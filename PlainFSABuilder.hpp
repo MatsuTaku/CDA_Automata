@@ -27,7 +27,6 @@ namespace array_fsa {
         struct Range {
             size_t begin;
             size_t end;
-            
             size_t length() const {
                 return end - begin;
             }
@@ -35,11 +34,9 @@ namespace array_fsa {
             void press_size(size_t size) {
                 begin += size;
             }
-            
             void append_size(size_t size) {
                 end += size;
             }
-            
             void close_to_end() {
                 end = begin;
             }
@@ -60,7 +57,8 @@ namespace array_fsa {
             return (bytes_[trans] & 2) != 0;
         }
         void set_final_flag_(size_t trans, bool is_final) {
-            bytes_[trans + 0] |= is_final ? 2 : 0;
+            if (is_final) { bytes_[trans + 0] |= 2; }
+            else { bytes_[trans + 0] &= ~2; }
         }
         uint8_t get_symbol_(size_t trans) const {
             return bytes_[trans + 1];

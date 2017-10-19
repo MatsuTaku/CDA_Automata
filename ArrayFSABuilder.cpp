@@ -11,7 +11,7 @@
 
 using namespace array_fsa;
 
-// MARK: - public
+// MARK: - public static
 
 ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
     ArrayFSABuilder builder(orig_fsa);
@@ -21,7 +21,7 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
     ArrayFSA new_fsa;
     const auto num_elems = builder.bytes_.size() / kElemSize;
     
-    while (num_elems >> (8 * ++new_fsa.next_size_ - 1));
+    new_fsa.calc_next_size(num_elems);
     new_fsa.element_size_ = new_fsa.next_size_ + 1;
     
     new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
@@ -30,6 +30,7 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
         const auto offset = i * kElemSize;
         const auto new_offset = i * new_fsa.element_size_;
         
+        // Set final flag to top of next bit.
         size_t next = builder.get_next_(offset) << 1 | (builder.is_final_(offset) ? 1 : 0);
         std::memcpy(&new_fsa.bytes_[new_offset], &next, new_fsa.next_size_);
         new_fsa.bytes_[new_offset + new_fsa.next_size_] = builder.get_check_(offset);
@@ -39,7 +40,37 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
         }
     }
     
+    builder.showNextSizeMapping();
+    
     return new_fsa;
+}
+
+
+// MARK: - public
+
+void ArrayFSABuilder::showNextSizeMapping() {
+    std::vector<size_t> next_map;
+    next_map.resize(4, 0);
+    for (size_t i = 0; i < bytes_.size(); i += kElemSize) {
+        if (get_check_(i) == 0) {
+            continue;
+        }
+        auto next = get_next_(i);
+        int size = 0;
+        while (next >> (8 * ++size - 1));
+        next_map[size - 1]++;
+    }
+    
+    std::cout << "Next size mapping" << std::endl;
+    std::cout << "num_elems " << num_elems_() << std::endl;
+    std::cout << "\t1\t2\t3\t4\tbyte size" << std::endl;
+    auto tab = "\t";
+    for (auto num: next_map) {
+        auto per_num = int(double(num) / num_elems_() * 100);
+        std::cout << tab << per_num;
+    }
+    std::cout << tab << "%";
+    std::cout << std::endl;
 }
 
 
@@ -50,8 +81,7 @@ void ArrayFSABuilder::build_() {
     
     expand_();
     freeze_state_(0);
-    
-    bytes_[0] |= 5; // is_final = is_used_next = true for terminal state
+    set_true_final_and_used_next_(0);
     
     arrange_(orig_fsa_.get_root_state(), 0);
     
@@ -91,7 +121,7 @@ void ArrayFSABuilder::expand_() {
 void ArrayFSABuilder::freeze_state_(size_t offset) {
     assert(!is_frozen_(offset));
     
-    bytes_[offset] |= 2; // is_frozen = true
+    set_frozen_(offset, true);
     
     const auto succ = get_succ_(offset);
     const auto pred = get_pred_(offset);
@@ -100,6 +130,7 @@ void ArrayFSABuilder::freeze_state_(size_t offset) {
     set_succ_(pred, succ);
     set_pred_(succ, pred);
     
+    // set succ and pred to 0
     std::memset(&bytes_[offset + 1], 0, kAddrSize * 2);
     
     if (offset == unfrozen_head_) {
@@ -112,14 +143,13 @@ void ArrayFSABuilder::close_block_(size_t begin) {
     
     if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
         return;
-        
     }
     for (auto i = begin; i < end; i += kElemSize) {
         if (is_frozen_(i)) {
             continue;
         }
         freeze_state_(i);
-        bytes_[i] &= ~2; // is_frozen = false
+        set_frozen_(i, false);
     }
 }
 
@@ -131,7 +161,7 @@ void ArrayFSABuilder::arrange_(size_t state, size_t offset) {
         return;
     }
     
-    {
+    { // Set next of offset to state's second if needed.
         auto it = state_map_.find(state);
         if (it != state_map_.end()) {
             // already visited state
@@ -147,7 +177,7 @@ void ArrayFSABuilder::arrange_(size_t state, size_t offset) {
     
     set_next_(offset, next);
     state_map_.insert(std::make_pair(state, next));
-    bytes_[offset_(next)] |= 4; // is_used_next = true
+    set_used_next_(offset_(next), true);
     
     for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
         const auto symbol = orig_fsa_.get_trans_symbol(trans);
@@ -157,7 +187,7 @@ void ArrayFSABuilder::arrange_(size_t state, size_t offset) {
         set_check_(child_offset, symbol);
         
         if (orig_fsa_.is_final_trans(trans)) {
-            bytes_[child_offset] |= 1; // is_final = true
+            set_final_(child_offset, true);
         }
     }
     

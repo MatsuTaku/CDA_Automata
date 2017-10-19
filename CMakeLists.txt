@@ -23,6 +23,11 @@ set(HEADER_FILES
   PlainFSABuilder.hpp
   )
 
-add_executable(test_PlainFSA test_PlainFSA.cpp ${HEADER_FILES})
-add_executable(bench bench.cpp ${HEADER_FILES})
-add_executable(build build.cpp ${HEADER_FILES})
+set(SOURCE_FILES
+    ArrayFSABuilder.cpp
+    PlainFSABuilder.cpp
+)
+
+add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(bench bench.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(build build.cpp ${SOURCE_FILES} ${HEADER_FILES})

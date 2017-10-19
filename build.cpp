@@ -8,18 +8,18 @@ using namespace array_fsa;
 
 namespace {
     
+    class DataNotFoundException : std::exception {};
+    
 	ArrayFSA getArrayFsaFromData(const char* data_name) {
 		std::ifstream ifs(data_name);
 		if (!ifs) {
-			std::cerr << "Error open " << data_name << std::endl;
-			throw "Data not found";
+			throw DataNotFoundException();
 		}
 		
 		PlainFSABuilder builder;
 		for (std::string line; std::getline(ifs, line);) {
 			builder.add(line);
 		}
-		
 		auto orig_fsa = builder.release();
 		return ArrayFSABuilder::build(orig_fsa);
 	}
@@ -27,8 +27,7 @@ namespace {
 	void checkArrayFsaHasMember(ArrayFSA& fsa, const char* data_name) {
 		std::ifstream ifs(data_name);
 		if (!ifs) {
-            std::cerr << "Error open: " << data_name << std::endl;
-			throw "Data not found";
+			throw DataNotFoundException();
 		}
 		
 		for (std::string line; std::getline(ifs, line);) {
@@ -50,10 +49,10 @@ int main(int argc, const char* argv[]) {
 	try {
 		fsa = getArrayFsaFromData(data_name);
 		
-		std::cout << "Test for membership" << std::endl;
-		
+        std::cout << "Test for membership" << std::endl;
 		checkArrayFsaHasMember(fsa, data_name);
-	} catch (...) {
+	} catch (DataNotFoundException e) {
+        std::cerr << "Error open " << data_name << std::endl;
 		return 1;
 	}
 	

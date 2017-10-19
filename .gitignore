@@ -1,4 +1,9 @@
+# cmake project
+build/
+results*
+
 # xcodeproject
+array_fsa.build/
 *.xcodeproj
 *.build
 DerivedData/

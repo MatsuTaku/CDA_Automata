@@ -22,6 +22,11 @@ namespace array_fsa {
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;
         ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
         
+        
+        // MARK: - Addition Matsumoto
+        
+        void showNextSizeMapping();
+        
     private:
         static constexpr size_t kBlockSize = 0x100;
         static constexpr size_t kFreeBytes = 0x10 * kBlockSize * kElemSize; // like darts-clone
@@ -42,6 +47,10 @@ namespace array_fsa {
         // MARK: of codes
         size_t offset_(size_t index) const {
             return index * kElemSize;
+        }
+        
+        size_t num_elems_() const {
+            return bytes_.size() / kElemSize;
         }
         
         // MARK: Getters
@@ -74,6 +83,21 @@ namespace array_fsa {
         }
         
         // MARK: Setters
+        void set_final_(size_t offset, bool is_final) {
+            if (is_final) { bytes_[offset] |= 1; }
+            else { bytes_[offset] &= ~1; }
+        }
+        void set_frozen_(size_t offset, bool is_frozen) {
+            if (is_frozen) { bytes_[offset] |= 2; }
+            else { bytes_[offset] &= ~2; }
+        }
+        void set_used_next_(size_t offset, bool is_used_next) {
+            if (is_used_next) { bytes_[offset] |= 4; }
+            else { bytes_[offset] &= ~4; }
+        }
+        void set_true_final_and_used_next_(size_t offset) {
+            bytes_[offset] |= 5;
+        }
         void set_next_(size_t offset, size_t next) {
             std::memcpy(&bytes_[offset + 1], &next, kAddrSize);
         }

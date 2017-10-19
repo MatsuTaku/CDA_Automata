@@ -10,6 +10,7 @@
 namespace array_fsa {
     
     class ArrayFSA {
+        friend class ArrayFSABuilder;
     public:
         ArrayFSA() = default;
         ~ArrayFSA() = default;
@@ -45,6 +46,11 @@ namespace array_fsa {
         }
         size_t get_num_elements() const {
             return bytes_.size() / element_size_;
+        }
+        
+        void calc_next_size(size_t num_elems) {
+            next_size_ = 0;
+            while (num_elems >> (8 * ++next_size_ - 1));
         }
         
         void write(std::ostream& os) const {
@@ -95,8 +101,6 @@ namespace array_fsa {
         uint8_t get_check_(size_t trans) const { // == get_trans_symbol
             return bytes_[trans * element_size_ + next_size_];
         }
-        
-        friend class ArrayFSABuilder;
     };
     
 }
