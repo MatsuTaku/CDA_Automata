@@ -15,6 +15,8 @@ message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 set(HEADER_FILES
   ArrayFSA.hpp
   ArrayFSABuilder.hpp
+  ArrayDACFSA.hpp
+  ArrayDACFSABuilder.hpp
   basic.hpp
   FsaTools.hpp
   MorfologikCFSA2.hpp
@@ -25,6 +27,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
     ArrayFSABuilder.cpp
+    ArrayDACFSABuilder.cpp
     PlainFSABuilder.cpp
 )
 

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "ArrayFSABuilder.hpp"
+#include "ArrayDACFSABuilder.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "MorfologikFSA5.hpp"
 #include "FsaTools.hpp"

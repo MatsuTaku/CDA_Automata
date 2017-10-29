@@ -2,25 +2,25 @@
 // Created by Kampersanda on 2017/05/26.
 //
 
-#ifndef ARRAY_FSA_ARRAYFSABUILDER_HPP
-#define ARRAY_FSA_ARRAYFSABUILDER_HPP
+#ifndef ARRAY_FSA_ArrayDACFSABUILDER_HPP
+#define ARRAY_FSA_ArrayDACFSABUILDER_HPP
 
 #include <unordered_map>
 
-#include "ArrayFSA.hpp"
+#include "ArrayDACFSA.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
-    class ArrayFSABuilder {
+    class ArrayDACFSABuilder {
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayFSA build(const PlainFSA& orig_fsa);
+        static ArrayDACFSA build(const PlainFSA& orig_fsa);
         
-        ArrayFSABuilder(const ArrayFSABuilder&) = delete;
-        ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
+        ArrayDACFSABuilder(const ArrayDACFSABuilder&) = delete;
+        ArrayDACFSABuilder& operator=(const ArrayDACFSABuilder&) = delete;
         
         
         // MARK: - Addition Matsumoto
@@ -38,8 +38,8 @@ namespace array_fsa {
         std::unordered_map<size_t, size_t> state_map_;
         size_t unfrozen_head_ = 0;
         
-        explicit ArrayFSABuilder(const PlainFSA& orig_fsa) : orig_fsa_(orig_fsa) {}
-        ~ArrayFSABuilder() = default;
+        explicit ArrayDACFSABuilder(const PlainFSA& orig_fsa) : orig_fsa_(orig_fsa) {}
+        ~ArrayDACFSABuilder() = default;
         
         // MARK: of array
         size_t index_(size_t offset) const {
@@ -136,4 +136,4 @@ namespace array_fsa {
     
 }
 
-#endif //ARRAY_FSA_ARRAYFSABUILDER_HPP
+#endif //ARRAY_FSA_ArrayDACFSABUILDER_HPP

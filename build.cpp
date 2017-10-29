@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "ArrayFSABuilder.hpp"
+#include "ArrayDACFSABuilder.hpp"
 #include "FsaTools.hpp"
 #include "PlainFSABuilder.hpp"
 
@@ -11,6 +11,7 @@ using namespace array_fsa;
 namespace {
     
     class DataNotFoundException : std::exception {};
+    class DoesntHaveMemberExceptipn : std::exception {};
     
 	ArrayFSA getArrayFsaFromData(const char* data_name) {
 		std::ifstream ifs(data_name);
@@ -23,7 +24,7 @@ namespace {
 			builder.add(line);
 		}
 		auto orig_fsa = builder.release();
-		return ArrayFSABuilder::build(orig_fsa);
+		return ArrayDACFSABuilder::build(orig_fsa);
 	}
 	
 	void checkArrayFsaHasMember(ArrayFSA& fsa, const char* data_name) {
@@ -36,6 +37,7 @@ namespace {
 		for (std::string line; std::getline(ifs, line);) {
 			if (!FsaTools::is_member(fsa, line)) {
                 std::cout << "Doesn't have member " << line << std::endl;
+                throw DoesntHaveMemberExceptipn();
 			}
             num++;
 		}
@@ -54,16 +56,16 @@ int main(int argc, const char* argv[]) {
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
-    ArrayFSA fsa;
+    ArrayFSA fsa = getArrayFsaFromData(data_name);
     try {
-        fsa = getArrayFsaFromData(data_name);
+        std::cout << "Test for membership" << std::endl;
+        checkArrayFsaHasMember(fsa, data_name);
     } catch (DataNotFoundException e) {
         std::cerr << "Error open " << data_name << std::endl;
         return 1;
+    } catch (DoesntHaveMemberExceptipn e) {
+        std::cerr << "Doesn't have member" << std::endl;
     }
-    
-    std::cout << "Test for membership" << std::endl;
-    checkArrayFsaHasMember(fsa, data_name);
 	
 	std::cout << "Write FSA into " << fsa_name << std::endl;
 	
