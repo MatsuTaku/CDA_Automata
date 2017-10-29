@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "ArrayFSABuilder.hpp"
 #include "ArrayDACFSABuilder.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "MorfologikFSA5.hpp"
@@ -77,6 +78,8 @@ int main(int argc, const char* argv[]) {
             return bench<MorfologikFSA5>(fsa_name, query_name);
         case '3':
             return bench<MorfologikCFSA2>(fsa_name, query_name);
+        case '4':
+            return bench<ArrayDACFSA>(fsa_name, query_name);
         default:
             break;
     }

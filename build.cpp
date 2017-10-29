@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "ArrayFSABuilder.hpp"
 #include "ArrayDACFSABuilder.hpp"
 #include "FsaTools.hpp"
 #include "PlainFSABuilder.hpp"
@@ -13,7 +14,7 @@ namespace {
     class DataNotFoundException : std::exception {};
     class DoesntHaveMemberExceptipn : std::exception {};
     
-	ArrayFSA getArrayFsaFromData(const char* data_name) {
+    ArrayDACFSA getArrayFsaFromData(const char* data_name) {
 		std::ifstream ifs(data_name);
 		if (!ifs) {
 			throw DataNotFoundException();
@@ -27,7 +28,7 @@ namespace {
 		return ArrayDACFSABuilder::build(orig_fsa);
 	}
 	
-	void checkArrayFsaHasMember(ArrayFSA& fsa, const char* data_name) {
+	void checkArrayFsaHasMember(ArrayDACFSA& fsa, const char* data_name) {
 		std::ifstream ifs(data_name);
 		if (!ifs) {
 			throw DataNotFoundException();
@@ -56,7 +57,7 @@ int main(int argc, const char* argv[]) {
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
-    ArrayFSA fsa = getArrayFsaFromData(data_name);
+    ArrayDACFSA fsa = getArrayFsaFromData(data_name);
     try {
         std::cout << "Test for membership" << std::endl;
         checkArrayFsaHasMember(fsa, data_name);
