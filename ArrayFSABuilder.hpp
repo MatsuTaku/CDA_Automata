@@ -25,7 +25,8 @@ namespace array_fsa {
         
         // MARK: - Addition Matsumoto
         
-        void showNextSizeMapping();
+        void showMapping(bool show_density);
+        // MARK: -
         
     private:
         static constexpr size_t kBlockSize = 0x100;
@@ -54,61 +55,65 @@ namespace array_fsa {
         }
         
         // MARK: Getters
-        bool is_final_(size_t offset) const {
-            return (bytes_[offset] & 1) == 1;
+        bool is_final_(size_t index) const {
+            return (bytes_[offset_(index)] & 1) == 1;
         }
-        bool is_frozen_(size_t offset) const {
-            return (bytes_[offset] & 2) == 2;
+        bool is_frozen_(size_t index) const {
+            return (bytes_[offset_(index)] & 2) == 2;
         }
-        bool is_used_next_(size_t offset) const {
-            return (bytes_[offset] & 4) == 4;
+        bool is_used_next_(size_t index) const {
+            return (bytes_[offset_(index)] & 4) == 4;
         }
-        size_t get_next_(size_t offset) const {
+        size_t get_next_(size_t index) const {
             size_t next = 0;
-            std::memcpy(&next, &bytes_[offset + 1], kAddrSize);
-            return next;
+            std::memcpy(&next, &bytes_[offset_(index) + 1], kAddrSize);
+            return index ^ next;
         }
-        uint8_t get_check_(size_t offset) const {
-            return bytes_[offset + 1 + kAddrSize];
+        uint8_t get_check_(size_t index) const {
+            return bytes_[offset_(index) + 1 + kAddrSize];
         }
-        size_t get_succ_(size_t offset) const {
+        size_t get_succ_(size_t index) const {
             size_t succ = 0;
-            std::memcpy(&succ, &bytes_[offset + 1], kAddrSize);
+            std::memcpy(&succ, &bytes_[offset_(index) + 1], kAddrSize);
             return succ;
         }
-        size_t get_pred_(size_t offset) const {
+        size_t get_pred_(size_t index) const {
             size_t pred = 0;
-            std::memcpy(&pred, &bytes_[offset + 1 + kAddrSize], kAddrSize);
+            std::memcpy(&pred, &bytes_[offset_(index) + 1 + kAddrSize], kAddrSize);
             return pred;
         }
         
         // MARK: Setters
-        void set_final_(size_t offset, bool is_final) {
+        void set_final_(size_t index, bool is_final) {
+            auto offset = offset_(index);
             if (is_final) { bytes_[offset] |= 1; }
             else { bytes_[offset] &= ~1; }
         }
-        void set_frozen_(size_t offset, bool is_frozen) {
+        void set_frozen_(size_t index, bool is_frozen) {
+            auto offset = offset_(index);
             if (is_frozen) { bytes_[offset] |= 2; }
             else { bytes_[offset] &= ~2; }
         }
-        void set_used_next_(size_t offset, bool is_used_next) {
+        void set_used_next_(size_t index, bool is_used_next) {
+            auto offset = offset_(index);
             if (is_used_next) { bytes_[offset] |= 4; }
             else { bytes_[offset] &= ~4; }
         }
-        void set_true_final_and_used_next_(size_t offset) {
-            bytes_[offset] |= 5;
+        void set_true_final_and_used_next_(size_t index) {
+            bytes_[offset_(index)] |= 5;
         }
-        void set_next_(size_t offset, size_t next) {
-            std::memcpy(&bytes_[offset + 1], &next, kAddrSize);
+        void set_next_(size_t index, size_t next) {
+            auto relative_next = index ^ next;
+            std::memcpy(&bytes_[offset_(index) + 1], &relative_next, kAddrSize);
         }
-        void set_check_(size_t offset, uint8_t check) {
-            bytes_[offset + 1 + kAddrSize] = check;
+        void set_check_(size_t index, uint8_t check) {
+            bytes_[offset_(index) + 1 + kAddrSize] = check;
         }
-        void set_succ_(size_t offset, size_t succ) {
-            std::memcpy(&bytes_[offset + 1], &succ, kAddrSize);
+        void set_succ_(size_t index, size_t succ) {
+            std::memcpy(&bytes_[offset_(index) + 1], &succ, kAddrSize);
         }
-        void set_pred_(size_t offset, size_t pred) {
-            std::memcpy(&bytes_[offset + 1 + kAddrSize], &pred, kAddrSize);
+        void set_pred_(size_t index, size_t pred) {
+            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &pred, kAddrSize);
         }
         
         // MARK: methods
@@ -117,11 +122,11 @@ namespace array_fsa {
         
         void expand_();
         
-        void freeze_state_(size_t offset);
+        void freeze_state_(size_t index);
         
         void close_block_(size_t begin);
         
-        void arrange_(size_t state, size_t offset);
+        void arrange_(size_t state, size_t index);
         
         // so-called XCHECK
         size_t find_next_(size_t first_trans) const;

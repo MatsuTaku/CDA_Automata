@@ -7,6 +7,8 @@
 
 #include "PlainFSABuilder.hpp"
 
+#include <unistd.h>
+
 using namespace array_fsa;
 using namespace std;
 
@@ -63,6 +65,11 @@ namespace {
 }
 
 int main() {
+    char *cwd ;
+    cwd=getcwd(NULL, 0);
+    printf("current working directory:%s\n", cwd);
+    free(cwd);
+    
     auto strs = sample_strs();
     test(strs);
     

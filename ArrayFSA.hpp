@@ -27,15 +27,20 @@ namespace array_fsa {
             return "ArrayFSA";
         }
         
+        size_t offset_(size_t trans) const {
+            return trans * element_size_;
+        }
+        
         size_t get_root_state() const {
             return get_next_(0);
         }
         size_t get_trans(size_t state, uint8_t symbol) const {
             const auto trans = state ^ symbol;
-            return get_check_(trans) != symbol ? 0 : trans;
+            auto is_match = get_check_(trans) == symbol;
+            return is_match ? trans : 0;
         }
         size_t get_target_state(size_t trans) const {
-            return get_next_(trans);
+            return trans ^ get_next_(trans);
         }
         bool is_final_trans(size_t trans) const {
             return (bytes_[trans * element_size_] & 1) == 1;
@@ -95,11 +100,11 @@ namespace array_fsa {
         
         size_t get_next_(size_t trans) const { // == get_target_state
             size_t next = 0;
-            std::memcpy(&next, &bytes_[trans * element_size_], next_size_);
+            std::memcpy(&next, &bytes_[offset_(trans)], next_size_);
             return next >> 1;
         }
         uint8_t get_check_(size_t trans) const { // == get_trans_symbol
-            return bytes_[trans * element_size_ + next_size_];
+            return bytes_[offset_(trans) + next_size_];
         }
     };
     
