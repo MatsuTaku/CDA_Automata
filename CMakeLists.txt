@@ -26,9 +26,9 @@ set(HEADER_FILES
   )
 
 set(SOURCE_FILES
-    ArrayFSABuilder.cpp
-    ArrayDACFSABuilder.cpp
-    PlainFSABuilder.cpp
+  ArrayFSABuilder.cpp
+  ArrayDACFSABuilder.cpp
+  PlainFSABuilder.cpp
 )
 
 add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})

@@ -60,9 +60,6 @@ namespace array_fsa {
         void set_needs_DAC(size_t trans, bool needs_DAC) {
             if (needs_DAC) { bytes_[offset_(trans)] |= 2; }
             else { bytes_[offset_(trans)] &= ~2; }
-            if (needs_DAC != is_used_DAC_(trans)) {
-                std::cout << "error: setNeedsDac" << std::endl;
-            }
         }
         
         void set_next(size_t trans, size_t next) {
@@ -76,20 +73,6 @@ namespace array_fsa {
                     dac_bytes_.push_back((nextFlow >> (i * 8)) & 0xff);
                 }
             }
-//            if (needsDAC) {
-//                size_t flow = 0;
-//            flow = (dac_bytes_[dac_bytes_.size() - 1] << 16 |
-//                             dac_bytes_[dac_bytes_.size() - 2] << 8 |
-//                             dac_bytes_[dac_bytes_.size() - 3]);
-//                std::cout << next << "\t" << (flow << 8 | next) << std::endl;
-//                if (next != (flow << 8 | one_byte_next) || !is_used_DAC_(trans)) {
-//                    std::cout << "error[" << trans << "] " << next << " : " << (flow << 8 | one_byte_next) << std::endl;
-//                }
-//                flow = get_DAC_flow(trans);
-//                if (next != (flow << 8 | one_byte_next) || !is_used_DAC_(trans)) {
-//                    std::cout << "error[" << trans << "] " << next << " : " << (flow << 8 | one_byte_next) << std::endl;
-//                }
-//            }
         }
         
         void set_check(size_t trans, uint8_t check) {
@@ -103,18 +86,20 @@ namespace array_fsa {
         
         void write(std::ostream& os) const {
             write_vec(bytes_, os);
+            write_vec(dac_bytes_, os);
             write_val(next_size_, os);
             write_val(num_trans_, os);
         }
         void read(std::istream& is) {
             bytes_ = read_vec<uint8_t>(is);
+            dac_bytes_ = read_vec<uint8_t>(is);
             next_size_ = read_val<size_t>(is);
-            element_size_ = next_size_ + 1;
+            element_size_ = 3;
             num_trans_ = read_val<size_t>(is);
         }
         
         size_t size_in_bytes() const {
-            return size_vec(bytes_) + sizeof(next_size_) + sizeof(num_trans_);
+            return size_vec(bytes_) + size_vec(dac_bytes_) + sizeof(next_size_) + sizeof(num_trans_);
         }
         
         void show_stat(std::ostream& os) const {

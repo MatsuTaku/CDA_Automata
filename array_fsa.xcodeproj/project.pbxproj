@@ -9,9 +9,9 @@
 /* Begin PBXAggregateTarget section */
 		457329286FB9419581294C48 /* ZERO_CHECK */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = A1C8C5718C4148FAA53DBDAB /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildConfigurationList = 3F86727475DF4051929315AF /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
 			buildPhases = (
-				2BA100E845C049139889AAD6 /* CMake Rules */,
+				A6FFF1D8056845718BFB2616 /* CMake Rules */,
 			);
 			dependencies = (
 			);
@@ -20,15 +20,15 @@
 		};
 		B15429E0C80D4D3C9B3DF12F /* ALL_BUILD */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 7537667E632648B78DC8B2DC /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildConfigurationList = A7A665433A9541CA81EA33F8 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
 			buildPhases = (
-				22D32A36B00F4126A569E8AF /* CMake Rules */,
+				E82A914F23E2471387A6637A /* CMake Rules */,
 			);
 			dependencies = (
-				B5E92AA64CCE435BBA9000AB /* PBXTargetDependency */,
-				7F621617EE5C4E1DA29C9953 /* PBXTargetDependency */,
-				F570C87FC5444EBC8AEA33AC /* PBXTargetDependency */,
-				A641CB25F4714EA48CA536EA /* PBXTargetDependency */,
+				F5AB392AD2AF481F8723293C /* PBXTargetDependency */,
+				8FA505B9927447DFAD593470 /* PBXTargetDependency */,
+				8BA72C543368438ABDFF5D6C /* PBXTargetDependency */,
+				16BFA02C8981455B9DC27AAF /* PBXTargetDependency */,
 			);
 			name = ALL_BUILD;
 			productName = ALL_BUILD;
@@ -36,128 +36,128 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		0126F41AD53F4ACE939C4B59 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXBuildFile; fileRef = ABA8B4692F3D4830A4C6AFD4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */; };
-		04B7273A60D941B18E2EE325 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = E6FA9B7CD01047208C935239 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */; };
-		0CBE3AA2359142FFA734DCBD /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXBuildFile; fileRef = A6D2C5EBF42C48BB81493182 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */; };
-		17B5C1D3947A402C89D054F5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 81220B320EFA4D90902F5EA9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */; };
-		1A4978DB4BB04BBF872E9659 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXBuildFile; fileRef = 57DCE85B20F6413FA699FC88 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */; };
-		1E80E67FA4124706BB4C53DB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */ = {isa = PBXBuildFile; fileRef = 4DAC98FFDDCB46E2B8567233 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */; };
-		23C1279A61C94082A7C25F0D /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = CA6DB12078EB43728266E700 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */; };
-		354D9C0E6A45454899E7990A /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXBuildFile; fileRef = CC130E5EE7C6425A8730D865 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */; };
-		3D3FB66588CD4B81BAB03082 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 1185C4FA6A5C4F32BA346C4C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */; };
-		4189C2E5D2E0477BB53C0A14 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 1955360F40984730AFAC6899 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */; };
-		514DDE27D6B4439EBF4DCD46 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXBuildFile; fileRef = 315D334EB80A47599B78F297 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */; };
-		5329D6E8FF4C435EA3E31DCC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXBuildFile; fileRef = 378285E34667457B9B1869DF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */; };
-		53ADBC314E984302B3A27289 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 73023E00C7834E6187A197FB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */; };
-		56E97EAEB9DF4A1C844EBFEB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = CCFA819BE67A4ECCB8E22A0F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */; };
-		5AA49AC9E0994F6F803C903B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = CD4459BE1432492D86C2D914 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */; };
-		5B3931F9FD8447D1A72DE7CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = A998E25913464040B5DF471E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */; };
-		5CEEE6B792CB42FDA1FE9E17 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXBuildFile; fileRef = BA3DA23A0E4F439B8E2243AF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */; };
-		6265BB83263D4D81B4DA510B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXBuildFile; fileRef = C6FBFADA90834723B9A46751 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */; };
-		66784419AA634143982BD3FF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXBuildFile; fileRef = AC7CB8B4A8BD4D37BBCD1D15 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */; };
-		67947F8B2A354A01983F8872 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = DA1D82A8E3994FA4A6C7ED0D /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */; };
-		6B0F9D6BE54B4625BF6EBFBA /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXBuildFile; fileRef = EF4C0B14EE9946CA8A760206 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */; };
-		6EB3A2F09B944A409DDC9EDF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 150B4A747649474B85C1D32E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */; };
-		7AFC39869F844D1B9E49A4B4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 0FA77E3C54AE4B91B0BFFA2C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */; };
-		7CFCF90B6CE848FF99ACE906 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXBuildFile; fileRef = 1B9AA05B8DD64D1C814C48B6 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */; };
-		917E8F380A7640058234E798 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 29694EA17ADB4285B4266FC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */; };
-		9A6C18F6EF13449785C4D764 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXBuildFile; fileRef = 13DAB5797A1645039F5D020C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */; };
-		9E792A0B08D947CDBB99968C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 6EFE7C1A75D74FE2B5A94DFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */; };
-		A4E5E6BEB5484F538FAF78DF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 05F1292B8BB2401FA0603222 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */; };
-		A93D681C0A774927B1534BBB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = DDDB779AF6F4455498A7B899 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */; };
-		BBE82E2B86EB4C3C870C64A4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXBuildFile; fileRef = 9B50025DD0A84B7490B279CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */; };
-		C07DBA0899814B9CA098646C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXBuildFile; fileRef = 36619A0E3D6B4588B63B3C27 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */; };
-		C6684FB3117B49F6AB882FF8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = C6ED8767D4F44E949CD76655 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */; };
-		C8BCE6AE791F4F0B9652A6DA /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 71BD47FEBBC7491BAFE18438 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */; };
-		CDE3B2C844F24A1E9113AC78 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */ = {isa = PBXBuildFile; fileRef = 2478AF1ADBB04E219B3E06E0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */; };
-		D63D702EBD25494E9F2CCDF9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXBuildFile; fileRef = 5C88E2875C8C41E797E746E2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */; };
-		D8053A5C23F64DC094ABCAB7 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXBuildFile; fileRef = 3701A226279D4E82ADC9BD05 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */; };
-		D85B29347604433AA942803B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 243A09D64B584802B8FDC90E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */; };
-		E703B5388D44457B93D3207C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */ = {isa = PBXBuildFile; fileRef = 294BCB3A34404B3387E23471 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */; };
-		EBCEC3E8DFA24ECEBDD2C71A /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXBuildFile; fileRef = F797BFD680AF4417B64954C5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */; };
-		EC955FC8FCEE49D2812AE820 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXBuildFile; fileRef = BBA1F6A5C24D44C280B43DC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */; };
-		F069F46F0FAE4114B94567BB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 2D0E96BC209C405A9FDA4B19 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */; };
-		F42CF5D062FF46EF9D247A0C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXBuildFile; fileRef = DC296EEEDCF4471D89E0EE17 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */; };
-		FAA8BE75E17C49608A42C34F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = F90D048926504ED58E358AFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */; };
-		FBE10F89A3B8443B8B450BF4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXBuildFile; fileRef = 2131501C2F2448EA859F8EA2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */; };
-		FF9F48A3AFB64979984D4D00 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXBuildFile; fileRef = C91F768ADD53493A94986AA6 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */; };
+		08CFDCF6717B45149CA917E0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 200AFEC8921D4B9F9F5357C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */; };
+		1123489F88534D158266FF62 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = AB26C8E20C734C768711AB62 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */; };
+		11E293DB04AF4413B68997C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 40D1B2A5EF244CFEB5C05C69 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */; };
+		11EF4DDC948E4CE3A7BF3D9B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXBuildFile; fileRef = 75CEAFE9627C44BD9B2A1E09 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */; };
+		17EFB80120BA4AD7A95A6234 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */ = {isa = PBXBuildFile; fileRef = 303B3882C15F4405A91DEE19 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */; };
+		23E1D78506D84E1CAA87FD96 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */ = {isa = PBXBuildFile; fileRef = DAAC1BA1043E4491B4BE89D5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */; };
+		2E20FD0C4BC64202B12AB09E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 82E4284BEE9C468DA5D1CF73 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */; };
+		3023C18E68AA4ED0AEF3D050 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXBuildFile; fileRef = 6104F2CA33F740FFA9B0FE8C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */; };
+		334D37C335ED427EA4F0E7E4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXBuildFile; fileRef = 76ABBB3E34974760B863C41C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */; };
+		33B848A6C0D94B72AC04F1F5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXBuildFile; fileRef = 38511995934149F7859F27BE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */; };
+		397D316947664A4787B2B5B5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXBuildFile; fileRef = C5CBD61A99A1400C9C43D4A7 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */; };
+		4A4ADCE3C20F4FACB1811FBA /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 364543E73DA24AD4BA58397F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */; };
+		549DD56A97574E8DA34CEFC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = CECF2218A366498690440A85 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */; };
+		5675D2F9808744918E56CCAD /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXBuildFile; fileRef = 90AFB3AF01DE4488BE4671B2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */; };
+		58837BA67A4C41018C3010A5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXBuildFile; fileRef = CE8A30EA415D4EB79B6D3600 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */; };
+		5A7E601B930842E5BC918181 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 80BA1AC96B2243378DE0B6A8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */; };
+		5E657642B685435E8032AF0D /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXBuildFile; fileRef = F085EE7111A3404280AB89C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */; };
+		63A2D0D73D634A378ACF041F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXBuildFile; fileRef = 51524762DA51432EBDA96648 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */; };
+		77447804460742D0989D736B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXBuildFile; fileRef = 23797190C29D46EFAF04051F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */; };
+		7B1862C54566471F9CDDD4EC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 818B7AA21BC24D0A9E149AFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */; };
+		8074FA4AE38942CABE7DF529 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = FFE8829BE040458E8A411560 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */; };
+		81DAF51ECEFD4A0D94F5679C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = C804D72C72B14F5D8AF15E04 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */; };
+		8B1B98D8A0E84F4DB186176E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 3543755FBC204EDD8184517C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */; };
+		8B7AA1BD5CB347A8B0199F6F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXBuildFile; fileRef = E9548B4646544691B7BB0D05 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */; };
+		989529CAFFE44D2BB4CA9DFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXBuildFile; fileRef = B35E15171DF745A78C8720C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */; };
+		9B767E0007A14704A6212E2C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 3D51D8A0FB9C43E7882E4E71 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */; };
+		9DC12B1F8131469BA0D50F4F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */ = {isa = PBXBuildFile; fileRef = 1EBBA1DF36664A5E84FEE425 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */; };
+		A94CBA9C2A5A487C9351CE11 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXBuildFile; fileRef = 9FF9C6A5FE8E49D4A9083D2B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */; };
+		AA7C01B6D7974C859FB520F3 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 1B4D8C008CDA44669060EC43 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */; };
+		B71A772038E3430F965EEEB2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 00685C66720649D1AB8753DB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */; };
+		BE420FEE38374C8787867586 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXBuildFile; fileRef = 903378CBEF524C8180EB574C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */; };
+		C46512C0850247D2BFDC5704 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXBuildFile; fileRef = 2BB982299E2C4F878C6908FD /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */; };
+		C603C7A16E0243F79BF36D89 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = FBAE5930F3C44B16AA3A0F88 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */; };
+		C672C2102DC6477CB20CB2B4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = C0279A047A7C425290683D14 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */; };
+		C6C7E45DE2584E67A14CE6C0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = E4EBDB702DD4442BBAC168CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */; };
+		CBA45FD15DF24B7982B3DCC9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXBuildFile; fileRef = 579E733BCA0849C8B179E93B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */; };
+		CDAFE95919C94AB9A0EC6A33 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXBuildFile; fileRef = E961A49C0CF94F89896B5486 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */; };
+		D5A078945D5245EFA5EAF671 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXBuildFile; fileRef = 03672A3A1BEF4E41B3B9762B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */; };
+		D770DD606BEA40E980DDA045 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXBuildFile; fileRef = 8059E0AE2A9043C0B8C2BDF8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */; };
+		DE54C5AC7F5E423B8880F9A2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXBuildFile; fileRef = 6AF9BEAF82024DCF964878C1 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */; };
+		E0A3E7111EFB4201B6A420AC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = AEB2E3C3112F47F798FC676C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */; };
+		EBC24A3560E94B89A40FC159 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 5D0B80510C4E4E4995438AB8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */; };
+		EFFDB7D1134D4DEC9945A5B8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXBuildFile; fileRef = 3A2A0010D51B444B98E2E368 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */; };
+		F619E29C58B2461E86F755C5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXBuildFile; fileRef = 350242F8D1E54DE0A1A82CAC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */; };
+		FED3E800EA494805BA90D797 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXBuildFile; fileRef = 3B645ECFD06945EBA0218B33 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildStyle section */
-		01CABA4553A3458E86B61580 /* RelWithDebInfo */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-			};
-			name = RelWithDebInfo;
-		};
-		46746FD2CF2843A4814DEA73 /* MinSizeRel */ = {
+		5E7E32E02C614687A770CAB5 /* MinSizeRel */ = {
 			isa = PBXBuildStyle;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 			};
 			name = MinSizeRel;
 		};
-		9D41E0FF70894AAC9C716261 /* Release */ = {
+		D498AC92A74A49B28BFF85FB /* Release */ = {
 			isa = PBXBuildStyle;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 			};
 			name = Release;
 		};
-		C45A4F5918854A6AA76040AE /* Debug */ = {
+		E237C051901F435688BDCC34 /* Debug */ = {
 			isa = PBXBuildStyle;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 			};
 			name = Debug;
 		};
+		FB0C9415F53D4B36909ACB5D /* RelWithDebInfo */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = RelWithDebInfo;
+		};
 /* End PBXBuildStyle section */
 
 /* Begin PBXContainerItemProxy section */
-		53BF5A4EC55B455AA76C6206 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 137AD7C95C7E497192D98401;
-			remoteInfo = bench;
-		};
-		79A5355ECB994225956786A2 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 457329286FB9419581294C48;
-			remoteInfo = ZERO_CHECK;
-		};
-		A0C34F788BA34A12BED26720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 457329286FB9419581294C48;
-			remoteInfo = ZERO_CHECK;
-		};
-		AB3C98B0DEBD434C96F65445 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 457329286FB9419581294C48;
-			remoteInfo = ZERO_CHECK;
-		};
-		B1E13665B5D6496EA16F2D36 /* PBXContainerItemProxy */ = {
+		138DBA3EB63A4360A9439591 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 30C233E399B843DA8CEEE33B;
 			remoteInfo = test_PlainFSA;
 		};
-		DB9D3F76468B4B4099448E38 /* PBXContainerItemProxy */ = {
+		22977577FD1242FEA8F15059 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 457329286FB9419581294C48;
+			remoteInfo = ZERO_CHECK;
+		};
+		364E3689DA7D4486BE1F2531 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 457329286FB9419581294C48;
+			remoteInfo = ZERO_CHECK;
+		};
+		6F5F3A7F5AE3468AB0FC675F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 457329286FB9419581294C48;
+			remoteInfo = ZERO_CHECK;
+		};
+		BBB7764F303B47EAA81E0DDB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 137AD7C95C7E497192D98401;
+			remoteInfo = bench;
+		};
+		CDDA204E042B4605A8500D94 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = FD6B1C3B318A4FAEA29B53EC;
 			remoteInfo = build;
 		};
-		F66BB269FF1346349E73E987 /* PBXContainerItemProxy */ = {
+		E8001D10744549CEA9AF03F8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B537B4F2E8E34987BA684C0D /* Project object */;
 			proxyType = 1;
@@ -167,225 +167,225 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		05F1292B8BB2401FA0603222 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayFSABuilder.cpp; path = ArrayFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		0FA77E3C54AE4B91B0BFFA2C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSABuilder.hpp; path = ArrayDACFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		1185C4FA6A5C4F32BA346C4C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		13DAB5797A1645039F5D020C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = FsaTools.hpp; path = FsaTools.hpp; sourceTree = SOURCE_ROOT; };
-		150B4A747649474B85C1D32E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = PlainFSABuilder.cpp; path = PlainFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		1955360F40984730AFAC6899 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		1B9AA05B8DD64D1C814C48B6 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = basic.hpp; path = basic.hpp; sourceTree = SOURCE_ROOT; };
-		2131501C2F2448EA859F8EA2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikCFSA2.hpp; path = MorfologikCFSA2.hpp; sourceTree = SOURCE_ROOT; };
-		243A09D64B584802B8FDC90E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayDACFSABuilder.cpp; path = ArrayDACFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		2478AF1ADBB04E219B3E06E0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = build.cpp; path = build.cpp; sourceTree = SOURCE_ROOT; };
-		294BCB3A34404B3387E23471 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = bench.cpp; path = bench.cpp; sourceTree = SOURCE_ROOT; };
-		29694EA17ADB4285B4266FC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSABuilder.hpp; path = PlainFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		2D0E96BC209C405A9FDA4B19 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayFSABuilder.cpp; path = ArrayFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		315D334EB80A47599B78F297 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSA.hpp; path = PlainFSA.hpp; sourceTree = SOURCE_ROOT; };
-		36619A0E3D6B4588B63B3C27 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSA.hpp; path = ArrayFSA.hpp; sourceTree = SOURCE_ROOT; };
-		3701A226279D4E82ADC9BD05 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSA.hpp; path = ArrayDACFSA.hpp; sourceTree = SOURCE_ROOT; };
-		378285E34667457B9B1869DF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = FsaTools.hpp; path = FsaTools.hpp; sourceTree = SOURCE_ROOT; };
-		4DAC98FFDDCB46E2B8567233 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = test_PlainFSA.cpp; path = test_PlainFSA.cpp; sourceTree = SOURCE_ROOT; };
-		57DCE85B20F6413FA699FC88 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikFSA5.hpp; path = MorfologikFSA5.hpp; sourceTree = SOURCE_ROOT; };
-		5C88E2875C8C41E797E746E2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSA.hpp; path = ArrayFSA.hpp; sourceTree = SOURCE_ROOT; };
-		5F1298850C2C4730AF9D440B /* build */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = build; sourceTree = BUILT_PRODUCTS_DIR; };
-		6BFF6B3EE2354579B99F780E /* bench */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = bench; sourceTree = BUILT_PRODUCTS_DIR; };
-		6EFE7C1A75D74FE2B5A94DFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayDACFSABuilder.cpp; path = ArrayDACFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		6F0986443D314C21B8CE4A2E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		71BD47FEBBC7491BAFE18438 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSABuilder.hpp; path = PlainFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		73023E00C7834E6187A197FB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSABuilder.hpp; path = ArrayFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		81220B320EFA4D90902F5EA9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSABuilder.hpp; path = ArrayFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		835515CA754942ECBC0148D9 /* test_PlainFSA */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = test_PlainFSA; sourceTree = BUILT_PRODUCTS_DIR; };
-		9B50025DD0A84B7490B279CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikFSA5.hpp; path = MorfologikFSA5.hpp; sourceTree = SOURCE_ROOT; };
-		A6D2C5EBF42C48BB81493182 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSA.hpp; path = PlainFSA.hpp; sourceTree = SOURCE_ROOT; };
-		A998E25913464040B5DF471E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSABuilder.hpp; path = ArrayFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		ABA8B4692F3D4830A4C6AFD4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = basic.hpp; path = basic.hpp; sourceTree = SOURCE_ROOT; };
-		AC7CB8B4A8BD4D37BBCD1D15 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSA.hpp; path = ArrayDACFSA.hpp; sourceTree = SOURCE_ROOT; };
-		BA3DA23A0E4F439B8E2243AF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikFSA5.hpp; path = MorfologikFSA5.hpp; sourceTree = SOURCE_ROOT; };
-		BBA1F6A5C24D44C280B43DC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSA.hpp; path = ArrayDACFSA.hpp; sourceTree = SOURCE_ROOT; };
-		C6ED8767D4F44E949CD76655 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSABuilder.hpp; path = ArrayDACFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		C6FBFADA90834723B9A46751 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = FsaTools.hpp; path = FsaTools.hpp; sourceTree = SOURCE_ROOT; };
-		C91F768ADD53493A94986AA6 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = basic.hpp; path = basic.hpp; sourceTree = SOURCE_ROOT; };
-		CA6DB12078EB43728266E700 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSABuilder.hpp; path = ArrayDACFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		CC130E5EE7C6425A8730D865 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikCFSA2.hpp; path = MorfologikCFSA2.hpp; sourceTree = SOURCE_ROOT; };
-		CCFA819BE67A4ECCB8E22A0F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		CD4459BE1432492D86C2D914 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSABuilder.hpp; path = PlainFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
-		DA1D82A8E3994FA4A6C7ED0D /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = PlainFSABuilder.cpp; path = PlainFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		DC296EEEDCF4471D89E0EE17 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikCFSA2.hpp; path = MorfologikCFSA2.hpp; sourceTree = SOURCE_ROOT; };
-		DDDB779AF6F4455498A7B899 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayFSABuilder.cpp; path = ArrayFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		E6FA9B7CD01047208C935239 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = PlainFSABuilder.cpp; path = PlainFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
-		EBD475509C4B4F099A25D725 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
-		EF4C0B14EE9946CA8A760206 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSA.hpp; path = ArrayFSA.hpp; sourceTree = SOURCE_ROOT; };
-		F797BFD680AF4417B64954C5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSA.hpp; path = PlainFSA.hpp; sourceTree = SOURCE_ROOT; };
-		F90D048926504ED58E358AFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayDACFSABuilder.cpp; path = ArrayDACFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		00685C66720649D1AB8753DB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayFSABuilder.cpp; path = ArrayFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		03672A3A1BEF4E41B3B9762B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = basic.hpp; path = basic.hpp; sourceTree = SOURCE_ROOT; };
+		1B4D8C008CDA44669060EC43 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayDACFSABuilder.cpp; path = ArrayDACFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		1EBBA1DF36664A5E84FEE425 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = build.cpp; path = build.cpp; sourceTree = SOURCE_ROOT; };
+		200AFEC8921D4B9F9F5357C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		23797190C29D46EFAF04051F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = FsaTools.hpp; path = FsaTools.hpp; sourceTree = SOURCE_ROOT; };
+		2BB982299E2C4F878C6908FD /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSA.hpp; path = ArrayFSA.hpp; sourceTree = SOURCE_ROOT; };
+		303B3882C15F4405A91DEE19 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = bench.cpp; path = bench.cpp; sourceTree = SOURCE_ROOT; };
+		350242F8D1E54DE0A1A82CAC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSA.hpp; path = PlainFSA.hpp; sourceTree = SOURCE_ROOT; };
+		3543755FBC204EDD8184517C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSABuilder.hpp; path = ArrayFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		364543E73DA24AD4BA58397F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSABuilder.hpp; path = ArrayDACFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		38511995934149F7859F27BE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikCFSA2.hpp; path = MorfologikCFSA2.hpp; sourceTree = SOURCE_ROOT; };
+		3A2A0010D51B444B98E2E368 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSABuilder.hpp; path = ArrayDACFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		3B645ECFD06945EBA0218B33 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = PlainFSABuilder.cpp; path = PlainFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		3D51D8A0FB9C43E7882E4E71 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSABuilder.hpp; path = ArrayFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		40D1B2A5EF244CFEB5C05C69 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = PlainFSABuilder.cpp; path = PlainFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		51524762DA51432EBDA96648 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSA.hpp; path = PlainFSA.hpp; sourceTree = SOURCE_ROOT; };
+		579E733BCA0849C8B179E93B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikCFSA2.hpp; path = MorfologikCFSA2.hpp; sourceTree = SOURCE_ROOT; };
+		5A04EF4C08E24B7C95E843EF /* build */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = build; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D0B80510C4E4E4995438AB8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSABuilder.hpp; path = ArrayFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		6104F2CA33F740FFA9B0FE8C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = basic.hpp; path = basic.hpp; sourceTree = SOURCE_ROOT; };
+		6AF9BEAF82024DCF964878C1 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikFSA5.hpp; path = MorfologikFSA5.hpp; sourceTree = SOURCE_ROOT; };
+		75CEAFE9627C44BD9B2A1E09 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = FsaTools.hpp; path = FsaTools.hpp; sourceTree = SOURCE_ROOT; };
+		76ABBB3E34974760B863C41C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSA.hpp; path = ArrayFSA.hpp; sourceTree = SOURCE_ROOT; };
+		8059E0AE2A9043C0B8C2BDF8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikCFSA2.hpp; path = MorfologikCFSA2.hpp; sourceTree = SOURCE_ROOT; };
+		80BA1AC96B2243378DE0B6A8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		818B7AA21BC24D0A9E149AFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayFSABuilder.cpp; path = ArrayFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		82E4284BEE9C468DA5D1CF73 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSABuilder.hpp; path = PlainFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		8D0180F5A07A43BEAACDEEB9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		903378CBEF524C8180EB574C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = FsaTools.hpp; path = FsaTools.hpp; sourceTree = SOURCE_ROOT; };
+		90AFB3AF01DE4488BE4671B2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayFSA.hpp; path = ArrayFSA.hpp; sourceTree = SOURCE_ROOT; };
+		975F92F9DC4845EF83A594E3 /* bench */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = bench; sourceTree = BUILT_PRODUCTS_DIR; };
+		9FF9C6A5FE8E49D4A9083D2B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikFSA5.hpp; path = MorfologikFSA5.hpp; sourceTree = SOURCE_ROOT; };
+		A6958CEBD8414C51A1F730AE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		AB26C8E20C734C768711AB62 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = PlainFSABuilder.cpp; path = PlainFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		AEB2E3C3112F47F798FC676C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSABuilder.hpp; path = PlainFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		B35E15171DF745A78C8720C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = MorfologikFSA5.hpp; path = MorfologikFSA5.hpp; sourceTree = SOURCE_ROOT; };
+		C0279A047A7C425290683D14 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayDACFSABuilder.cpp; path = ArrayDACFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		C5CBD61A99A1400C9C43D4A7 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSA.hpp; path = ArrayDACFSA.hpp; sourceTree = SOURCE_ROOT; };
+		C804D72C72B14F5D8AF15E04 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSABuilder.hpp; path = ArrayDACFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
+		CAB9E102850D48F3B42E6B9D /* test_PlainFSA */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = test_PlainFSA; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE8A30EA415D4EB79B6D3600 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSA.hpp; path = PlainFSA.hpp; sourceTree = SOURCE_ROOT; };
+		CECF2218A366498690440A85 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayDACFSABuilder.cpp; path = ArrayDACFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		DAAC1BA1043E4491B4BE89D5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = test_PlainFSA.cpp; path = test_PlainFSA.cpp; sourceTree = SOURCE_ROOT; };
+		E4EBDB702DD4442BBAC168CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		E9548B4646544691B7BB0D05 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSA.hpp; path = ArrayDACFSA.hpp; sourceTree = SOURCE_ROOT; };
+		E961A49C0CF94F89896B5486 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = ArrayDACFSA.hpp; path = ArrayDACFSA.hpp; sourceTree = SOURCE_ROOT; };
+		F085EE7111A3404280AB89C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = basic.hpp; path = basic.hpp; sourceTree = SOURCE_ROOT; };
+		FBAE5930F3C44B16AA3A0F88 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ArrayFSABuilder.cpp; path = ArrayFSABuilder.cpp; sourceTree = SOURCE_ROOT; };
+		FFE8829BE040458E8A411560 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = PlainFSABuilder.hpp; path = PlainFSABuilder.hpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		00E323DE06384181831FF1BD /* ALL_BUILD */ = {
+		23D440C3D943480B8DC759CF /* Header Files */ = {
 			isa = PBXGroup;
 			children = (
-				81F9543549384CA98935CB59 /* CMake Rules */,
-				EBD475509C4B4F099A25D725 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
+				C5CBD61A99A1400C9C43D4A7 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */,
+				3A2A0010D51B444B98E2E368 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */,
+				2BB982299E2C4F878C6908FD /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */,
+				5D0B80510C4E4E4995438AB8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */,
+				23797190C29D46EFAF04051F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */,
+				38511995934149F7859F27BE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */,
+				9FF9C6A5FE8E49D4A9083D2B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */,
+				51524762DA51432EBDA96648 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */,
+				AEB2E3C3112F47F798FC676C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */,
+				03672A3A1BEF4E41B3B9762B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */,
 			);
-			name = ALL_BUILD;
+			name = "Header Files";
 			sourceTree = "<group>";
 		};
-		07B92AE863B242FCAC565337 /* CMake Rules */ = {
+		26D262492DA749729D2AFCD4 /* Header Files */ = {
+			isa = PBXGroup;
+			children = (
+				E9548B4646544691B7BB0D05 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */,
+				364543E73DA24AD4BA58397F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */,
+				76ABBB3E34974760B863C41C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */,
+				3D51D8A0FB9C43E7882E4E71 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */,
+				75CEAFE9627C44BD9B2A1E09 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */,
+				8059E0AE2A9043C0B8C2BDF8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */,
+				B35E15171DF745A78C8720C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */,
+				CE8A30EA415D4EB79B6D3600 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */,
+				FFE8829BE040458E8A411560 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */,
+				F085EE7111A3404280AB89C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */,
+			);
+			name = "Header Files";
+			sourceTree = "<group>";
+		};
+		28B185F5E23647BBBF504A94 /* CMake Rules */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = "CMake Rules";
 			sourceTree = "<group>";
 		};
-		27BEBB9BE0A340BFABD9F227 /* Header Files */ = {
+		3738E94E3A944E8FBA577861 /* ZERO_CHECK */ = {
 			isa = PBXGroup;
 			children = (
-				AC7CB8B4A8BD4D37BBCD1D15 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */,
-				0FA77E3C54AE4B91B0BFFA2C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */,
-				EF4C0B14EE9946CA8A760206 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */,
-				73023E00C7834E6187A197FB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */,
-				378285E34667457B9B1869DF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */,
-				DC296EEEDCF4471D89E0EE17 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */,
-				9B50025DD0A84B7490B279CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */,
-				315D334EB80A47599B78F297 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */,
-				29694EA17ADB4285B4266FC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */,
-				ABA8B4692F3D4830A4C6AFD4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */,
-			);
-			name = "Header Files";
-			sourceTree = "<group>";
-		};
-		2C22518AD40A451E8D0C62A9 /* bench */ = {
-			isa = PBXGroup;
-			children = (
-				351B71A911B041CCAD9272FA /* Source Files */,
-				D6E9D6FC22214A508195216A /* Header Files */,
-				1955360F40984730AFAC6899 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
-			);
-			name = bench;
-			sourceTree = "<group>";
-		};
-		351B71A911B041CCAD9272FA /* Source Files */ = {
-			isa = PBXGroup;
-			children = (
-				243A09D64B584802B8FDC90E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
-				05F1292B8BB2401FA0603222 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
-				DA1D82A8E3994FA4A6C7ED0D /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
-				294BCB3A34404B3387E23471 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */,
-			);
-			name = "Source Files";
-			sourceTree = "<group>";
-		};
-		569E706B72014CC3A9DDB81B /* test_PlainFSA */ = {
-			isa = PBXGroup;
-			children = (
-				AAF89029265446E89B094DC0 /* Source Files */,
-				27BEBB9BE0A340BFABD9F227 /* Header Files */,
-				1185C4FA6A5C4F32BA346C4C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
-			);
-			name = test_PlainFSA;
-			sourceTree = "<group>";
-		};
-		65B8FDFB215041EA84F128D8 /* ZERO_CHECK */ = {
-			isa = PBXGroup;
-			children = (
-				07B92AE863B242FCAC565337 /* CMake Rules */,
-				6F0986443D314C21B8CE4A2E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
+				28B185F5E23647BBBF504A94 /* CMake Rules */,
+				A6958CEBD8414C51A1F730AE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
 			);
 			name = ZERO_CHECK;
 			sourceTree = "<group>";
 		};
-		81F9543549384CA98935CB59 /* CMake Rules */ = {
+		3A3F5303370D48BB9274B5FE /* build */ = {
+			isa = PBXGroup;
+			children = (
+				5A8BA7098E804FD1B6D1FE80 /* Source Files */,
+				23D440C3D943480B8DC759CF /* Header Files */,
+				80BA1AC96B2243378DE0B6A8 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
+			);
+			name = build;
+			sourceTree = "<group>";
+		};
+		3A884C2D3F514F42972DDA45 = {
+			isa = PBXGroup;
+			children = (
+				D03B35144A9042B2BF1B1567 /* bench */,
+				3A3F5303370D48BB9274B5FE /* build */,
+				C5039AF7052E41408886B6F9 /* test_PlainFSA */,
+				BD81745795324FAC81DA7D5C /* ALL_BUILD */,
+				3738E94E3A944E8FBA577861 /* ZERO_CHECK */,
+				88676E221EE946C698CECE9C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		50A8670C66974D35840D232C /* Header Files */ = {
+			isa = PBXGroup;
+			children = (
+				E961A49C0CF94F89896B5486 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */,
+				C804D72C72B14F5D8AF15E04 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */,
+				90AFB3AF01DE4488BE4671B2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */,
+				3543755FBC204EDD8184517C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */,
+				903378CBEF524C8180EB574C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */,
+				579E733BCA0849C8B179E93B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */,
+				6AF9BEAF82024DCF964878C1 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */,
+				350242F8D1E54DE0A1A82CAC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */,
+				82E4284BEE9C468DA5D1CF73 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */,
+				6104F2CA33F740FFA9B0FE8C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */,
+			);
+			name = "Header Files";
+			sourceTree = "<group>";
+		};
+		5A8BA7098E804FD1B6D1FE80 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				CECF2218A366498690440A85 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
+				00685C66720649D1AB8753DB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
+				3B645ECFD06945EBA0218B33 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
+				1EBBA1DF36664A5E84FEE425 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		88676E221EE946C698CECE9C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				975F92F9DC4845EF83A594E3 /* bench */,
+				5A04EF4C08E24B7C95E843EF /* build */,
+				CAB9E102850D48F3B42E6B9D /* test_PlainFSA */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B1D368290BEB4D66981FF41A /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				C0279A047A7C425290683D14 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
+				FBAE5930F3C44B16AA3A0F88 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
+				40D1B2A5EF244CFEB5C05C69 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
+				303B3882C15F4405A91DEE19 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		BC1812E16DCC418BB2D02DD8 /* CMake Rules */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = "CMake Rules";
 			sourceTree = "<group>";
 		};
-		A1FC40E6D8614BC896770757 /* Source Files */ = {
+		BD81745795324FAC81DA7D5C /* ALL_BUILD */ = {
 			isa = PBXGroup;
 			children = (
-				F90D048926504ED58E358AFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
-				2D0E96BC209C405A9FDA4B19 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
-				150B4A747649474B85C1D32E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
-				2478AF1ADBB04E219B3E06E0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */,
+				BC1812E16DCC418BB2D02DD8 /* CMake Rules */,
+				8D0180F5A07A43BEAACDEEB9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		C5039AF7052E41408886B6F9 /* test_PlainFSA */ = {
+			isa = PBXGroup;
+			children = (
+				D1A72F152FB147FA8C40398C /* Source Files */,
+				26D262492DA749729D2AFCD4 /* Header Files */,
+				E4EBDB702DD4442BBAC168CC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
+			);
+			name = test_PlainFSA;
+			sourceTree = "<group>";
+		};
+		D03B35144A9042B2BF1B1567 /* bench */ = {
+			isa = PBXGroup;
+			children = (
+				B1D368290BEB4D66981FF41A /* Source Files */,
+				50A8670C66974D35840D232C /* Header Files */,
+				200AFEC8921D4B9F9F5357C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
+			);
+			name = bench;
+			sourceTree = "<group>";
+		};
+		D1A72F152FB147FA8C40398C /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				1B4D8C008CDA44669060EC43 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
+				818B7AA21BC24D0A9E149AFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
+				AB26C8E20C734C768711AB62 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
+				DAAC1BA1043E4491B4BE89D5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */,
 			);
 			name = "Source Files";
-			sourceTree = "<group>";
-		};
-		A76762F07D304296B02C681B /* build */ = {
-			isa = PBXGroup;
-			children = (
-				A1FC40E6D8614BC896770757 /* Source Files */,
-				DC919E67D4634E0E901BBFCA /* Header Files */,
-				CCFA819BE67A4ECCB8E22A0F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeLists.txt */,
-			);
-			name = build;
-			sourceTree = "<group>";
-		};
-		AAF89029265446E89B094DC0 /* Source Files */ = {
-			isa = PBXGroup;
-			children = (
-				6EFE7C1A75D74FE2B5A94DFE /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
-				DDDB779AF6F4455498A7B899 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
-				E6FA9B7CD01047208C935239 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
-				4DAC98FFDDCB46E2B8567233 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */,
-			);
-			name = "Source Files";
-			sourceTree = "<group>";
-		};
-		D6E9D6FC22214A508195216A /* Header Files */ = {
-			isa = PBXGroup;
-			children = (
-				3701A226279D4E82ADC9BD05 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */,
-				CA6DB12078EB43728266E700 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */,
-				36619A0E3D6B4588B63B3C27 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */,
-				A998E25913464040B5DF471E /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */,
-				13DAB5797A1645039F5D020C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */,
-				CC130E5EE7C6425A8730D865 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */,
-				BA3DA23A0E4F439B8E2243AF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */,
-				A6D2C5EBF42C48BB81493182 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */,
-				71BD47FEBBC7491BAFE18438 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */,
-				C91F768ADD53493A94986AA6 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */,
-			);
-			name = "Header Files";
-			sourceTree = "<group>";
-		};
-		DC919E67D4634E0E901BBFCA /* Header Files */ = {
-			isa = PBXGroup;
-			children = (
-				BBA1F6A5C24D44C280B43DC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSA.hpp */,
-				C6ED8767D4F44E949CD76655 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.hpp */,
-				5C88E2875C8C41E797E746E2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSA.hpp */,
-				81220B320EFA4D90902F5EA9 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.hpp */,
-				C6FBFADA90834723B9A46751 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/FsaTools.hpp */,
-				2131501C2F2448EA859F8EA2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikCFSA2.hpp */,
-				57DCE85B20F6413FA699FC88 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MorfologikFSA5.hpp */,
-				F797BFD680AF4417B64954C5 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSA.hpp */,
-				CD4459BE1432492D86C2D914 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.hpp */,
-				1B9AA05B8DD64D1C814C48B6 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/basic.hpp */,
-			);
-			name = "Header Files";
-			sourceTree = "<group>";
-		};
-		E60769B917F940058D83FA6E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				6BFF6B3EE2354579B99F780E /* bench */,
-				5F1298850C2C4730AF9D440B /* build */,
-				835515CA754942ECBC0148D9 /* test_PlainFSA */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		F42E09B606EF42E1A2F95BC6 = {
-			isa = PBXGroup;
-			children = (
-				2C22518AD40A451E8D0C62A9 /* bench */,
-				A76762F07D304296B02C681B /* build */,
-				569E706B72014CC3A9DDB81B /* test_PlainFSA */,
-				00E323DE06384181831FF1BD /* ALL_BUILD */,
-				65B8FDFB215041EA84F128D8 /* ZERO_CHECK */,
-				E60769B917F940058D83FA6E /* Products */,
-			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -393,50 +393,50 @@
 /* Begin PBXNativeTarget section */
 		137AD7C95C7E497192D98401 /* bench */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9A7BC9285278446E935EC395 /* Build configuration list for PBXNativeTarget "bench" */;
+			buildConfigurationList = 83FADC67F6B6470D8692B1E3 /* Build configuration list for PBXNativeTarget "bench" */;
 			buildPhases = (
-				7960EE4374CE4561B3F0DDBA /* Sources */,
+				F46E10AC103F48738E1D2F91 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				267381505A14476F91C1E1EA /* PBXTargetDependency */,
+				799B2F5DFF33404AA7DE208B /* PBXTargetDependency */,
 			);
 			name = bench;
 			productName = bench;
-			productReference = 6BFF6B3EE2354579B99F780E /* bench */;
+			productReference = 975F92F9DC4845EF83A594E3 /* bench */;
 			productType = "com.apple.product-type.tool";
 		};
 		30C233E399B843DA8CEEE33B /* test_PlainFSA */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6814D98CCCEA4365B46FF3E0 /* Build configuration list for PBXNativeTarget "test_PlainFSA" */;
+			buildConfigurationList = EA6E44ECF7BE446DB740666D /* Build configuration list for PBXNativeTarget "test_PlainFSA" */;
 			buildPhases = (
-				1E3539D927B8497F8FBBB3F7 /* Sources */,
+				3284A068C17149DC945590D3 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				0A2D03E39F994B869F2691CB /* PBXTargetDependency */,
+				0E17FB5F846D4D3D9FFDD110 /* PBXTargetDependency */,
 			);
 			name = test_PlainFSA;
 			productName = test_PlainFSA;
-			productReference = 835515CA754942ECBC0148D9 /* test_PlainFSA */;
+			productReference = CAB9E102850D48F3B42E6B9D /* test_PlainFSA */;
 			productType = "com.apple.product-type.tool";
 		};
 		FD6B1C3B318A4FAEA29B53EC /* build */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5240707CC85C4D558E6C82F5 /* Build configuration list for PBXNativeTarget "build" */;
+			buildConfigurationList = 0A522BEA894D4A568C1FC4E2 /* Build configuration list for PBXNativeTarget "build" */;
 			buildPhases = (
-				4E46EF3B7FFB4E6BBFA4BD2C /* Sources */,
+				4308863889C146D69081BC26 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				795A8AD9630B457784EF11A2 /* PBXTargetDependency */,
+				99248A94B68549DB96BD911C /* PBXTargetDependency */,
 			);
 			name = build;
 			productName = build;
-			productReference = 5F1298850C2C4730AF9D440B /* build */;
+			productReference = 5A04EF4C08E24B7C95E843EF /* build */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -448,18 +448,18 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 0900;
 			};
-			buildConfigurationList = B8F9E27298FA45FEA9B0A86C /* Build configuration list for PBXProject "array_fsa" */;
+			buildConfigurationList = F5FD7DA6E0D0497695542A03 /* Build configuration list for PBXProject "array_fsa" */;
 			buildSettings = {
 			};
 			buildStyles = (
-				C45A4F5918854A6AA76040AE /* Debug */,
-				9D41E0FF70894AAC9C716261 /* Release */,
-				46746FD2CF2843A4814DEA73 /* MinSizeRel */,
-				01CABA4553A3458E86B61580 /* RelWithDebInfo */,
+				E237C051901F435688BDCC34 /* Debug */,
+				D498AC92A74A49B28BFF85FB /* Release */,
+				5E7E32E02C614687A770CAB5 /* MinSizeRel */,
+				FB0C9415F53D4B36909ACB5D /* RelWithDebInfo */,
 			);
 			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 0;
-			mainGroup = F42E09B606EF42E1A2F95BC6;
+			mainGroup = 3A884C2D3F514F42972DDA45;
 			projectDirPath = .;
 			projectRoot = "";
 			targets = (
@@ -473,18 +473,22 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		22D32A36B00F4126A569E8AF /* CMake Rules */ = {
+		84BFF61BE22A4CBDAA281DCA = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			name = "CMake Rules";
+			inputPaths = (
+			);
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "make -C /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			shellScript = "# shell script goes here
+exit 0";
 			showEnvVarsInLog = 0;
 		};
-		2BA100E845C049139889AAD6 /* CMake Rules */ = {
+		A6FFF1D8056845718BFB2616 /* CMake Rules */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -495,7 +499,7 @@
 			shellScript = "make -C /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
 			showEnvVarsInLog = 0;
 		};
-		4BDB775FEB7442CC92BE04A9 = {
+		C8E89A92904C492AA03EAFF1 = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -510,99 +514,95 @@
 exit 0";
 			showEnvVarsInLog = 0;
 		};
-		B5F8CD50FC124735889FEA52 = {
+		E82A914F23E2471387A6637A /* CMake Rules */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
+			name = "CMake Rules";
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# shell script goes here
-exit 0";
+			shellScript = "make -C /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		1E3539D927B8497F8FBBB3F7 /* Sources */ = {
+		3284A068C17149DC945590D3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E792A0B08D947CDBB99968C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
-				A93D681C0A774927B1534BBB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
-				04B7273A60D941B18E2EE325 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
-				1E80E67FA4124706BB4C53DB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */,
+				AA7C01B6D7974C859FB520F3 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
+				7B1862C54566471F9CDDD4EC /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
+				1123489F88534D158266FF62 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
+				23E1D78506D84E1CAA87FD96 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/test_PlainFSA.cpp */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4E46EF3B7FFB4E6BBFA4BD2C /* Sources */ = {
+		4308863889C146D69081BC26 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FAA8BE75E17C49608A42C34F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
-				F069F46F0FAE4114B94567BB /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
-				6EB3A2F09B944A409DDC9EDF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
-				CDE3B2C844F24A1E9113AC78 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */,
+				549DD56A97574E8DA34CEFC0 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
+				B71A772038E3430F965EEEB2 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
+				FED3E800EA494805BA90D797 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
+				9DC12B1F8131469BA0D50F4F /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build.cpp */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7960EE4374CE4561B3F0DDBA /* Sources */ = {
+		F46E10AC103F48738E1D2F91 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D85B29347604433AA942803B /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
-				A4E5E6BEB5484F538FAF78DF /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
-				67947F8B2A354A01983F8872 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
-				E703B5388D44457B93D3207C /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */,
+				C672C2102DC6477CB20CB2B4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayDACFSABuilder.cpp */,
+				C603C7A16E0243F79BF36D89 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/ArrayFSABuilder.cpp */,
+				11E293DB04AF4413B68997C4 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/PlainFSABuilder.cpp */,
+				17EFB80120BA4AD7A95A6234 /* /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/bench.cpp */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		0A2D03E39F994B869F2691CB /* PBXTargetDependency */ = {
+		0E17FB5F846D4D3D9FFDD110 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 457329286FB9419581294C48 /* ZERO_CHECK */;
-			targetProxy = A0C34F788BA34A12BED26720 /* PBXContainerItemProxy */;
+			targetProxy = 364E3689DA7D4486BE1F2531 /* PBXContainerItemProxy */;
 		};
-		267381505A14476F91C1E1EA /* PBXTargetDependency */ = {
+		16BFA02C8981455B9DC27AAF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 457329286FB9419581294C48 /* ZERO_CHECK */;
-			targetProxy = 79A5355ECB994225956786A2 /* PBXContainerItemProxy */;
+			targetProxy = E8001D10744549CEA9AF03F8 /* PBXContainerItemProxy */;
 		};
-		795A8AD9630B457784EF11A2 /* PBXTargetDependency */ = {
+		799B2F5DFF33404AA7DE208B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 457329286FB9419581294C48 /* ZERO_CHECK */;
-			targetProxy = F66BB269FF1346349E73E987 /* PBXContainerItemProxy */;
+			targetProxy = 6F5F3A7F5AE3468AB0FC675F /* PBXContainerItemProxy */;
 		};
-		7F621617EE5C4E1DA29C9953 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FD6B1C3B318A4FAEA29B53EC /* build */;
-			targetProxy = DB9D3F76468B4B4099448E38 /* PBXContainerItemProxy */;
-		};
-		A641CB25F4714EA48CA536EA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 457329286FB9419581294C48 /* ZERO_CHECK */;
-			targetProxy = AB3C98B0DEBD434C96F65445 /* PBXContainerItemProxy */;
-		};
-		B5E92AA64CCE435BBA9000AB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 137AD7C95C7E497192D98401 /* bench */;
-			targetProxy = 53BF5A4EC55B455AA76C6206 /* PBXContainerItemProxy */;
-		};
-		F570C87FC5444EBC8AEA33AC /* PBXTargetDependency */ = {
+		8BA72C543368438ABDFF5D6C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 30C233E399B843DA8CEEE33B /* test_PlainFSA */;
-			targetProxy = B1E13665B5D6496EA16F2D36 /* PBXContainerItemProxy */;
+			targetProxy = 138DBA3EB63A4360A9439591 /* PBXContainerItemProxy */;
+		};
+		8FA505B9927447DFAD593470 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FD6B1C3B318A4FAEA29B53EC /* build */;
+			targetProxy = CDDA204E042B4605A8500D94 /* PBXContainerItemProxy */;
+		};
+		99248A94B68549DB96BD911C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 457329286FB9419581294C48 /* ZERO_CHECK */;
+			targetProxy = 22977577FD1242FEA8F15059 /* PBXContainerItemProxy */;
+		};
+		F5AB392AD2AF481F8723293C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 137AD7C95C7E497192D98401 /* bench */;
+			targetProxy = BBB7764F303B47EAA81E0DDB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		002DC89EBEE9406FBB2148DA /* Release */ = {
+		0A42662003F44D5E89099CD2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -614,31 +614,7 @@ exit 0";
 				INSTALL_PATH = "";
 				OTHER_LDFLAGS = " ";
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Release;
-		};
-		09FA0A7329E24A4DB22D1B99 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = test_PlainFSA;
+				PRODUCT_NAME = ALL_BUILD;
 				SECTORDER_FLAGS = "";
 				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
 				USE_HEADERMAP = NO;
@@ -646,220 +622,16 @@ exit 0";
 			};
 			name = Debug;
 		};
-		0A12D47C7D0A44C4B161EACB /* MinSizeRel */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = s;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = bench;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = MinSizeRel;
-		};
-		0A4A2288CFF84CB59943E9B9 /* MinSizeRel */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = s;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = build;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = MinSizeRel;
-		};
-		102FE8D02E00468C8BBBEE97 /* Release */ = {
+		1488E391F31143188FB0009D /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
 				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build";
 			};
-			name = Release;
-		};
-		154E3B3A013B4FA2BC33FF23 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 2;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14        -DNDEBUG  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = test_PlainFSA;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = RelWithDebInfo;
-		};
-		16BC6408AB2A4D32A8DDDD19 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = build;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Debug;
-		};
-		31D53CD56762404D91022429 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = build;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Release;
-		};
-		31F85766B2604527AE9F5403 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Release;
-		};
-		384415835B754169884A5B5D /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 2;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14        -DNDEBUG  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = bench;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = RelWithDebInfo;
-		};
-		780402ED905E4D109A08A8AF /* MinSizeRel */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
 			name = MinSizeRel;
 		};
-		7E68E2A8AE20404BA2624668 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Debug;
-		};
-		812DEE34862C4A1E9693287E /* RelWithDebInfo */ = {
+		14F82AC0F1C34664916AE79C /* RelWithDebInfo */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -883,7 +655,245 @@ exit 0";
 			};
 			name = RelWithDebInfo;
 		};
-		87B560C6A80E4ADBA68D2B12 /* MinSizeRel */ = {
+		24B3228FED0744BE8473F0DE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		2D80BF70F62B4FC5BE7A9DCF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = build;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		2ED5F9F94E2B4D768419FB18 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build";
+			};
+			name = RelWithDebInfo;
+		};
+		4DCE48E16D3A4EDA883FD29D /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		513AE4852E294AA3AC27A35F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = test_PlainFSA;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		5929A0EBE43B45B5AEAEAAAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		5DF3DF02BD2E49FF91C28755 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build";
+			};
+			name = Release;
+		};
+		798F2003800B4417862795E2 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		88D24D4EE93345C0AC1EF93F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = test_PlainFSA;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		8A48619F19D44D18BB4BAD0F /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14        -DNDEBUG  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = test_PlainFSA;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		9175F6B9503D4B0B80B2CC14 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = bench;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		A09C478516864138B3B36952 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		A33B22F447014336A9FE2DC9 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -903,16 +913,84 @@ exit 0";
 			};
 			name = MinSizeRel;
 		};
-		9C16753257904B7BB8E70C40 /* MinSizeRel */ = {
+		AA64DE59897445DB894AE000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		B69E2DF73AEB4B52A6C30B00 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = build;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		B6D995B4D0A443ECA6A21E09 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
 				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build";
 			};
-			name = MinSizeRel;
+			name = Debug;
 		};
-		AC63018D06D141AF86E9A023 /* MinSizeRel */ = {
+		B9A81572587144548A49CE21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = bench;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		BDB3ECC70FCE4F93B6B08F43 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -936,16 +1014,7 @@ exit 0";
 			};
 			name = MinSizeRel;
 		};
-		C50054015A7743CD98BA2C08 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build";
-			};
-			name = Debug;
-		};
-		D4F411621F574C7EABBF7D03 /* Debug */ = {
+		E4B803D050994201BEC82839 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -969,7 +1038,7 @@ exit 0";
 			};
 			name = Debug;
 		};
-		DD6CC878C4344B919434BA24 /* Release */ = {
+		FA9780D206664F409E22881E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
@@ -983,6 +1052,30 @@ exit 0";
 				INSTALL_PATH = "";
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
+				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = build;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		FE699DD87E4940A79E80A744 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14        -DNDEBUG  ";
 				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = bench;
@@ -991,166 +1084,73 @@ exit 0";
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
 			};
-			name = Release;
-		};
-		E9F4CD2D95644A2C977F1F92 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ALL_BUILD;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
 			name = RelWithDebInfo;
-		};
-		F335DF8A83E04C7AA7469148 /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/build";
-			};
-			name = RelWithDebInfo;
-		};
-		FA1AB52DA59F4CAAB1273B7B /* RelWithDebInfo */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = RelWithDebInfo;
-		};
-		FD7AAF2C897C4CA794BEBA98 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				OTHER_LDFLAGS = " ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = ZERO_CHECK;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Debug;
-		};
-		FED5AD59576D42E6B40BAAF3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				INSTALL_PATH = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CPLUSPLUSFLAGS = "-Wall -std=c++14     -DNDEBUG  ";
-				OTHER_LDFLAGS = " -Wl,-search_paths_first -Wl,-headerpad_max_install_names  ";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = test_PlainFSA;
-				SECTORDER_FLAGS = "";
-				SYMROOT = "/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
-			};
-			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5240707CC85C4D558E6C82F5 /* Build configuration list for PBXNativeTarget "build" */ = {
+		0A522BEA894D4A568C1FC4E2 /* Build configuration list for PBXNativeTarget "build" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				16BC6408AB2A4D32A8DDDD19 /* Debug */,
-				31D53CD56762404D91022429 /* Release */,
-				0A4A2288CFF84CB59943E9B9 /* MinSizeRel */,
-				812DEE34862C4A1E9693287E /* RelWithDebInfo */,
+				2D80BF70F62B4FC5BE7A9DCF /* Debug */,
+				FA9780D206664F409E22881E /* Release */,
+				B69E2DF73AEB4B52A6C30B00 /* MinSizeRel */,
+				14F82AC0F1C34664916AE79C /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		6814D98CCCEA4365B46FF3E0 /* Build configuration list for PBXNativeTarget "test_PlainFSA" */ = {
+		3F86727475DF4051929315AF /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				09FA0A7329E24A4DB22D1B99 /* Debug */,
-				FED5AD59576D42E6B40BAAF3 /* Release */,
-				AC63018D06D141AF86E9A023 /* MinSizeRel */,
-				154E3B3A013B4FA2BC33FF23 /* RelWithDebInfo */,
+				AA64DE59897445DB894AE000 /* Debug */,
+				24B3228FED0744BE8473F0DE /* Release */,
+				A33B22F447014336A9FE2DC9 /* MinSizeRel */,
+				4DCE48E16D3A4EDA883FD29D /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		7537667E632648B78DC8B2DC /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+		83FADC67F6B6470D8692B1E3 /* Build configuration list for PBXNativeTarget "bench" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7E68E2A8AE20404BA2624668 /* Debug */,
-				31F85766B2604527AE9F5403 /* Release */,
-				780402ED905E4D109A08A8AF /* MinSizeRel */,
-				E9F4CD2D95644A2C977F1F92 /* RelWithDebInfo */,
+				E4B803D050994201BEC82839 /* Debug */,
+				B9A81572587144548A49CE21 /* Release */,
+				9175F6B9503D4B0B80B2CC14 /* MinSizeRel */,
+				FE699DD87E4940A79E80A744 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		9A7BC9285278446E935EC395 /* Build configuration list for PBXNativeTarget "bench" */ = {
+		A7A665433A9541CA81EA33F8 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D4F411621F574C7EABBF7D03 /* Debug */,
-				DD6CC878C4344B919434BA24 /* Release */,
-				0A12D47C7D0A44C4B161EACB /* MinSizeRel */,
-				384415835B754169884A5B5D /* RelWithDebInfo */,
+				0A42662003F44D5E89099CD2 /* Debug */,
+				5929A0EBE43B45B5AEAEAAAC /* Release */,
+				798F2003800B4417862795E2 /* MinSizeRel */,
+				A09C478516864138B3B36952 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		A1C8C5718C4148FAA53DBDAB /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+		EA6E44ECF7BE446DB740666D /* Build configuration list for PBXNativeTarget "test_PlainFSA" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FD7AAF2C897C4CA794BEBA98 /* Debug */,
-				002DC89EBEE9406FBB2148DA /* Release */,
-				87B560C6A80E4ADBA68D2B12 /* MinSizeRel */,
-				FA1AB52DA59F4CAAB1273B7B /* RelWithDebInfo */,
+				88D24D4EE93345C0AC1EF93F /* Debug */,
+				513AE4852E294AA3AC27A35F /* Release */,
+				BDB3ECC70FCE4F93B6B08F43 /* MinSizeRel */,
+				8A48619F19D44D18BB4BAD0F /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		B8F9E27298FA45FEA9B0A86C /* Build configuration list for PBXProject "array_fsa" */ = {
+		F5FD7DA6E0D0497695542A03 /* Build configuration list for PBXProject "array_fsa" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C50054015A7743CD98BA2C08 /* Debug */,
-				102FE8D02E00468C8BBBEE97 /* Release */,
-				9C16753257904B7BB8E70C40 /* MinSizeRel */,
-				F335DF8A83E04C7AA7469148 /* RelWithDebInfo */,
+				B6D995B4D0A443ECA6A21E09 /* Debug */,
+				5DF3DF02BD2E49FF91C28755 /* Release */,
+				1488E391F31143188FB0009D /* MinSizeRel */,
+				2ED5F9F94E2B4D768419FB18 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -15,14 +15,12 @@ namespace array_fsa {
             size_t state = fsa.get_root_state(), arc = 0;
             
             for (char c : str) {
-                std::cout << char(c);
                 arc = fsa.get_trans(state, static_cast<uint8_t>(c));
                 if (arc == 0) {
                     return false;
                 }
                 state = fsa.get_target_state(arc);
             }
-            std::cout << std::endl;
             
             return fsa.is_final_trans(arc);
         }
