@@ -29,10 +29,7 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
     for (size_t i = 0; i < num_elems; ++i) {
         // TODO: DAC
         size_t next = i ^ builder.get_next_(i);
-//        size_t nextFlow = next >> 8;
-//        auto needsDac = nextFlow > 0;
         new_fsa.set_is_final(i, builder.is_final_(i));
-//        new_fsa.set_needs_DAC(i, needsDac);
         new_fsa.set_next(i, next);
         new_fsa.set_check(i, builder.get_check_(i));
         
@@ -41,14 +38,16 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
         }
     }
     
-    builder.showMapping(false);
-//
-//    auto tab = "\t";
-//    for (auto i = 0; i < 0x100; i++) {
-//        std::cout << builder.is_final_(i) << tab << (i ^ builder.get_next_(i)) << tab << builder.get_check_(i) << tab;
-//        std::cout << new_fsa.is_final_trans(i) << tab << new_fsa.get_next_(i) << tab << new_fsa.get_check_(i) << tab << new_fsa.is_used_DAC_(i);
-//        std::cout << std::endl;
-//    }
+//    builder.showMapping(false);
+    
+    auto tab = "\t";
+    for (auto i = 0; i < num_elems; i++) {
+        if ((i ^ builder.get_next_(i)) != new_fsa.get_next_(i)) {
+            std::cout << i << tab << builder.is_final_(i) << tab << (i ^ builder.get_next_(i)) << tab << builder.get_check_(i) << tab;
+            std::cout << new_fsa.is_final_trans(i) << tab << new_fsa.get_next_(i) << tab << new_fsa.get_check_(i) << tab << new_fsa.is_used_DAC_(i);
+            std::cout << std::endl;
+        }
+    }
     
     return new_fsa;
 }

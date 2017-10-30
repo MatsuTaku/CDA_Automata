@@ -17,6 +17,7 @@ set(HEADER_FILES
   ArrayFSABuilder.hpp
   ArrayDACFSA.hpp
   ArrayDACFSABuilder.hpp
+  Rank.hpp
   basic.hpp
   FsaTools.hpp
   MorfologikCFSA2.hpp

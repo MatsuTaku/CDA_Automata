@@ -64,7 +64,8 @@ int main(int argc, const char* argv[]) {
 //    data_name = "../../data-sets/ciura-deorowicz/deutsch.dict";
 //    fsa_name = "../../results-try/deutsch/deutsch.array_fsa";
 //    data_name = "../../data-sets/weiss/wikipedia.dict";
-//    fsa_name = "../../results-try/weiss/wikipedia.array_fsa";
+//    fsa_name = "../../results/wikipedia/wikipedia.array_dac_fsa";
+//    fsa_type = '1';
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
@@ -85,7 +86,7 @@ int main(int argc, const char* argv[]) {
         } else if (fsa_type == '1') {
             ArrayDACFSA fsa = getArrayDACFsaFromData(data_name);
             std::cout << "Test for membership" << std::endl;
-            //            checkFsaHasMember<ArrayDACFSA>(fsa, data_name);
+            checkFsaHasMember<ArrayDACFSA>(fsa, data_name);
             // TODO: Too slow...
             
             std::cout << "Write FSA into " << fsa_name << std::endl;

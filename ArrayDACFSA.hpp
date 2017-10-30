@@ -6,6 +6,7 @@
 #define ARRAY_DAC_FSA_ArrayDACFSA_HPP
 
 #include "basic.hpp"
+#include "Rank.hpp"
 
 namespace array_fsa {
     
@@ -57,18 +58,17 @@ namespace array_fsa {
             bytes_[offset_(trans)] |= (is_final ? 1 : 0);
         }
         
-        void set_needs_DAC(size_t trans, bool needs_DAC) {
-            if (needs_DAC) { bytes_[offset_(trans)] |= 2; }
-            else { bytes_[offset_(trans)] &= ~2; }
+        void set_needs_DAC(size_t trans) {
+            dac_flags_.set(trans);
         }
         
         void set_next(size_t trans, size_t next) {
             auto one_byte_next = next & 0xff;
             std::memcpy(&bytes_[offset_(trans) + 1], &one_byte_next, 1);
-            auto nextFlow = next >> 8;
+            auto nextFlow = next / 0x100;
             auto needsDAC = nextFlow > 0;
-            set_needs_DAC(trans, needsDAC);
             if (needsDAC) {
+                set_needs_DAC(trans);
                 for (auto i = 0; i < dac_flow_size_(); i++) {
                     dac_bytes_.push_back((nextFlow >> (i * 8)) & 0xff);
                 }
@@ -89,6 +89,7 @@ namespace array_fsa {
             write_vec(dac_bytes_, os);
             write_val(next_size_, os);
             write_val(num_trans_, os);
+            dac_flags_.write(os);
         }
         void read(std::istream& is) {
             bytes_ = read_vec<uint8_t>(is);
@@ -96,10 +97,11 @@ namespace array_fsa {
             next_size_ = read_val<size_t>(is);
             element_size_ = 3;
             num_trans_ = read_val<size_t>(is);
+            dac_flags_.read(is);
         }
         
         size_t size_in_bytes() const {
-            return size_vec(bytes_) + size_vec(dac_bytes_) + sizeof(next_size_) + sizeof(num_trans_);
+            return size_vec(bytes_) + size_vec(dac_bytes_) + sizeof(next_size_) + sizeof(num_trans_) + dac_flags_.size_in_bytes();
         }
         
         void show_stat(std::ostream& os) const {
@@ -122,6 +124,7 @@ namespace array_fsa {
         
     private:
         std::vector<uint8_t> bytes_;
+        Rank dac_flags_;
         std::vector<uint8_t> dac_bytes_;
         size_t next_size_ = 0;
         size_t element_size_ = 0;
@@ -143,14 +146,15 @@ namespace array_fsa {
         }
         size_t get_DAC_flow(size_t trans) const {
             size_t flow = 0;
-            std::memcpy(&flow, &dac_bytes_[offset_rank_(rank_(trans) - 1)], dac_flow_size_());
+            auto offsetRank = offset_rank_(rank_(trans) - 1);
+            std::memcpy(&flow, &dac_bytes_[offsetRank], dac_flow_size_());
             return flow;
         }
         uint8_t get_check_(size_t trans) const { // == get_trans_symbol
             return bytes_[offset_(trans) + 2];
         }
         bool is_used_DAC_(size_t trans) const {
-            return (bytes_[offset_(trans)] & 2) == 2;
+            return dac_flags_.get(trans) == 1;
         }
         // TODO: DAC
         size_t offset_rank_(size_t rank) const {
@@ -158,13 +162,7 @@ namespace array_fsa {
         }
         
         size_t rank_(size_t trans) const {
-            auto rank = 0;
-            for (auto i = 0; i <= trans; i++) {
-                if  (is_used_DAC_(i)) {
-                    rank++;
-                }
-            }
-            return rank;
+            return dac_flags_.rank(trans);
         }
     };
     
