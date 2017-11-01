@@ -17,14 +17,12 @@ namespace array_fsa {
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayDACFSA build(const PlainFSA& orig_fsa);
+        static ArrayDACFSA build(const PlainFSA& orig_fsa, size_t dac_unit_size);
         
         ArrayDACFSABuilder(const ArrayDACFSABuilder&) = delete;
         ArrayDACFSABuilder& operator=(const ArrayDACFSABuilder&) = delete;
         
-        
         // MARK: - Addition Matsumoto
-        
         void showMapping(bool show_density);
         // MARK: -
         
@@ -64,10 +62,13 @@ namespace array_fsa {
         bool is_used_next_(size_t index) const {
             return (bytes_[offset_(index)] & 4) == 4;
         }
+        size_t get_target_index(size_t index) const {
+            return index ^ get_next_(index);
+        }
         size_t get_next_(size_t index) const {
             size_t next = 0;
             std::memcpy(&next, &bytes_[offset_(index) + 1], kAddrSize);
-            return index ^ next;
+            return next;
         }
         uint8_t get_check_(size_t index) const {
             return bytes_[offset_(index) + 1 + kAddrSize];

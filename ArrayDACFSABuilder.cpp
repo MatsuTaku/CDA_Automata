@@ -13,7 +13,7 @@ using namespace array_fsa;
 
 // MARK: - public static
 
-ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
+ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa, size_t dac_unit_size) {
     ArrayDACFSABuilder builder(orig_fsa);
     builder.build_();
     
@@ -22,14 +22,14 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
     const auto num_elems = builder.bytes_.size() / kElemSize;
     
     new_fsa.calc_next_size(num_elems);
-    new_fsa.element_size_ = 2; // TODO: DAC
+    new_fsa.dac_unit_size = dac_unit_size;
+    new_fsa.element_size_ = dac_unit_size + 1; // TODO: DAC
     
     new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
     
     for (size_t i = 0; i < num_elems; ++i) {
         // TODO: DAC
-        size_t next = i ^ builder.get_next_(i);
-        new_fsa.set_next(i, next);
+        new_fsa.set_next(i, builder.get_next_(i));
         if (builder.is_final_(i)) {
             new_fsa.set_is_final(i);
         }
@@ -41,15 +41,15 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
     }
     
 //    builder.showMapping(false);
-    
-    auto tab = "\t";
-    for (auto i = 0; i < num_elems; i++) {
-        if ((i ^ builder.get_next_(i)) != new_fsa.get_next_(i)) {
-            std::cout << i << tab << builder.is_final_(i) << tab << (i ^ builder.get_next_(i)) << tab << builder.get_check_(i) << tab;
-            std::cout << new_fsa.is_final_trans(i) << tab << new_fsa.get_next_(i) << tab << new_fsa.get_check_(i) << tab << new_fsa.is_used_DAC_(i);
-            std::cout << std::endl;
-        }
-    }
+//
+//    auto tab = "\t";
+//    for (auto i = 0; i < num_elems; i++) {
+//        if (builder.get_next_(i) != new_fsa.get_next_(i)) {
+//            std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << tab;
+//            std::cout << new_fsa.is_final_trans(i) << tab << new_fsa.get_next_(i) << tab << new_fsa.get_check_(i) << tab << new_fsa.is_used_DAC_(i);
+//            std::cout << std::endl;
+//        }
+//    }
     
     return new_fsa;
 }
@@ -79,8 +79,8 @@ void ArrayDACFSABuilder::showMapping(bool show_density) {
             num_node = 0;
         }
         
-        auto index = get_next_(i);
-        auto next = i ^ index;
+        auto index = get_target_index(i);
+        auto next = get_next_(i);
         int size = 0;
         while (next >> (8 * ++size - 1));
         next_map[size - 1]++;

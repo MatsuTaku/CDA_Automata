@@ -32,9 +32,9 @@ namespace {
         return ArrayFSABuilder::build(orig_fsa);
     }
     
-    ArrayDACFSA getArrayDACFsaFromData(const char* data_name) {
+    ArrayDACFSA getArrayDACFsaFromData(const char* data_name, size_t dac_unit_size) {
         PlainFSA orig_fsa = getPlainFSAFromData(data_name);
-        return ArrayDACFSABuilder::build(orig_fsa);
+        return ArrayDACFSABuilder::build(orig_fsa, dac_unit_size);
     }
 	
     template <typename FSAType>
@@ -60,12 +60,14 @@ int main(int argc, const char* argv[]) {
     auto data_name = argv[1];
     auto fsa_name = argv[2];
     auto fsa_type = *argv[3];
+    auto dac_unit_size = size_t(strtoul(argv[4], NULL, 10));
     
 //    data_name = "../../data-sets/ciura-deorowicz/deutsch.dict";
 //    fsa_name = "../../results-try/deutsch/deutsch.array_fsa";
-//    data_name = "../../data-sets/weiss/wikipedia.dict";
-//    fsa_name = "../../results/wikipedia/wikipedia.array_dac_fsa";
-//    fsa_type = '1';
+    data_name = "../../data-sets/weiss/wikipedia.dict";
+    fsa_name = "../../results/wikipedia/wikipedia.array_dac_fsa";
+    fsa_type = '1';
+    dac_unit_size = 1;
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
@@ -84,7 +86,7 @@ int main(int argc, const char* argv[]) {
             }
             fsa.write(ofs);
         } else if (fsa_type == '1') {
-            ArrayDACFSA fsa = getArrayDACFsaFromData(data_name);
+            ArrayDACFSA fsa = getArrayDACFsaFromData(data_name, dac_unit_size);
             std::cout << "Test for membership" << std::endl;
             checkFsaHasMember<ArrayDACFSA>(fsa, data_name);
             // TODO: Too slow...
