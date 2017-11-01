@@ -44,7 +44,7 @@ namespace array_fsa {
             return trans ^ get_next_(trans);
         }
         bool is_final_trans(size_t trans) const {
-            return (bytes_[offset_(trans)] & 1) == 1;
+            return dac_flags_.get_is_final(trans) == 1;
         }
         
         size_t get_num_trans() const {
@@ -54,17 +54,17 @@ namespace array_fsa {
             return bytes_.size() / element_size_;
         }
         
-        void set_is_final(size_t trans, bool is_final) {
-            bytes_[offset_(trans)] |= (is_final ? 1 : 0);
+        void set_is_final(size_t trans) {
+            dac_flags_.set_is_final(trans);
         }
         
         void set_needs_DAC(size_t trans) {
-            dac_flags_.set(trans);
+            dac_flags_.set_needs_dac(trans);
         }
         
         void set_next(size_t trans, size_t next) {
-            auto one_byte_next = next & 0xff;
-            std::memcpy(&bytes_[offset_(trans) + 1], &one_byte_next, 1);
+            auto one_byte_next = (next & 0xff);
+            std::memcpy(&bytes_[offset_(trans)], &one_byte_next, 1);
             auto nextFlow = next / 0x100;
             auto needsDAC = nextFlow > 0;
             if (needsDAC) {
@@ -76,12 +76,12 @@ namespace array_fsa {
         }
         
         void set_check(size_t trans, uint8_t check) {
-            bytes_[offset_(trans) + 2] = check;
+            bytes_[offset_(trans) + 1] = check;
         }
         
         void calc_next_size(size_t num_elems) {
             next_size_ = 0;
-            while (num_elems >> (8 * ++next_size_ - 1));
+            while (num_elems >> (8 * ++next_size_));
         }
         
         void write(std::ostream& os) const {
@@ -95,7 +95,7 @@ namespace array_fsa {
             bytes_ = read_vec<uint8_t>(is);
             dac_bytes_ = read_vec<uint8_t>(is);
             next_size_ = read_val<size_t>(is);
-            element_size_ = 3;
+            element_size_ = 2;
             num_trans_ = read_val<size_t>(is);
             dac_flags_.read(is);
         }
@@ -136,11 +136,11 @@ namespace array_fsa {
         
         size_t get_next_(size_t trans) const { // == get_target_state
             size_t next = 0;
-            std::memcpy(&next, &bytes_[offset_(trans) + 1], 1);
+            std::memcpy(&next, &bytes_[offset_(trans)], 1);
             // TODO: DAC
             if (is_used_DAC_(trans)) {
                 size_t nextFlow = get_DAC_flow(trans);
-                next = nextFlow << 8 | next;
+                next = (nextFlow << 8) | next;
             }
             return next;
         }
@@ -151,10 +151,10 @@ namespace array_fsa {
             return flow;
         }
         uint8_t get_check_(size_t trans) const { // == get_trans_symbol
-            return bytes_[offset_(trans) + 2];
+            return bytes_[offset_(trans) + 1];
         }
         bool is_used_DAC_(size_t trans) const {
-            return dac_flags_.get(trans) == 1;
+            return dac_flags_.get_used_dac(trans) == 1;
         }
         // TODO: DAC
         size_t offset_rank_(size_t rank) const {

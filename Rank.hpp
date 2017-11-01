@@ -14,16 +14,36 @@ namespace array_fsa {
     
     class Rank {
         typedef uint64_t rankBlock;
+        
     public:
-        size_t get(size_t index) const {
+        size_t get_used_dac(size_t index) const {
             return (bytes_[abs(index)] >> rel(index)) & 1;
         }
         
-        void set(size_t index) {
-            if (abs(index) + 1 > bytes_.size()) {
+        size_t get_is_final(size_t index) const {
+            return (bytes_[abs(index)] >> (rel(index) + 1)) & 1;
+        }
+        
+        void set_needs_dac(size_t index) {
+            if (abs(index) > bytes_.size() - 1) {
                 expand(abs(index));
             }
             bytes_[abs(index)] |= (rankBlock(1) << rel(index));
+            
+            if (get_used_dac(index) == 0) {
+                std::cout << "Error set DAC!" << std::endl;
+            }
+        }
+        
+        void set_is_final(size_t index) {
+            if (abs(index) + 1 > bytes_.size()) {
+                expand(abs(index));
+            }
+            bytes_[abs(index)] |= (rankBlock(1) << (rel(index) + 1));
+            
+            if (get_is_final(index) == 0) {
+                std::cout << "Error set isFinal!" << std::endl;
+            }
         }
         
         void expand(size_t size) {
@@ -80,16 +100,17 @@ namespace array_fsa {
         std::vector<size_t> count_bytes_;
         
         size_t abs(size_t index) const {
-            return index / 0x40;
+            return index / 0x20;
         }
         
         size_t rel(size_t index) const {
-            return index % 0x40;
+            return (index % 0x20) * 2;
         }
         
         size_t pop_count(size_t x) const {
-            x = (x & 0x5555555555555555) + ((x >> 1) & 0x5555555555555555);
-            x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+//            x = (x & 0x5555555555555555) + ((x >> 1) & 0x5555555555555555);
+//            x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+            x = (x & 0x1111111111111111) + ((x >> 2) & 0x1111111111111111);
             x = (x & 0x0f0f0f0f0f0f0f0f) + ((x >> 4) & 0x0f0f0f0f0f0f0f0f);
             x = (x & 0x00ff00ff00ff00ff) + ((x >> 8) & 0x00ff00ff00ff00ff);
             x = (x & 0x0000ffff0000ffff) + ((x >> 16) & 0x0000ffff0000ffff);

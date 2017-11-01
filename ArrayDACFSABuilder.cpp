@@ -22,15 +22,17 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
     const auto num_elems = builder.bytes_.size() / kElemSize;
     
     new_fsa.calc_next_size(num_elems);
-    new_fsa.element_size_ = 3; // TODO: DAC
+    new_fsa.element_size_ = 2; // TODO: DAC
     
     new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
     
     for (size_t i = 0; i < num_elems; ++i) {
         // TODO: DAC
         size_t next = i ^ builder.get_next_(i);
-        new_fsa.set_is_final(i, builder.is_final_(i));
         new_fsa.set_next(i, next);
+        if (builder.is_final_(i)) {
+            new_fsa.set_is_final(i);
+        }
         new_fsa.set_check(i, builder.get_check_(i));
         
         if (builder.is_frozen_(i)) {
