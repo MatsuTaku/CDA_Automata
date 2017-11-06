@@ -13,86 +13,73 @@
 namespace array_fsa {
     
     class Rank {
-        typedef uint64_t rankBlock;
+    protected:
+        using rankBlock = uint32_t;
+        static constexpr size_t kBlockSize { 0x100 };
+        static constexpr uint8_t kBitSize { 32 };
+        static constexpr uint8_t kBlockInTipSize { kBlockSize / kBitSize }; // 8
         
     public:
-        size_t get_used_dac(size_t index) const {
-            return (bytes_[abs(index)] >> rel(index)) & 1;
+        bool get(size_t index) const {
+            return (bits_[abs(index)] & (1U << rel(index))) != 0;
         }
         
-        size_t get_is_final(size_t index) const {
-            return (bytes_[abs(index)] >> (rel(index) + 1)) & 1;
-        }
-        
-        void set_needs_dac(size_t index) {
-            if (abs(index) > bytes_.size() - 1) {
-                expand(abs(index));
+        void set(size_t index, bool bit) {
+            check_resize(index);
+            if (bit) {
+                bits_[abs(index)] |= (1U << rel(index));
+            } else {
+                bits_[abs(index)] &= ~(1U << rel(index));
             }
-            bytes_[abs(index)] |= (rankBlock(1) << rel(index));
-            
-            // TODO: Test set needs dac
-//            if (get_used_dac(index) == 0) {
-//                std::cout << "Error set DAC!" << std::endl;
-//            }
         }
         
-        void set_is_final(size_t index) {
-            if (abs(index) + 1 > bytes_.size()) {
-                expand(abs(index));
-            }
-            bytes_[abs(index)] |= (rankBlock(1) << (rel(index) + 1));
-            
-            // TODO: Test set is final
-//            if (get_is_final(index) == 0) {
-//                std::cout << "Error set isFinal!" << std::endl;
-//            }
-        }
-        
-        void expand(size_t size) {
-            bytes_.resize(size + 1);
-            auto beforeCSize = count_bytes_.size();
-            count_bytes_.resize(size);
-            if (size > 1) {
-                for (auto i = beforeCSize; i < count_bytes_.size(); i++) {
-                    count_bytes_[i] = count_bytes_[i - 1] + pop_count(bytes_[i]);
+        void build() {
+            rank_tips_.resize(bits_.size() / kBlockInTipSize + 1);
+            size_t count = 0;
+            for (auto i = 0; i < rank_tips_.size(); i++) {
+                auto& tip = rank_tips_[i];
+                tip.L1 = count;
+                for (auto offset = 0; offset < kBlockInTipSize; offset++) {
+                    tip.L2[offset] = count - tip.L1;
+                    auto index = i * kBlockInTipSize + offset;
+                    if (index < bits_.size()) {
+                        count += pop_count(bits_[index]);
+                    }
                 }
-            } else if (size == 1) {
-                count_bytes_[size - 1] = pop_count(bytes_[size - 1]);
             }
+        }
+        
+        void check_resize(size_t index) {
+            if (abs(index) + 1 > bits_.size()) {
+                resize(abs(index) + 1);
+            }
+        }
+        
+        void resize(size_t size) {
+            bits_.resize(size);
         }
         
         size_t rank(size_t index) const {
-            size_t offset = 0;
-            auto abs_index = abs(index);
-            if (abs_index > 0) {
-                offset += count_bytes_[abs_index - 1];
-            }
-            auto rel_index = rel(index);
-            rankBlock mask = -1;
-            if (rel_index < 0x3f) {
-                mask = (rankBlock(1) << (rel_index + 1)) - 1;
-            }
-            offset += pop_count(bytes_[abs_index] & mask);
-            
-            return offset;
+            auto& tip = rank_tips_[block(index)];
+            return tip.L1 + tip.L2[abs(index) % kBlockInTipSize] + pop_count(bits_[abs(index)] & (-1U >> (kBitSize - rel(index + 1))));
         }
         
         void write(std::ostream& os) const {
-            write_vec(bytes_, os);
-            write_vec(count_bytes_, os);
+            write_vec(bits_, os);
+            write_vec(rank_tips_, os);
         }
         void read(std::istream& is) {
-            bytes_ = read_vec<rankBlock>(is);
-            count_bytes_ = read_vec<size_t>(is);
+            bits_ = read_vec<rankBlock>(is);
+            rank_tips_ = read_vec<RankTip>(is);
         }
         
         size_t size_in_bytes() const {
-            return size_vec(bytes_) + size_vec(count_bytes_);
+            return size_vec(bits_) + size_vec(rank_tips_);
         }
         
         void swap(Rank &rank) {
-            bytes_.swap(rank.bytes_);
-            count_bytes_.swap(rank.count_bytes_);
+            bits_.swap(rank.bits_);
+            rank_tips_.swap(rank.rank_tips_);
         }
         
         static void show_as_bytes(rankBlock value, size_t size) {
@@ -102,39 +89,33 @@ namespace array_fsa {
             std::cout << std::endl;
         }
         
-    private:
-        std::vector<rankBlock> bytes_;
-        std::vector<size_t> count_bytes_;
+    protected:
+        std::vector<rankBlock> bits_;
+        struct RankTip {
+            rankBlock L1;
+            uint8_t L2[kBlockInTipSize];
+        };
+        std::vector<RankTip> rank_tips_;
         
-        size_t abs(size_t index) const {
-            return (index * 2) / 0x40;
+        virtual size_t block(size_t index) const {
+            return index / kBlockSize;
         }
         
-        size_t rel(size_t index) const {
-            return (index * 2) % 0x40;
+        virtual size_t abs(size_t index) const {
+            return index / kBitSize;
         }
         
-        size_t pop_count(size_t x) const {
-//            auto source = x;
-//            x = (x & 0x5555555555555555) + ((x >> 1) & 0x5555555555555555);
-//            x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
-            x = (x & 0x1111111111111111) + ((x >> 2) & 0x1111111111111111);
-            x = (x & 0x0f0f0f0f0f0f0f0f) + ((x >> 4) & 0x0f0f0f0f0f0f0f0f);
-            x = (x & 0x00ff00ff00ff00ff) + ((x >> 8) & 0x00ff00ff00ff00ff);
-            x = (x & 0x0000ffff0000ffff) + ((x >> 16) & 0x0000ffff0000ffff);
-            x = (x & 0x00000000ffffffff) + ((x >> 32) & 0x00000000ffffffff);
-            
-            // TODO: Test pop count
-//            size_t count1 = 0;
-//            for (auto i = 0; i < 0x20; i++) {
-//                if ((source & 1) == 1) {
-//                    count1++;
-//                }
-//                source >>= 2;
-//            }
-//            if (count1 != x) {
-//                std::cout << "pop count error: " << x << "\t" << count1 << std::endl;
-//            }
+        virtual size_t rel(size_t index) const {
+            return index % kBitSize;
+        }
+        
+        virtual size_t pop_count(size_t x) const {
+            x = (x & 0x55555555) + ((x >> 1) & 0x55555555);
+            x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+            x = (x & 0x0f0f0f0f) + ((x >> 4) & 0x0f0f0f0f);
+            x += (x >> 8);
+            x += (x >> 16);
+            return x & 0x3F;
             return x;
         }
         

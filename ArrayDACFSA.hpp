@@ -6,7 +6,7 @@
 #define ARRAY_DAC_FSA_ArrayDACFSA_HPP
 
 #include "basic.hpp"
-#include "Rank.hpp"
+#include "ArrayDACFSARank.hpp"
 
 namespace array_fsa {
     
@@ -63,11 +63,11 @@ namespace array_fsa {
         }
         
         bool is_used_DAC_(size_t trans) const {
-            return flag_structs_.get_used_dac(trans) == 1;
+            return flag_structs_.get_used_dac(trans);
         }
         
         bool is_final_trans(size_t trans) const {
-            return flag_structs_.get_is_final(trans) == 1;
+            return flag_structs_.get_is_final(trans);
         }
         
         uint8_t get_check_(size_t trans) const { // == get_trans_symbol
@@ -90,7 +90,7 @@ namespace array_fsa {
                 auto nextFlow = next >> (8 * dac_unit_size);
                 auto needsDAC = nextFlow > 0;
                 if (needsDAC) {
-                    set_needs_DAC(trans);
+                    set_used_DAC(trans);
                     for (auto i = 0; i < dac_flow_size_(); i++) {
                         dac_bytes_.push_back((nextFlow >> (i * 8)) & 0xff);
                     }
@@ -107,11 +107,11 @@ namespace array_fsa {
         }
         
         void set_is_final(size_t trans) {
-            flag_structs_.set_is_final(trans);
+            flag_structs_.set_is_final(trans, true);
         }
         
-        void set_needs_DAC(size_t trans) {
-            flag_structs_.set_needs_dac(trans);
+        void set_used_DAC(size_t trans) {
+            flag_structs_.set_used_dac(trans, true);
         }
         
         void set_check(size_t trans, uint8_t check) {
@@ -178,7 +178,7 @@ namespace array_fsa {
         
     private:
         std::vector<uint8_t> bytes_;
-        Rank flag_structs_;
+        ArrayDACFSARank flag_structs_;
         std::vector<uint8_t> dac_bytes_;
         size_t next_size_ = 0;
         size_t dac_unit_size = 0;

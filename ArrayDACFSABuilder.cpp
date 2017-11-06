@@ -40,6 +40,8 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa, size_t dac_unit_
         }
     }
     
+    new_fsa.flag_structs_.build();
+    
 //    builder.showMapping(false);
 //
 //    auto tab = "\t";
@@ -163,7 +165,7 @@ void ArrayDACFSABuilder::expand_() {
 void ArrayDACFSABuilder::freeze_state_(size_t index) {
     assert(!is_frozen_(index));
     
-    set_frozen_(index, true);
+    set_frozen_(index);
     
     const auto succ = get_succ_(index);
     const auto pred = get_pred_(index);
@@ -191,7 +193,7 @@ void ArrayDACFSABuilder::close_block_(size_t begin) {
             continue;
         }
         freeze_state_(i);
-        set_frozen_(i, false);
+        set_frozen_(i);
     }
 }
 
@@ -199,7 +201,7 @@ void ArrayDACFSABuilder::arrange_(size_t state, size_t index) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
-        set_next_(index, index); // to the terminal state
+        set_next_(index, 0); // to the terminal state
         return;
     }
     
@@ -207,7 +209,7 @@ void ArrayDACFSABuilder::arrange_(size_t state, size_t index) {
         auto it = state_map_.find(state);
         if (it != state_map_.end()) {
             // already visited state
-            set_next_(index, it->second);
+            set_target_state_(index, it->second);
             return;
         }
     }
@@ -217,9 +219,9 @@ void ArrayDACFSABuilder::arrange_(size_t state, size_t index) {
         expand_();
     }
     
-    set_next_(index, next);
+    set_target_state_(index, next);
     state_map_.insert(std::make_pair(state, next));
-    set_used_next_(next, true);
+    set_used_next_(next);
     
     for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
         const auto symbol = orig_fsa_.get_trans_symbol(trans);
@@ -229,7 +231,7 @@ void ArrayDACFSABuilder::arrange_(size_t state, size_t index) {
         set_check_(child_index, symbol);
         
         if (orig_fsa_.is_final_trans(trans)) {
-            set_final_(child_index, true);
+            set_final_(child_index);
         }
     }
     
@@ -263,7 +265,7 @@ bool ArrayDACFSABuilder::check_next_(size_t next, size_t trans) const {
     }
     
     do {
-        const auto index = next ^orig_fsa_.get_trans_symbol(trans);
+        const auto index = next ^ orig_fsa_.get_trans_symbol(trans);
         if (is_frozen_(index)) {
             return false;
         }
@@ -272,3 +274,4 @@ bool ArrayDACFSABuilder::check_next_(size_t next, size_t trans) const {
     
     return true;
 }
+

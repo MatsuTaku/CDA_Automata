@@ -85,27 +85,26 @@ namespace array_fsa {
         }
         
         // MARK: Setters
-        void set_final_(size_t index, bool is_final) {
+        void set_final_(size_t index) {
             auto offset = offset_(index);
-            if (is_final) { bytes_[offset] |= 1; }
-            else { bytes_[offset] &= ~1; }
+            bytes_[offset] |= 1;
         }
-        void set_frozen_(size_t index, bool is_frozen) {
+        void set_frozen_(size_t index) {
             auto offset = offset_(index);
-            if (is_frozen) { bytes_[offset] |= 2; }
-            else { bytes_[offset] &= ~2; }
+            bytes_[offset] |= 2;
         }
-        void set_used_next_(size_t index, bool is_used_next) {
+        void set_used_next_(size_t index) {
             auto offset = offset_(index);
-            if (is_used_next) { bytes_[offset] |= 4; }
-            else { bytes_[offset] &= ~4; }
+            bytes_[offset] |= 4;
         }
         void set_true_final_and_used_next_(size_t index) {
             bytes_[offset_(index)] |= 5;
         }
+        void set_target_state_(size_t index, size_t target) {
+            set_next_(index, index ^ target);
+        }
         void set_next_(size_t index, size_t next) {
-            auto relative_next = index ^ next;
-            std::memcpy(&bytes_[offset_(index) + 1], &relative_next, kAddrSize);
+            std::memcpy(&bytes_[offset_(index) + 1], &next, kAddrSize);
         }
         void set_check_(size_t index, uint8_t check) {
             bytes_[offset_(index) + 1 + kAddrSize] = check;
@@ -133,6 +132,7 @@ namespace array_fsa {
         size_t find_next_(size_t first_trans) const;
         
         bool check_next_(size_t next, size_t trans) const;
+        
     };
     
 }

@@ -126,7 +126,7 @@ namespace array_fsa {
         
         void close_block_(size_t begin);
         
-        void arrange_(size_t state, size_t index);
+        virtual void arrange_(size_t state, size_t index);
         
         // so-called XCHECK
         size_t find_next_(size_t first_trans) const;

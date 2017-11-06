@@ -56,26 +56,26 @@ namespace array_fsa {
         bool is_final_trans_(size_t trans) const {
             return (bytes_[trans] & 2) != 0;
         }
-        void set_final_flag_(size_t trans, bool is_final) {
-            if (is_final) { bytes_[trans + 0] |= 2; }
-            else { bytes_[trans + 0] &= ~2; }
-        }
         uint8_t get_symbol_(size_t trans) const {
             return bytes_[trans + 1];
-        }
-        void set_symbol_(size_t trans, char symbol) {
-            bytes_[trans + 1] = static_cast<uint8_t>(symbol);
         }
         size_t get_target_(size_t trans) const {
             size_t target = 0;
             std::memcpy(&target, &bytes_[trans + 2], PlainFSA::kAddrSize);
             return target;
         }
-        void set_target_(size_t arc, size_t target) {
-            std::memcpy(&bytes_[arc + 2], &target, PlainFSA::kAddrSize);
-        }
         bool is_invalid_trans_(size_t trans) const {
             return (bytes_[trans] & 0x80) != 0;
+        }
+        void set_final_flag_(size_t trans, bool is_final) {
+            if (is_final) { bytes_[trans + 0] |= 2; }
+            else { bytes_[trans + 0] &= ~2; }
+        }
+        void set_symbol_(size_t trans, char symbol) {
+            bytes_[trans + 1] = static_cast<uint8_t>(symbol);
+        }
+        void set_target_(size_t arc, size_t target) {
+            std::memcpy(&bytes_[arc + 2], &target, PlainFSA::kAddrSize);
         }
         void set_invalid_flag_(size_t trans) {
             bytes_[trans] |= 0x80;

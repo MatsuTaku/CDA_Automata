@@ -62,12 +62,10 @@ int main(int argc, const char* argv[]) {
     auto fsa_type = *argv[3];
     auto dac_unit_size = size_t(strtoul(argv[4], NULL, 10));
     
-//    data_name = "../../data-sets/ciura-deorowicz/deutsch.dict";
-//    fsa_name = "../../results-try/deutsch/deutsch.array_fsa";
-    data_name = "../../data-sets/weiss/wikipedia.dict";
-    fsa_name = "../../results/wikipedia/wikipedia.array_dac_fsa";
-    fsa_type = '1';
-    dac_unit_size = 1;
+//    data_name = "../../data-sets/weiss/wikipedia.dict";
+//    fsa_name = "../../results/wikipedia/wikipedia.array_dac_fsa";
+//    fsa_type = '1';
+//    dac_unit_size = 1;
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
