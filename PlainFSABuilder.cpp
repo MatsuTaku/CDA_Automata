@@ -77,7 +77,7 @@ PlainFSA PlainFSABuilder::release() {
         if (!flags[flags_target]) {
             flags[flags_target] = true;
         } else {
-            bytes_[target] |= 4;
+            set_is_multi_src_state_(target, true);
         }
         
         i += PlainFSA::kTransSize;

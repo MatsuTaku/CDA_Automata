@@ -19,6 +19,8 @@ namespace array_fsa {
         
         static ArrayFSA build(const PlainFSA& orig_fsa);
         
+        static void showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa);
+        
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;
         ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
         
@@ -28,7 +30,7 @@ namespace array_fsa {
         void showMapping(bool show_density);
         // MARK: -
         
-    private:
+    protected:
         static constexpr size_t kBlockSize = 0x100;
         static constexpr size_t kFreeBytes = 0x10 * kBlockSize * kElemSize; // like darts-clone
         
@@ -64,10 +66,13 @@ namespace array_fsa {
         bool is_used_next_(size_t index) const {
             return (bytes_[offset_(index)] & 4) == 4;
         }
+        size_t get_target_state_(size_t index) const {
+            return index ^ get_next_(index);
+        }
         size_t get_next_(size_t index) const {
             size_t next = 0;
             std::memcpy(&next, &bytes_[offset_(index) + 1], kAddrSize);
-            return index ^ next;
+            return next;
         }
         uint8_t get_check_(size_t index) const {
             return bytes_[offset_(index) + 1 + kAddrSize];
@@ -118,9 +123,9 @@ namespace array_fsa {
         
         // MARK: methods
         
-        void build_();
+        virtual void build_();
         
-        void expand_();
+        virtual void expand_();
         
         void freeze_state_(size_t index);
         

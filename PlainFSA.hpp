@@ -11,6 +11,8 @@ namespace array_fsa {
     
     class PlainFSA {
         friend class PlainFSABuilder;
+        friend class PlainFSATail;
+        friend class StringDictBuilder;
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kTransSize = 2 + kAddrSize;
@@ -21,6 +23,7 @@ namespace array_fsa {
         size_t get_root_state() const {
             return get_target_state(0);
         }
+        
         size_t get_trans(size_t state, uint8_t symbol) const {
             for (auto t = get_first_trans(state); t != 0; t = get_next_trans(t)) {
                 if (symbol == get_trans_symbol(t)) {
@@ -29,11 +32,13 @@ namespace array_fsa {
             }
             return 0;
         }
+        
         size_t get_target_state(size_t trans) const {
             size_t target = 0;
             std::memcpy(&target, &bytes_[trans + 2], kAddrSize);
             return target;
         }
+        
         bool is_final_trans(size_t trans) const {
             return (bytes_[trans] & 2) != 0;
         }
@@ -41,21 +46,38 @@ namespace array_fsa {
         size_t get_first_trans(size_t state) const {
             return state;
         }
+        
         size_t get_next_trans(size_t trans) const {
             return is_last_trans(trans) ? 0 : trans + kTransSize;
         }
+        
         bool is_last_trans(size_t trans) const {
             return (bytes_[trans] & 1) != 0;
         }
+        
         bool is_multi_src_state(size_t state) const {
             return (bytes_[get_first_trans(state)] & 4) != 0;
         }
+        
         uint8_t get_trans_symbol(size_t trans) const {
             return bytes_[trans + 1];
         }
         
         size_t get_num_trans() const {
             return num_trans_;
+        }
+        
+        bool is_multi_child_state(size_t state) const {
+            auto target = get_target_state(state);
+            return !is_final_trans(state) && !is_last_trans(target);
+        }
+        
+        bool is_straight_state(size_t state) const {
+            auto isSingleSrc = !is_multi_src_state(state);
+            auto isLessSingleChild = !is_multi_child_state(state);
+            auto isFinal = is_final_trans(state);
+            auto isStraight = isSingleSrc && isLessSingleChild && !isFinal;
+            return isStraight;
         }
         
         void print_for_debug(std::ostream& os) const {
@@ -93,9 +115,10 @@ namespace array_fsa {
             return *this;
         }
         
-    private:
+    protected:
         std::vector<uint8_t> bytes_; // serialized FSA
         size_t num_trans_ = 0;
+        
     };
     
 }

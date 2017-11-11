@@ -10,11 +10,16 @@
 
 namespace array_fsa {
     
+    class ArrayDACFSABuilder;
+    
     class ArrayDACFSA {
         friend class ArrayDACFSABuilder;
+        
     public:
         ArrayDACFSA() = default;
         ~ArrayDACFSA() = default;
+        
+        using Builder = ArrayDACFSABuilder;
         
         ArrayDACFSA(ArrayDACFSA&& rhs) noexcept : ArrayDACFSA() {
             this->swap(rhs);

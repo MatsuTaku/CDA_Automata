@@ -19,7 +19,7 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
     
     // Release
     ArrayFSA new_fsa;
-    const auto num_elems = builder.bytes_.size() / kElemSize;
+    const auto num_elems = builder.num_elems_();
     
     new_fsa.calc_next_size(num_elems);
     new_fsa.element_size_ = new_fsa.next_size_ + 1;
@@ -31,7 +31,7 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
         const auto new_offset = i * new_fsa.element_size_;
         
         // Set final flag to top of next bit.
-        size_t next = (i ^ builder.get_next_(i)) << 1 | (builder.is_final_(i) ? 1 : 0);
+        size_t next = (builder.get_next_(i) << 1) | (builder.is_final_(i) ? 1 : 0);
         std::memcpy(&new_fsa.bytes_[new_offset], &next, new_fsa.next_size_);
         new_fsa.bytes_[new_offset + new_fsa.next_size_] = builder.get_check_(i);
         
@@ -41,6 +41,8 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
     }
     
     builder.showMapping(false);
+    
+    showInBox(builder, new_fsa);
     
     return new_fsa;
 }
@@ -53,8 +55,6 @@ void ArrayFSABuilder::showMapping(bool show_density) {
     
     std::vector<size_t> next_map;
     next_map.resize(4, 0);
-    std::vector<size_t> def_next_map;
-    def_next_map.resize(4, 0);
     std::vector<size_t> dens_map;
     const auto dens_block_size = 0x100;
     dens_map.resize(num_elems_() / dens_block_size, 0);
@@ -70,25 +70,16 @@ void ArrayFSABuilder::showMapping(bool show_density) {
             num_node = 0;
         }
         
-        auto index = get_next_(i);
-        auto next = i ^ index;
+        auto next = get_next_(i);
         int size = 0;
         while (next >> (8 * ++size - 1));
         next_map[size - 1]++;
         size = 0;
-        while (index >> (8 * ++size - 1));
-        def_next_map[size - 1]++;
     }
     
     std::cout << "Next size mapping" << std::endl;
     std::cout << "num_elems " << num_elems_() << std::endl;
     std::cout << "\t1\t2\t3\t4\tbyte size" << std::endl;
-    for (auto num: def_next_map) {
-        auto per_num = int(double(num) / num_elems_() * 100);
-        std::cout << tab << per_num;
-    }
-    std::cout << tab << "%";
-    std::cout << std::endl;
     for (auto num: next_map) {
         auto per_num = int(double(num) / num_elems_() * 100);
         std::cout << tab << per_num;
@@ -103,6 +94,17 @@ void ArrayFSABuilder::showMapping(bool show_density) {
             std::cout << tab << double(dens_map[i]) / 10 << "%";
         }
         std::cout << std::endl;
+    }
+}
+
+void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa) {
+    auto tab = "\t";
+    for (auto i = 0; i < 256; i++) {
+        //        if (bLabel != nLabel) {
+        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
+        std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.get_next_(i) << tab << fsa.get_check_(i) << std::endl;;
+        std::cout << std::endl;
+        //        }
     }
 }
 

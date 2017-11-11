@@ -23,7 +23,7 @@ namespace array_fsa {
         PlainFSABuilder(const PlainFSABuilder&) = delete;
         PlainFSABuilder& operator=(const PlainFSABuilder&) = delete;
         
-    private:
+    protected:
         struct Range {
             size_t begin;
             size_t end;
@@ -76,6 +76,10 @@ namespace array_fsa {
         }
         void set_target_(size_t arc, size_t target) {
             std::memcpy(&bytes_[arc + 2], &target, PlainFSA::kAddrSize);
+        }
+        void set_is_multi_src_state_(size_t trans, bool is_multi_src) {
+            if (is_multi_src) { bytes_[trans] |= 4; }
+            else { bytes_[trans] &= ~4; }
         }
         void set_invalid_flag_(size_t trans) {
             bytes_[trans] |= 0x80;

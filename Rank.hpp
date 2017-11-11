@@ -20,7 +20,12 @@ namespace array_fsa {
         static constexpr uint8_t kBlockInTipSize { kBlockSize / kBitSize }; // 8
         
     public:
+        virtual ~Rank() = default;
+        
         bool get(size_t index) const {
+            if (abs(index) + 1 > bits_.size()) {
+                return false;
+            }
             return (bits_[abs(index)] & (1U << rel(index))) != 0;
         }
         
