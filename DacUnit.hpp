@@ -26,6 +26,10 @@ namespace array_fsa {
             return bytes_[rank(index) - 1];
         }
         
+        size_t numBytes() const {
+            return bytes_.size();
+        }
+        
         size_t rank(size_t index) const {
             return bits_.rank(index);
         }

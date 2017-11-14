@@ -13,7 +13,7 @@ using namespace array_fsa;
 
 // MARK: - public static
 
-ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa, size_t dac_unit_size) {
+ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
     ArrayDACFSABuilder builder(orig_fsa);
     builder.build_();
     
@@ -22,8 +22,7 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa, size_t dac_unit_
     const auto num_elems = builder.bytes_.size() / kElemSize;
     
     new_fsa.calc_next_size(num_elems);
-    new_fsa.dac_unit_size = dac_unit_size;
-    new_fsa.element_size_ = dac_unit_size + 1; // TODO: DAC
+    new_fsa.element_size_ = 1 + 1; // TODO: DAC
     
     new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
     
@@ -40,18 +39,10 @@ ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa, size_t dac_unit_
         }
     }
     
-    new_fsa.flag_structs_.build();
+    new_fsa.buildBits();
     
-//    builder.showMapping(false);
-//
-//    auto tab = "\t";
-//    for (auto i = 0; i < num_elems; i++) {
-//        if (builder.get_next_(i) != new_fsa.get_next_(i)) {
-//            std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << tab;
-//            std::cout << new_fsa.is_final_trans(i) << tab << new_fsa.get_next_(i) << tab << new_fsa.get_check_(i) << tab << new_fsa.is_used_DAC_(i);
-//            std::cout << std::endl;
-//        }
-//    }
+    builder.showMapping(false);
+    ArrayDACFSABuilder::showInBox(builder, new_fsa);
     
     return new_fsa;
 }
@@ -84,10 +75,10 @@ void ArrayDACFSABuilder::showMapping(bool show_density) {
         auto index = get_target_index(i);
         auto next = get_next_(i);
         int size = 0;
-        while (next >> (8 * ++size - 1));
+        while (next >> (8 * ++size));
         next_map[size - 1]++;
         size = 0;
-        while (index >> (8 * ++size - 1));
+        while (index >> (8 * ++size));
         def_next_map[size - 1]++;
     }
     
@@ -114,6 +105,21 @@ void ArrayDACFSABuilder::showMapping(bool show_density) {
             std::cout << tab << double(dens_map[i]) / 10 << "%";
         }
         std::cout << std::endl;
+    }
+}
+
+void ArrayDACFSABuilder::showInBox(ArrayDACFSABuilder &builder, ArrayDACFSA &fsa) {
+    auto tab = "\t";
+    for (auto i = 0; i < 0x100; i++) {
+        auto bN = builder.get_next_(i);
+        auto nN = fsa.get_next_(i);
+        if (bN != nN) {
+            std::cout << i << tab << builder.is_final_(i) << tab << bN << std::endl;
+            Rank::show_as_bytes(bN, 4);
+            std::cout << i << tab << fsa.is_final_trans(i) << tab << nN << std::endl;;
+            Rank::show_as_bytes(nN, 4);
+            std::cout << std::endl;
+        }
     }
 }
 

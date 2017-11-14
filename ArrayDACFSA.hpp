@@ -7,6 +7,7 @@
 
 #include "basic.hpp"
 #include "ArrayDACFSARank.hpp"
+#include "DacUnit.hpp"
 
 namespace array_fsa {
     
@@ -53,30 +54,29 @@ namespace array_fsa {
         
         size_t get_next_(size_t trans) const {
             size_t next = 0;
-            std::memcpy(&next, &bytes_[offset_(trans)], dac_unit_size);
+            std::memcpy(&next, &bytes_[offset_(trans)], 1);
             // TODO: DAC
-            if (is_used_DAC_(trans)) {
-                size_t nextFlow = get_DAC_flow_(trans);
-                next = (nextFlow << (8 * dac_unit_size)) | next;
-                
-                // TODO: Show
-                //                std::cout << "next = " << next << std::endl;
-                //                Rank::show_as_bytes(nextFlow, dac_flow_size_());
-                //                Rank::show_as_bytes(next, dac_unit_size);
+            for (size_t size = 1, index = trans; size < next_size_; size++) {
+                auto &unit = dac_units_[size - 1];
+                if (!unit.get(index)) {
+                    break;
+                }
+                next |= unit.getByte(index) << (8 * size);
+                index = unit.rank(index) - 1;
             }
             return next;
         }
         
-        bool is_used_DAC_(size_t trans) const {
-            return flag_structs_.get_used_dac(trans);
-        }
+//        bool is_used_DAC_(size_t trans) const {
+//            return dac_units_[0].get(trans);
+//        }
         
         bool is_final_trans(size_t trans) const {
-            return flag_structs_.get_is_final(trans);
+            return is_final_bits.get(trans);
         }
         
         uint8_t get_check_(size_t trans) const { // == get_trans_symbol
-            return bytes_[offset_(trans) + dac_unit_size];
+            return bytes_[offset_(trans) + 1];
         }
         
         size_t get_num_trans() const {
@@ -88,73 +88,75 @@ namespace array_fsa {
         }
         
         void set_next(size_t trans, size_t next) {
-            if (dac_unit_size < sizeof(size_t)) {
-                size_t first_unit_mask = (size_t(1) << (8 * dac_unit_size)) - 1;
-                auto first_unit_next = next & first_unit_mask;
-                std::memcpy(&bytes_[offset_(trans)], &first_unit_next, dac_unit_size);
-                auto nextFlow = next >> (8 * dac_unit_size);
-                auto needsDAC = nextFlow > 0;
-                if (needsDAC) {
-                    set_used_DAC(trans);
-                    for (auto i = 0; i < dac_flow_size_(); i++) {
-                        dac_bytes_.push_back((nextFlow >> (i * 8)) & 0xff);
-                    }
-                }
-                
-                // TODO: Test set_next
-//                auto union_next = first_unit_next | nextFlow << (8 * dac_unit_size);
-//                if (union_next != next) {
-//                    std::cout << "setnext error: " << next << "\t" << union_next << std::endl;
-//                }
-            } else {
-                std::memcpy(&bytes_[offset_(trans)], &next, dac_unit_size);
+            size_t mask = 0xff;
+            auto firstUnit = next & mask;
+            std::memcpy(&bytes_[offset_(trans)], &firstUnit, 1);
+            auto nextSize = 0;
+            while (next >> (8 * ++nextSize));
+//            Rank::show_as_bytes(next, 4);
+            for (size_t size = 1, index = trans; size < nextSize; size++) {
+                auto &unit = dac_units_[size - 1];
+                unit.setBit(index, true);
+                auto byte = (next >> (8 * size)) & mask;
+//                Rank::show_as_bytes(byte, 1);
+                unit.setByte(byte);
+                index = unit.numBytes() - 1;
             }
         }
         
         void set_is_final(size_t trans) {
-            flag_structs_.set_is_final(trans, true);
+            is_final_bits.set(trans, true);
         }
         
-        void set_used_DAC(size_t trans) {
-            flag_structs_.set_used_dac(trans, true);
-        }
+//        void set_used_DAC(size_t trans) {
+//            dac_units_[0].setBit(trans, true);
+//        }
         
         void set_check(size_t trans, uint8_t check) {
-            bytes_[offset_(trans) + dac_unit_size] = check;
+            bytes_[offset_(trans) + 1] = check;
         }
         
         void calc_next_size(size_t num_elems) {
             next_size_ = 0;
-            while (num_elems >> (8 * ++next_size_));
+            while ((num_elems - 1) >> (8 * ++next_size_));
+            dac_units_.resize(next_size_ - 1);
+        }
+        
+        void buildBits() {
+            is_final_bits.build();
+            for (auto &u : dac_units_) {
+                u.build();
+            }
         }
         
         void write(std::ostream& os) const {
             write_vec(bytes_, os);
-            write_vec(dac_bytes_, os);
+            is_final_bits.write(os);
             write_val(next_size_, os);
-            write_val(dac_unit_size, os);
             write_val(num_trans_, os);
-            flag_structs_.write(os);
+            for (auto &u : dac_units_) {
+                u.write(os);
+            }
         }
         
         void read(std::istream& is) {
             bytes_ = read_vec<uint8_t>(is);
-            dac_bytes_ = read_vec<uint8_t>(is);
+            is_final_bits.read(is);
             next_size_ = read_val<size_t>(is);
-            dac_unit_size = read_val<size_t>(is);
-            element_size_ = dac_unit_size + 1;
+            element_size_ = 1 + 1;
             num_trans_ = read_val<size_t>(is);
-            flag_structs_.read(is);
+            for (auto i = 0; i < next_size_ - 1; i++) {
+                DacUnit unit;
+                unit.read(is);
+                dac_units_.push_back(unit);
+            }
         }
         
         size_t size_in_bytes() const {
             size_t size = 0;
             size += size_vec(bytes_);
-            size += size_vec(dac_bytes_);
             size += sizeof(next_size_);
-            size += sizeof(dac_unit_size);
             size += sizeof(num_trans_);
-            size += flag_structs_.size_in_bytes();
             return size;
         }
         
@@ -165,15 +167,12 @@ namespace array_fsa {
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
             os << "size bytes:   " << size_vec(bytes_) << endl;
-            os << "size dac:   " << size_vec(dac_bytes_) << endl;
+            os << "size dac:   " << size_vec(dac_units_) << endl;
         }
         
         void swap(ArrayDACFSA& rhs) {
             bytes_.swap(rhs.bytes_);
-            flag_structs_.swap(rhs.flag_structs_);
-            dac_bytes_.swap(rhs.dac_bytes_);
             std::swap(next_size_, rhs.next_size_);
-            std::swap(dac_unit_size, rhs.dac_unit_size);
             std::swap(element_size_, rhs.element_size_);
             std::swap(num_trans_, rhs.num_trans_);
         }
@@ -183,28 +182,14 @@ namespace array_fsa {
         
     private:
         std::vector<uint8_t> bytes_;
-        ArrayDACFSARank flag_structs_;
-        std::vector<uint8_t> dac_bytes_;
+        Rank is_final_bits;
         size_t next_size_ = 0;
-        size_t dac_unit_size = 0;
         size_t element_size_ = 0;
         size_t num_trans_ = 0;
+        std::vector<DacUnit> dac_units_;
         
         size_t dac_flow_size_() const {
-            return next_size_ - dac_unit_size;
-        }
-        size_t get_DAC_flow_(size_t trans) const {
-            size_t flow = 0;
-            std::memcpy(&flow, &dac_bytes_[offset_rank_(trans)], dac_flow_size_());
-            return flow;
-        }
-        
-        size_t offset_rank_(size_t trans) const {
-            return (rank_(trans) - 1) * dac_flow_size_();
-        }
-        
-        size_t rank_(size_t trans) const {
-            return flag_structs_.rank(trans);
+            return next_size_ - 1;
         }
     };
     

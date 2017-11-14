@@ -17,13 +17,14 @@ namespace array_fsa {
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayDACFSA build(const PlainFSA& orig_fsa, size_t dac_unit_size);
+        static ArrayDACFSA build(const PlainFSA& orig_fsa);
         
         ArrayDACFSABuilder(const ArrayDACFSABuilder&) = delete;
         ArrayDACFSABuilder& operator=(const ArrayDACFSABuilder&) = delete;
         
         // MARK: - Addition Matsumoto
         void showMapping(bool show_density);
+        static void showInBox(ArrayDACFSABuilder &builder, ArrayDACFSA &fsa);
         // MARK: -
         
     private:
