@@ -27,7 +27,7 @@ namespace array_fsa {
         
         static void showInBox(ArrayFSATailBuilder &builder, ArrayFSATail &fsa);
         
-    private:
+    protected:
         StringDict str_dict_;
         
         size_t get_label_index(size_t index) const {

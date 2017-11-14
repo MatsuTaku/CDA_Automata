@@ -27,6 +27,15 @@ namespace array_fsa {
         }
         
         static bool is_member(const ArrayFSATail& fsa, const std::string& str) {
+            return isMemberUsingTail(fsa, str);
+        }
+        
+        static bool is_member(const ArrayFSATailDAC& fsa, const std::string& str) {
+            return isMemberUsingTail(fsa, str);
+        }
+        
+        template <typename FSAType>
+        static bool isMemberUsingTail(const FSAType &fsa, const std::string &str) {
             TransPointer pointer;
             
             for (auto i = 0; i < str.size(); i++) {

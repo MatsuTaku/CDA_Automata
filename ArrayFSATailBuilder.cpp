@@ -50,11 +50,11 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
             ++new_fsa.num_trans_;
         }
     }
-    new_fsa.dac_check_bits_.build();
+    new_fsa.buildBits();
     
 //    builder.showMapping(false);
 
-//    showInBox(builder, new_fsa);
+    showInBox(builder, new_fsa);
     
     return new_fsa;
 }

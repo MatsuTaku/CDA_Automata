@@ -88,11 +88,11 @@ namespace array_fsa {
         
         // MARK: - setter
         
-        void set_next(size_t trans, size_t next) {
+        virtual void set_next(size_t trans, size_t next) {
             std::memcpy(&bytes_[offset_(trans)], &next, next_size_);
         }
         
-        void set_check(size_t trans, uint8_t check) {
+        virtual void set_check(size_t trans, uint8_t check) {
             bytes_[offset_(trans) + next_size_] = check;
         }
         
@@ -139,6 +139,10 @@ namespace array_fsa {
             check_size_--;
         }
         
+        virtual void buildBits() {
+            dac_check_bits_.build();
+        }
+        
         void read(std::istream &is) override {
             ArrayFSA::read(is);
             element_size_ = next_size_ + 1;
@@ -183,7 +187,7 @@ namespace array_fsa {
             dac_check_bytes_.swap(rhs.dac_check_bytes_);
         }
         
-    private:
+    protected:
         Rank is_final_bits_;
         Rank has_label_bits_;
         std::vector<uint8_t> label_bytes_;

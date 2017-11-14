@@ -17,6 +17,9 @@ set(HEADER_FILES
   ArrayFSABuilder.hpp
   ArrayFSATail.hpp
   ArrayFSATailBuilder.hpp
+  ArrayFSATailDAC.hpp
+  ArrayFSATailDACBuilder.hpp
+  ArrayTri.hpp
   ArrayDACFSA.hpp
   ArrayDACFSABuilder.hpp
   ArrayDACFSARank.hpp
@@ -31,12 +34,12 @@ set(HEADER_FILES
   StringDictBuilder.hpp
   StrDictData.hpp
   DacUnit.hpp
-  ArrayTri.hpp
   )
 
 set(SOURCE_FILES
   ArrayFSABuilder.cpp
   ArrayFSATailBuilder.cpp
+  ArrayFSATailDACBuilder.cpp
   ArrayDACFSABuilder.cpp
   PlainFSABuilder.cpp
   StringDictBuilder.cpp

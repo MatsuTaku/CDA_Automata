@@ -1,6 +1,5 @@
 //
 //  DacUnit.hpp
-//  bench
 //
 //  Created by 松本拓真 on 2017/11/13.
 //

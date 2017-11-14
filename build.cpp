@@ -3,6 +3,7 @@
 #include "ArrayFSABuilder.hpp"
 #include "ArrayDACFSABuilder.hpp"
 #include "ArrayFSATailBuilder.hpp"
+#include "ArrayFSATailDACBuilder.hpp"
 #include "FsaTools.hpp"
 #include "PlainFSABuilder.hpp"
 
@@ -69,7 +70,7 @@ int main(int argc, const char* argv[]) {
 //    fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
 ////    data_name = "../../data-sets/ciura-deorowicz/sample.dict";
 ////    fsa_name = "../../results/sample/sample.array_tail_fsa";
-//    fsa_type = '1';
+//    fsa_type = '3';
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
@@ -98,6 +99,13 @@ int main(int argc, const char* argv[]) {
             ArrayFSATail fsa = getArrayFSAFromData<ArrayFSATail>(data_name);
             std::cout << "Test for membership" << std::endl;
             checkFsaHasMember<ArrayFSATail>(fsa, data_name);
+            
+            std::cout << "Write FSA into " << fsa_name << std::endl;
+            fsa.write(ofs);
+        } else if (fsa_type == '3') {
+            ArrayFSATailDAC fsa = getArrayFSAFromData<ArrayFSATailDAC>(data_name);
+            std::cout << "Test for membership" << std::endl;
+            checkFsaHasMember<ArrayFSATailDAC>(fsa, data_name);
             
             std::cout << "Write FSA into " << fsa_name << std::endl;
             fsa.write(ofs);

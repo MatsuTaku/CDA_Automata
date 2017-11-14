@@ -6,6 +6,8 @@
 
 #include "ArrayFSABuilder.hpp"
 #include "ArrayDACFSABuilder.hpp"
+#include "ArrayFSATail.hpp"
+#include "ArrayFSATailDAC.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "MorfologikFSA5.hpp"
 #include "FsaTools.hpp"
@@ -77,8 +79,8 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[3];
 
 //    auto type = '5';
-//    auto fsa_name = "../../results/wikipedia2/wikipedia2.array_tail_fsa";
-//    auto query_name = "../../data-sets/weiss/wikipedia2.1000000.rnd_dict";
+//    auto fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
+//    auto query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
     
     switch (type) {
         case '1':
@@ -91,6 +93,8 @@ int main(int argc, const char* argv[]) {
             return bench<ArrayDACFSA>(fsa_name, query_name);
         case '5':
             return bench<ArrayFSATail>(fsa_name, query_name);
+        case '6':
+            return bench<ArrayFSATailDAC>(fsa_name, query_name);
         default:
             break;
     }

@@ -157,6 +157,10 @@ namespace array_fsa {
             size += size_vec(bytes_);
             size += sizeof(next_size_);
             size += sizeof(num_trans_);
+            for (auto u : dac_units_) {
+                size += u.size_in_bytes();
+            }
+            
             return size;
         }
         
@@ -167,7 +171,11 @@ namespace array_fsa {
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
             os << "size bytes:   " << size_vec(bytes_) << endl;
-            os << "size dac:   " << size_vec(dac_units_) << endl;
+            auto dacSize = 0;
+            for (auto u : dac_units_) {
+                dacSize += u.size_in_bytes();
+            }
+            os << "size dac:   " << dacSize << endl;
         }
         
         void swap(ArrayDACFSA& rhs) {
