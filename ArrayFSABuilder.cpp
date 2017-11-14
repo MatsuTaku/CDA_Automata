@@ -27,7 +27,6 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
     new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
     
     for (size_t i = 0; i < num_elems; ++i) {
-//        const auto offset = i * kElemSize;
         const auto new_offset = i * new_fsa.element_size_;
         
         // Set final flag to top of next bit.

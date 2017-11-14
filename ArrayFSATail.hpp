@@ -46,9 +46,23 @@ namespace array_fsa {
         // MARK: - getter
         
         size_t get_label_index(size_t index) const {
-            size_t labelIndex = 0;
-            std::memcpy(&labelIndex, &bytes_[offset_(index) + 1 + next_size_], 4);
+            size_t labelIndex = get_check_(index);
+            // TODO: DAC
+            if (dac_check_bits_.get(index)) {
+                size_t nextFlow = get_dac_check_flow(index);
+                labelIndex |= nextFlow << 8;
+            }
             return labelIndex;
+        }
+        
+        size_t offsetDacCheck(size_t index) const {
+            return (dac_check_bits_.rank(index) - 1) * check_size_;
+        }
+        
+        size_t get_dac_check_flow(size_t trans) const {
+            size_t flow = 0;
+            std::memcpy(&flow, &dac_check_bytes_[offsetDacCheck(trans)], check_size_);
+            return flow;
         }
         
         std::string get_label(size_t index) const {
@@ -60,12 +74,12 @@ namespace array_fsa {
             return label;
         }
         
-        bool is_final(size_t trans) const {
-            return (bytes_[offset_(trans)] & 1) != 0;
+        bool is_final_trans(size_t trans) const override {
+            return is_final_bits_.get(trans);
         }
         
         bool has_label(size_t trans) const {
-            return (bytes_[offset_(trans)] & 2) != 0;
+            return has_label_bits_.get(trans);
         }
         
         bool is_label_finish(size_t index) const {
@@ -75,31 +89,37 @@ namespace array_fsa {
         // MARK: - setter
         
         void set_next(size_t trans, size_t next) {
-            std::memcpy(&bytes_[offset_(trans) + 1], &next, next_size_);
+            std::memcpy(&bytes_[offset_(trans)], &next, next_size_);
         }
         
         void set_check(size_t trans, uint8_t check) {
-            bytes_[offset_(trans) + 1 + next_size_] = check;
+            bytes_[offset_(trans) + next_size_] = check;
+        }
+        
+        void set_used_dac_check(size_t trans, bool useDac) {
+            dac_check_bits_.set(trans, useDac);
         }
         
         void set_label_index(size_t trans, size_t labelIndex) {
-            std::memcpy(&bytes_[offset_(trans) + 1 + next_size_], &labelIndex, 4);
+            size_t first_unit_mask = (size_t(1) << 8) - 1;
+            auto firstUnitCheck = labelIndex & first_unit_mask;
+            set_check(trans, firstUnitCheck);
+            auto flow = labelIndex >> 8;
+            if (flow > 0) {
+                set_used_dac_check(trans, true);
+                for (auto i = 0; i < check_size_; i++) {
+                    auto byte = flow >> (i * 8) & 0xff;
+                    dac_check_bytes_.push_back(byte);
+                }
+            }
         }
         
         void set_is_final(size_t trans, bool isFinal) {
-            if (isFinal) {
-                bytes_[offset_(trans)] |= 1;
-            } else {
-                bytes_[offset_(trans)] &= ~1;
-            }
+            is_final_bits_.set(trans, isFinal);
         }
         
         void set_has_label(size_t trans, bool hasLabel) {
-            if (hasLabel) {
-                bytes_[offset_(trans)] |= 2;
-            } else {
-                bytes_[offset_(trans)] &= ~2;
-            }
+            has_label_bits_.set(trans, hasLabel);
         }
         
         void set_is_label_finish(size_t index, bool isFinish) {
@@ -108,21 +128,42 @@ namespace array_fsa {
         
         // MARK: - function
         
+        void calc_next_size(size_t num_elems) override {
+            next_size_ = 0;
+            while ((num_elems - 1) >> (8 * ++next_size_));
+        }
+        
+        void calc_check_size(size_t labelSize) {
+            check_size_ = 0;
+            while ((labelSize - 1) >> (8 * ++check_size_));
+            check_size_--;
+        }
+        
         void read(std::istream &is) override {
             ArrayFSA::read(is);
-            element_size_ = next_size_ + 1 + 4;
+            element_size_ = next_size_ + 1;
+            is_final_bits_.read(is);
+            has_label_bits_.read(is);
             label_bytes_ = read_vec<uint8_t>(is);
             label_finish_flags_.read(is);
+            dac_check_bytes_ = read_vec<uint8_t>(is);
+            dac_check_bits_.read(is);
+            check_size_ = read_val<size_t>(is);
         }
         
         void write(std::ostream &os) const override {
             ArrayFSA::write(os);
+            is_final_bits_.write(os);
+            has_label_bits_.write(os);
             write_vec(label_bytes_, os);
             label_finish_flags_.write(os);
+            write_vec(dac_check_bytes_, os);
+            dac_check_bits_.write(os);
+            write_val(check_size_, os);
         }
         
         size_t size_in_bytes() const override {
-            return ArrayFSA::size_in_bytes() + size_vec(label_bytes_) + label_finish_flags_.size_in_bytes();
+            return ArrayFSA::size_in_bytes() + is_final_bits_.size_in_bytes() + has_label_bits_.size_in_bytes() + size_vec(label_bytes_) + label_finish_flags_.size_in_bytes() + size_vec(dac_check_bytes_) + dac_check_bits_.size_in_bytes() + sizeof(check_size_);
         }
         
         void show_stat(std::ostream& os) const override {
@@ -132,26 +173,33 @@ namespace array_fsa {
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
             os << "size bytes:   " << size_vec(bytes_) << endl;
+            os << "size dac_check_bytes:   " << size_vec(dac_check_bytes_) << endl;
             os << "size label:   " << size_vec(label_bytes_) << endl;
         }
         
         void swap(ArrayFSATail &rhs) {
             ArrayFSA::swap(rhs);
             label_bytes_.swap(rhs.label_bytes_);
+            dac_check_bytes_.swap(rhs.dac_check_bytes_);
         }
         
     private:
+        Rank is_final_bits_;
+        Rank has_label_bits_;
         std::vector<uint8_t> label_bytes_;
         Rank label_finish_flags_;
+        std::vector<uint8_t> dac_check_bytes_;
+        Rank dac_check_bits_;
+        size_t check_size_ = 0;
         
         size_t get_next_(size_t trans) const override {
             size_t next = 0;
-            std::memcpy(&next, &bytes_[offset_(trans) + 1], next_size_);
+            std::memcpy(&next, &bytes_[offset_(trans)], next_size_);
             return next;
         }
         
         uint8_t get_check_(size_t trans) const override {
-            return bytes_[offset_(trans) + 1 + next_size_];
+            return bytes_[offset_(trans) + next_size_];
         }
         
     };

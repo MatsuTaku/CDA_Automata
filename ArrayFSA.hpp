@@ -58,7 +58,7 @@ namespace array_fsa {
         size_t get_target_state(size_t trans) const {
             return trans ^ get_next_(trans);
         }
-        bool is_final_trans(size_t trans) const {
+        virtual bool is_final_trans(size_t trans) const {
             return (bytes_[offset_(trans)] & 1) != 0;
         }
         
@@ -69,9 +69,9 @@ namespace array_fsa {
             return bytes_.size() / element_size_;
         }
         
-        void calc_next_size(size_t num_elems) {
+        virtual void calc_next_size(size_t num_elems) {
             next_size_ = 0;
-            while (num_elems >> (8 * ++next_size_ - 1));
+            while ((num_elems - 1) >> (8 * ++next_size_ - 1));
         }
         
         virtual void read(std::istream& is) {
@@ -96,6 +96,7 @@ namespace array_fsa {
             os << "#trans: " << get_num_trans() << endl;
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
+            os << "size bytes_:   " << size_vec(bytes_) << endl;
         }
         
         void swap(ArrayFSA& rhs) {

@@ -12,7 +12,11 @@ using namespace array_fsa;
 
 namespace {
     
-    class DataNotFoundException : std::exception {};
+    class DataNotFoundException : std::exception {
+    public:
+        DataNotFoundException(std::string data_name) : data_name_(data_name) {}
+        std::string data_name_;
+    };
     class DoesntHaveMemberExceptipn : std::exception {
     public:
         DoesntHaveMemberExceptipn(std::string text) : text(text) {}
@@ -22,7 +26,7 @@ namespace {
     PlainFSA getPlainFSAFromData(const char* data_name) {
         std::ifstream ifs(data_name);
         if (!ifs) {
-            throw DataNotFoundException();
+            throw DataNotFoundException(data_name);
         }
         
         PlainFSABuilder builder;
@@ -48,7 +52,7 @@ namespace {
     void checkFsaHasMember(FSAType& fsa, const char* data_name) {
         std::ifstream ifs(data_name);
         if (!ifs) {
-            throw DataNotFoundException();
+            throw DataNotFoundException(data_name);
         }
         
         auto num = 0;
@@ -70,6 +74,8 @@ int main(int argc, const char* argv[]) {
     
 //    data_name = "../../data-sets/weiss/wikipedia.dict";
 //    fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
+////    data_name = "../../data-sets/ciura-deorowicz/sample.dict";
+////    fsa_name = "../../results/sample/sample.array_tail_fsa";
 //    fsa_type = '2';
 //    dac_unit_size = 1;
     
@@ -105,7 +111,7 @@ int main(int argc, const char* argv[]) {
             fsa.write(ofs);
         }
     } catch (DataNotFoundException e) {
-        std::cerr << "Error open " << data_name << std::endl;
+        std::cerr << "Error open " << e.data_name_ << std::endl;
         return 1;
     } catch (DoesntHaveMemberExceptipn e) {
         std::cout << "Doesn't have member: " << e.text << std::endl;

@@ -17,6 +17,7 @@ using namespace array_fsa;
 StringDict StringDictBuilder::build(const PlainFSA& fsa) {
     StringDictBuilder builder(fsa);
     builder.makeDict();
+//    builder.filteringStrings();
     builder.flatStringArray();
     
     StringDict dict;
@@ -41,7 +42,7 @@ void StringDictBuilder::labelArrange(size_t state) {
         return;
     }
     
-    { // Set next of offset to state's second if needed.
+    {
         auto it = state_map_.find(state);
         if (it != state_map_.end()) {
             // already visited state
@@ -55,14 +56,13 @@ void StringDictBuilder::labelArrange(size_t state) {
         auto labelTrans = trans;
         if (orig_fsa_.is_straight_state(labelTrans)) {
             auto index = labelTrans / PlainFSA::kTransSize;
-            has_label_bits_[index] = true;
             appendStrDict();
-            str_dict_indexes_[index] = cur_str_dict_index_;
-            cur_str_dict().set(orig_fsa_.get_trans_symbol(trans));
+            cur_str_dict().set(orig_fsa_.get_trans_symbol(labelTrans));
             do {
                 labelTrans = orig_fsa_.get_target_state(labelTrans);
                 cur_str_dict().set(orig_fsa_.get_trans_symbol(labelTrans));
             } while (orig_fsa_.is_straight_state(labelTrans));
+            saveStrDict(index);
         }
         
         labelArrange(orig_fsa_.get_target_state(labelTrans));
@@ -80,18 +80,18 @@ void StringDictBuilder::flatStringArray() {
     }
     
     // TODO: test
-    for (auto &dict : str_dicts_) {
-        for (auto i = 0; i < dict.label.size(); i++) {
-            char dictC = dict.label[i];
-            char flatC = label_bytes_[dict.place + i];
-            if (dictC != flatC) {
-                std::cout << "Error flat string array" << std::endl;
-            }
-            if (i == dict.label.size() - 1) {
-                if (!finish_flags_[dict.place + i]) {
-                    std::cout << "Error flat string finish flag" << std::endl;
-                }
-            }
-        }
-    }
+//    for (auto &dict : str_dicts_) {
+//        for (auto i = 0; i < dict.label.size(); i++) {
+//            char dictC = dict.label[i];
+//            char flatC = label_bytes_[dict.place + i];
+//            if (dictC != flatC) {
+//                std::cout << "Error flat string array" << std::endl;
+//            }
+//            if (i == dict.label.size() - 1) {
+//                if (!finish_flags_[dict.place + i]) {
+//                    std::cout << "Error flat string finish flag" << std::endl;
+//                }
+//            }
+//        }
+//    }
 }

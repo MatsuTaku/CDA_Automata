@@ -12,7 +12,7 @@
 		<key>ZERO_CHECK.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>2</integer>
 		</dict>
 		<key>array_fsa_test.xcscheme</key>
 		<dict>
@@ -22,7 +22,7 @@
 		<key>bench.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>1</integer>
 		</dict>
 		<key>build.xcscheme</key>
 		<dict>

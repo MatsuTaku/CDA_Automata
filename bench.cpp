@@ -77,8 +77,8 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[3];
 
 //    auto type = '5';
-//    auto fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
-//    auto query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+//    auto fsa_name = "../../results/wikipedia2/wikipedia2.array_tail_fsa";
+//    auto query_name = "../../data-sets/weiss/wikipedia2.1000000.rnd_dict";
     
     switch (type) {
         case '1':

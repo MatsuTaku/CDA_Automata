@@ -30,6 +30,8 @@ set(HEADER_FILES
   StringDict.hpp
   StringDictBuilder.hpp
   StrDictData.hpp
+  DacUnit.hpp
+  ArrayTri.hpp
   )
 
 set(SOURCE_FILES
