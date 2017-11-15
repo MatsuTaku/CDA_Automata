@@ -115,13 +115,17 @@ namespace array_fsa {
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
             os << "size bytes:   " << size_vec(bytes_) << endl;
-            os << "size dac_check_bytes:   " << size_vec(dac_check_bytes_) << endl;
-            os << "size label:   " << size_vec(label_bytes_) << endl;
             auto dacNextSize = 0;
-            for (auto u : dac_next_units_) {
+            for (auto &u : dac_next_units_) {
                 dacNextSize += u.size_in_bytes();
             }
             os << "size dac_next_bytes:   " << dacNextSize << endl;
+            auto dacCheckSize = 0;
+            for (auto &u : dac_check_units_) {
+                dacCheckSize += u.size_in_bytes();
+            }
+            os << "size dac_check_bytes:   " << dacCheckSize << endl;
+            os << "size label:   " << size_vec(label_bytes_) << endl;
         }
         
     private:

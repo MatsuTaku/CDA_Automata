@@ -47,7 +47,7 @@ ArrayFSATailDAC ArrayFSATailDACBuilder::build(const PlainFSA &orig_fsa) {
     }
     new_fsa.buildBits();
     
-    builder.showMapping(false);
+//    builder.showMapping(false);
     
     //    showInBox(builder, new_fsa);
     

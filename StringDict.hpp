@@ -61,7 +61,7 @@ namespace array_fsa {
         
     private:
         std::vector<StrDictData> str_dicts_;
-        std::vector<size_t> str_dict_indexes_;
+        std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
         std::vector<uint8_t> label_bytes_;
         std::vector<bool> finish_flags_;
@@ -70,11 +70,11 @@ namespace array_fsa {
         
         size_t dictIndex(size_t index) const {
             assert(hasLabel(index));
-            return str_dict_indexes_[index];
+            return fsa_target_indexes_[index];
         }
         
         StrDictData dataOf(size_t index) const {
-            const StrDictData dict = str_dicts_[dictIndex(index)];
+            const StrDictData &dict = str_dicts_[dictIndex(index)];
             return dict;
         }
         

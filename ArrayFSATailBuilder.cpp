@@ -54,7 +54,7 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
     
 //    builder.showMapping(false);
 
-    showInBox(builder, new_fsa);
+//    showInBox(builder, new_fsa);
     
     return new_fsa;
 }

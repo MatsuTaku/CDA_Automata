@@ -34,7 +34,8 @@ namespace array_fsa {
         
         std::vector<StrDictData> str_dicts_;
         size_t cur_str_dict_index_;
-        std::vector<size_t> str_dict_indexes_;
+        std::vector<size_t> fsa_target_ids_;
+        std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
         std::vector<uint8_t> label_bytes_;
         std::vector<bool> finish_flags_;
@@ -49,10 +50,12 @@ namespace array_fsa {
         
         void makeDict();
         void labelArrange(size_t state);
+        void sortDicts();
         void flatStringArray();
         
         void appendStrDict() {
             StrDictData dict;
+            dict.id = str_dicts_.size();
             str_dicts_.push_back(dict);
             cur_str_dict_index_ = str_dicts_.size() - 1;
         }
@@ -60,24 +63,18 @@ namespace array_fsa {
         void saveStrDict(size_t index) {
             has_label_bits_[index] = true;
             
-//            for (auto i = 0; i < cur_str_dict_index_; i++) {
-//                auto &toDict = str_dicts_[i];
-//                if (toDict.label == cur_str_dict().label) {
-//                    str_dict_indexes_[index] = i;
-//                    str_dicts_.pop_back();
-//                    return;
-//                }
-//            }
             auto sameAs = dict_tri_.isMember(cur_str_dict().label);
             if (sameAs != 0) {
-                str_dict_indexes_[index] = sameAs;
+                str_dicts_[sameAs].counter++;
+                fsa_target_ids_[index] = str_dicts_[sameAs].id;
                 str_dicts_.pop_back();
                 return;
             }
-            str_dict_indexes_[index] = cur_str_dict_index_;
+            fsa_target_ids_[index] = cur_str_dict().id;
             
             dict_tri_.add(cur_str_dict().label, cur_str_dict_index_);
         }
+        
     };
     
 }

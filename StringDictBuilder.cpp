@@ -11,18 +11,19 @@
 #include <string.h>
 #include "PlainFSA.hpp"
 #include "StringDict.hpp"
+#include <unordered_map>
 
 using namespace array_fsa;
 
 StringDict StringDictBuilder::build(const PlainFSA& fsa) {
     StringDictBuilder builder(fsa);
     builder.makeDict();
-//    builder.filteringStrings();
+    builder.sortDicts();
     builder.flatStringArray();
     
     StringDict dict;
     dict.str_dicts_ = std::move(builder.str_dicts_);
-    dict.str_dict_indexes_ = std::move(builder.str_dict_indexes_);
+    dict.fsa_target_indexes_ = std::move(builder.fsa_target_indexes_);
     dict.has_label_bits_ = builder.has_label_bits_;
     dict.label_bytes_ = std::move(builder.label_bytes_);
     dict.finish_flags_ = std::move(builder.finish_flags_);
@@ -30,9 +31,11 @@ StringDict StringDictBuilder::build(const PlainFSA& fsa) {
 }
 
 void StringDictBuilder::makeDict() {
-    str_dict_indexes_.resize(orig_fsa_.bytes_.size() / PlainFSA::kTransSize);
+    fsa_target_ids_.resize(orig_fsa_.bytes_.size() / PlainFSA::kTransSize);
+    fsa_target_indexes_.resize(orig_fsa_.bytes_.size() / PlainFSA::kTransSize);
     has_label_bits_.resize(orig_fsa_.bytes_.size() / PlainFSA::kTransSize);
     labelArrange(orig_fsa_.get_root_state());
+    dict_tri_ = ArrayTri(); // Clear memory
 }
 
 void StringDictBuilder::labelArrange(size_t state) {
@@ -69,6 +72,52 @@ void StringDictBuilder::labelArrange(size_t state) {
     }
 }
 
+void StringDictBuilder::sortDicts() {
+    std::sort(str_dicts_.begin(), str_dicts_.end(), [](const StrDictData &lhs, const StrDictData &rhs) {
+        return lhs.counter > rhs.counter;
+    });
+    
+    std::vector<size_t> idMap;
+    idMap.resize(str_dicts_.size());
+    
+    for (auto i = 0; i < str_dicts_.size(); i++) {
+        auto &dict = str_dicts_[i];
+        idMap[dict.id] = i;
+    }
+    
+    for (auto i = 0; i < fsa_target_ids_.size(); i++) {
+        if (!has_label_bits_[i]) {
+            continue;
+        }
+        auto &id = fsa_target_ids_[i];
+        fsa_target_indexes_[i] = idMap[id];
+    }
+    
+    { // Show mapping of byte size
+        size_t counts[4] = {0, 0, 0, 0};
+        for (auto size = 0; size < 4; size++) {
+            size_t block = 1 << (8 * (size + 1));
+            auto max = std::min(block, str_dicts_.size());
+            for (auto i = (1 << (8 * size)) - 1; i < max; i++) {
+                counts[size] += str_dicts_[i].counter + 1;
+            }
+        }
+        int map[4];
+        auto size = 0;
+        for (auto i = 0; i < 4; i++) {
+            size += counts[i];
+        }
+        for (auto i = 0; i < 4; i++) {
+            map[i] = float(counts[i]) / size * 100;
+        }
+        std::cout << "Label index per\t" << std::endl;
+        for (auto i = 0; i < 4; i++) {
+            std::cout << map[i]<< "\t" ;
+        }
+        std::cout << "%" << std::endl;
+    }
+}
+
 void StringDictBuilder::flatStringArray() {
     for (auto &dict : str_dicts_) {
         dict.place = label_bytes_.size();
@@ -78,20 +127,4 @@ void StringDictBuilder::flatStringArray() {
         finish_flags_.resize(label_bytes_.size(), false);
         finish_flags_[label_bytes_.size() - 1] = true;
     }
-    
-    // TODO: test
-//    for (auto &dict : str_dicts_) {
-//        for (auto i = 0; i < dict.label.size(); i++) {
-//            char dictC = dict.label[i];
-//            char flatC = label_bytes_[dict.place + i];
-//            if (dictC != flatC) {
-//                std::cout << "Error flat string array" << std::endl;
-//            }
-//            if (i == dict.label.size() - 1) {
-//                if (!finish_flags_[dict.place + i]) {
-//                    std::cout << "Error flat string finish flag" << std::endl;
-//                }
-//            }
-//        }
-//    }
 }

@@ -70,7 +70,7 @@ int main(int argc, const char* argv[]) {
 //    fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
 ////    data_name = "../../data-sets/ciura-deorowicz/sample.dict";
 ////    fsa_name = "../../results/sample/sample.array_tail_fsa";
-//    fsa_type = '3';
+//    fsa_type = '2';
     
     std::cout << "Build FSA from " << data_name << std::endl;
     

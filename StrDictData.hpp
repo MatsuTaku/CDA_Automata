@@ -13,12 +13,15 @@
 namespace array_fsa {
     
     struct StrDictData {
+        size_t id = 0;
         std::string label = "";
         size_t place = 0;
-        
+        size_t counter = 0;
+    
         void set(char c) {
             label += c;
         }
+        
     };
 
 }
