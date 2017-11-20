@@ -26,6 +26,7 @@ ArrayFSATailDAC ArrayFSATailDACBuilder::build(const PlainFSA &orig_fsa) {
     new_fsa.label_bytes_ = builder.str_dict_.get_label_bytes();
     new_fsa.calc_check_size(new_fsa.label_bytes_.size());
     for (auto i = 0; i < new_fsa.label_bytes_.size(); i++) {
+        new_fsa.set_is_label_start(i, builder.is_label_start(i));
         new_fsa.set_is_label_finish(i, builder.is_label_finish(i));
     }
     
@@ -36,7 +37,7 @@ ArrayFSATailDAC ArrayFSATailDACBuilder::build(const PlainFSA &orig_fsa) {
         if (!hasLabel) {
             new_fsa.set_check(i, builder.get_check_(i));
         } else {
-            new_fsa.set_label_index(i, builder.get_label_index(i));
+            new_fsa.set_label_number(i, builder.get_label_number(i));
         }
         new_fsa.set_is_final(i, builder.is_final_(i));
         new_fsa.set_has_label(i, hasLabel);
@@ -47,7 +48,7 @@ ArrayFSATailDAC ArrayFSATailDACBuilder::build(const PlainFSA &orig_fsa) {
     }
     new_fsa.buildBits();
     
-//    builder.showMapping(false);
+    builder.showMapping(false);
     
     //    showInBox(builder, new_fsa);
     

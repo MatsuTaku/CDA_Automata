@@ -38,6 +38,7 @@ namespace array_fsa {
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
         std::vector<uint8_t> label_bytes_;
+        std::vector<bool> start_flags_;
         std::vector<bool> finish_flags_;
         
         std::unordered_map<size_t, size_t> state_map_;

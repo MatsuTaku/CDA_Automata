@@ -78,9 +78,13 @@ int main(int argc, const char* argv[]) {
     auto fsa_name = argv[2];
     auto query_name = argv[3];
 
-//    auto type = '5';
-//    auto fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
-//    auto query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+//    auto type = '6';
+////    auto fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
+////    auto query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+////    auto fsa_name = "../../results/ifiles/ifiles.array_tail_fsa";
+////    auto query_name = "../../data-sets/ciura-deorowicz/ifiles.1000000.rnd_dict";
+//    auto fsa_name = "../../results/deutsch/deutsch.array_tail_dac_fsa";
+//    auto query_name = "../../data-sets/ciura-deorowicz/deutsch.1000000.rnd_dict";
     
     switch (type) {
         case '1':

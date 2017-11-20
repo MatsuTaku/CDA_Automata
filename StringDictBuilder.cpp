@@ -26,6 +26,7 @@ StringDict StringDictBuilder::build(const PlainFSA& fsa) {
     dict.fsa_target_indexes_ = std::move(builder.fsa_target_indexes_);
     dict.has_label_bits_ = builder.has_label_bits_;
     dict.label_bytes_ = std::move(builder.label_bytes_);
+    dict.start_flags_ = std::move(builder.start_flags_);
     dict.finish_flags_ = std::move(builder.finish_flags_);
     return dict;
 }
@@ -73,6 +74,7 @@ void StringDictBuilder::labelArrange(size_t state) {
 }
 
 void StringDictBuilder::sortDicts() {
+    // Sort as Descending order to time of access to stringDict.
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](const StrDictData &lhs, const StrDictData &rhs) {
         return lhs.counter > rhs.counter;
     });
@@ -114,17 +116,22 @@ void StringDictBuilder::sortDicts() {
         for (auto i = 0; i < 4; i++) {
             std::cout << map[i]<< "\t" ;
         }
-        std::cout << "%" << std::endl;
+        std::cout << "%";
+        std::cout << " in " << size << std::endl;
     }
 }
 
 void StringDictBuilder::flatStringArray() {
+    auto count = 0;
     for (auto &dict : str_dicts_) {
+        start_flags_.resize(label_bytes_.size() + 1);
+        start_flags_[label_bytes_.size()] = true;
         dict.place = label_bytes_.size();
         for (auto &&c : dict.label) {
             label_bytes_.push_back(c);
         }
         finish_flags_.resize(label_bytes_.size(), false);
         finish_flags_[label_bytes_.size() - 1] = true;
+        count++;
     }
 }

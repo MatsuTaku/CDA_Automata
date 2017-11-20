@@ -26,9 +26,18 @@ namespace array_fsa {
             return hasLabel(index);
         }
         
+        size_t dictIndex(size_t index) const {
+            assert(hasLabel(index));
+            return fsa_target_indexes_[index];
+        }
+        
         size_t startPos(size_t index) const {
             auto data = dataOf(index);
             return dataOf(index).place;
+        }
+        
+        bool isStartLabel(size_t index) const {
+            return start_flags_[index];
         }
         
         bool isEndLabel(size_t index) const {
@@ -64,14 +73,10 @@ namespace array_fsa {
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
         std::vector<uint8_t> label_bytes_;
+        std::vector<bool> start_flags_;
         std::vector<bool> finish_flags_;
         
         size_t pos_on_label_ = 0;
-        
-        size_t dictIndex(size_t index) const {
-            assert(hasLabel(index));
-            return fsa_target_indexes_[index];
-        }
         
         StrDictData dataOf(size_t index) const {
             const StrDictData &dict = str_dicts_[dictIndex(index)];

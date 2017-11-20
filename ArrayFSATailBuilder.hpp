@@ -30,7 +30,7 @@ namespace array_fsa {
     protected:
         StringDict str_dict_;
         
-        size_t get_label_index(size_t index) const {
+        size_t get_label_number(size_t index) const {
             size_t labelIndex = 0;
             std::memcpy(&labelIndex, &bytes_[offset_(index) + 1 + kAddrSize], 4);
             return labelIndex;
@@ -40,11 +40,15 @@ namespace array_fsa {
             return (bytes_[offset_(index)] & 8) != 0;
         }
         
-        bool is_label_finish(size_t index) {
+        bool is_label_start(size_t index) const {
+            return str_dict_.isStartLabel(index);
+        }
+        
+        bool is_label_finish(size_t index) const {
             return str_dict_.isEndLabel(index);
         }
         
-        void set_label_index_(size_t index, size_t labelIndex) {
+        void set_label_number_(size_t index, size_t labelIndex) {
             std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &labelIndex, 4);
         }
         

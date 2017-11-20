@@ -42,7 +42,7 @@ namespace array_fsa {
         }
         
         void build() {
-            bits_.build();
+            bits_.build(true, false);
         }
         
         size_t size_in_bytes() const {

@@ -46,13 +46,9 @@ namespace array_fsa {
         
         // MARK: - getter
         
-        size_t get_label_index(size_t trans) const {
+        size_t get_label_number(size_t trans) const {
             size_t labelIndex = get_check_(trans);
-//            // TODO: DAC
-//            if (dac_check_bits_.get(index)) {
-//                size_t nextFlow = get_dac_check_flow(index);
-//                labelIndex |= nextFlow << 8;
-//            }
+            // TODO: DAC
             for (size_t size = 1, index = trans; size < check_size_ + 1; size++) {
                 auto &unit = dac_check_units_[size - 1];
                 if (!unit.get(index)) {
@@ -64,23 +60,10 @@ namespace array_fsa {
             return labelIndex;
         }
         
-//        size_t offsetDacCheck(size_t index) const {
-//            return (dac_check_bits_.rank(index) - 1) * check_size_;
-//        }
-//
-//        size_t get_dac_check_flow(size_t trans) const {
-//            size_t flow = 0;
-//            std::memcpy(&flow, &dac_check_bytes_[offsetDacCheck(trans)], check_size_);
-//            return flow;
-//        }
-        
-        std::string get_label(size_t index) const {
-            auto labelPos = get_label_index(index);
-            std::string label;
-            for (auto i = 0; !is_label_finish(labelPos + i); i++) {
-                label[i] = label_bytes_[labelPos + i];
-            }
-            return label;
+        size_t get_label_index(size_t trans) const {
+            auto number = get_label_number(trans);
+            auto index = label_start_flags_.select(number);
+            return index;
         }
         
         bool is_final_trans(size_t trans) const override {
@@ -105,25 +88,7 @@ namespace array_fsa {
             bytes_[offset_(trans) + next_size_] = check;
         }
         
-//        void set_used_dac_check(size_t trans, bool useDac) {
-//            dac_check_bits_.set(trans, useDac);
-//        }
-        
-        void set_label_index(size_t trans, size_t labelIndex) {
-//            {
-//            size_t first_unit_mask = (size_t(1) << 8) - 1;
-//            auto firstUnitCheck = labelIndex & first_unit_mask;
-//            set_check(trans, firstUnitCheck);
-//            auto flow = labelIndex >> 8;
-//            if (flow > 0) {
-//                set_used_dac_check(trans, true);
-//                for (auto i = 0; i < check_size_; i++) {
-//                    auto byte = flow >> (i * 8) & 0xff;
-//                    dac_check_bytes_.push_back(byte);
-//                }
-//            }
-//            }
-//
+        void set_label_number(size_t trans, size_t labelIndex) {
             size_t mask = 0xff;
             auto firstUnit = labelIndex & mask;
             set_check(trans, firstUnit);
@@ -147,6 +112,10 @@ namespace array_fsa {
             has_label_bits_.set(trans, hasLabel);
         }
         
+        void set_is_label_start(size_t index, bool isStart) {
+            label_start_flags_.set(index, isStart);
+        }
+        
         void set_is_label_finish(size_t index, bool isFinish) {
             label_finish_flags_.set(index, isFinish);
         }
@@ -166,7 +135,7 @@ namespace array_fsa {
         }
         
         virtual void buildBits() {
-//            dac_check_bits_.build();
+            label_start_flags_.build(true, true);
             for (auto &u : dac_check_units_) {
                 u.build();
             }
@@ -178,9 +147,8 @@ namespace array_fsa {
             is_final_bits_.read(is);
             has_label_bits_.read(is);
             label_bytes_ = read_vec<uint8_t>(is);
+            label_start_flags_.read(is);
             label_finish_flags_.read(is);
-//            dac_check_bytes_ = read_vec<uint8_t>(is);
-//            dac_check_bits_.read(is);
             check_size_ = read_val<size_t>(is);
             for (auto i = 0; i < check_size_; i++) {
                 DacUnit unit;
@@ -194,9 +162,8 @@ namespace array_fsa {
             is_final_bits_.write(os);
             has_label_bits_.write(os);
             write_vec(label_bytes_, os);
+            label_start_flags_.write(os);
             label_finish_flags_.write(os);
-//            write_vec(dac_check_bytes_, os);
-//            dac_check_bits_.write(os);
             write_val(check_size_, os);
             for (auto &u : dac_check_units_) {
                 u.write(os);
@@ -209,6 +176,7 @@ namespace array_fsa {
             size += is_final_bits_.size_in_bytes();
             size += has_label_bits_.size_in_bytes();
             size += size_vec(label_bytes_);
+            size += label_start_flags_.size_in_bytes();
             size += label_finish_flags_.size_in_bytes();
             for (auto &unit : dac_check_units_) {
                 size += unit.size_in_bytes();
@@ -241,11 +209,11 @@ namespace array_fsa {
         Rank is_final_bits_;
         Rank has_label_bits_;
         std::vector<uint8_t> label_bytes_;
+        Rank label_start_flags_;
         Rank label_finish_flags_;
-//        std::vector<uint8_t> dac_check_bytes_;
-//        Rank dac_check_bits_;
         std::vector<DacUnit> dac_check_units_;
         size_t check_size_ = 0;
+        DacUnit label_access_unit_;
         
         size_t get_next_(size_t trans) const override {
             size_t next = 0;
@@ -288,6 +256,19 @@ namespace array_fsa {
             }
         }
         auto isMatch = check == symbol;
+        if (!isMatch) {
+            auto number = get_label_number(pointer.arc);
+            auto index = get_label_index(pointer.arc);
+            std::cout << number << ":\t" << index << std::endl;
+            for (auto i = -10; i < 0; i++) {
+                std::cout << " ";
+            }
+            std::cout << symbol << std::endl;
+            for (auto i = -10; i < 10; i++) {
+                std::cout << label_bytes_[i + index];
+            }
+            std::cout << std::endl;
+        }
         return isMatch;
     }
     

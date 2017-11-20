@@ -123,7 +123,6 @@ namespace array_fsa {
         }
         
         void buildBits() {
-            is_final_bits.build();
             for (auto &u : dac_units_) {
                 u.build();
             }

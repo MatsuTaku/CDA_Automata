@@ -40,7 +40,7 @@ namespace array_fsa {
             
             for (auto i = 0; i < str.size(); i++) {
                 if (!fsa.translatePointer(pointer, str[i])) {
-                    return false;
+                    return true;
                 }
             }
             

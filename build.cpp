@@ -66,11 +66,13 @@ int main(int argc, const char* argv[]) {
     auto fsa_name = argv[2];
     auto fsa_type = *argv[3];
     
-//    data_name = "../../data-sets/weiss/wikipedia.dict";
-//    fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
+////    data_name = "../../data-sets/weiss/wikipedia2.dict";
+////    fsa_name = "../../results/wikipedia2/wikipedia2.array_tail_fsa";
+//    data_name = "../../data-sets/ciura-deorowicz/files.dict";
+//    fsa_name = "../../results/files/files.array_tail_fsa";
 ////    data_name = "../../data-sets/ciura-deorowicz/sample.dict";
-////    fsa_name = "../../results/sample/sample.array_tail_fsa";
-//    fsa_type = '2';
+////    fsa_name = "../../results/sample/sample.array_tail_dac_fsa";
+//    fsa_type = '3';
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
