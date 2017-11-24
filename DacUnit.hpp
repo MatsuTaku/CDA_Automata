@@ -22,7 +22,7 @@ namespace array_fsa {
         }
         
         uint8_t getByte(size_t index) const {
-            return bytes_[rank(index) - 1];
+            return bytes_[(rank(index) - 1) * byte_size_];
         }
         
         size_t numBytes() const {
@@ -37,8 +37,23 @@ namespace array_fsa {
             bits_.set(index, bit);
         }
         
+        void setOverByte(size_t value) {
+            if (value >> (8 * byte_size_) != 0) {
+                std::cout << "Set Dac Unit Over flow!" << std::endl;
+                return;
+            }
+            for (auto size = 0; value >> (8 * size); size++) {
+                uint8_t byte = (value >> size) & 0xff;
+                setByte(byte);
+            }
+        }
+        
         void setByte(uint8_t value) {
             bytes_.push_back(value);
+        }
+        
+        void setByteSize(uint8_t size) {
+            byte_size_ = size;
         }
         
         void build() {
@@ -61,6 +76,7 @@ namespace array_fsa {
         
     private:
         Rank bits_;
+        uint8_t byte_size_ = 1;
         std::vector<uint8_t> bytes_;
         
     };

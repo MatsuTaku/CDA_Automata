@@ -40,9 +40,9 @@ namespace array_fsa {
             return (bytes_[offset_(index)] & 8) != 0;
         }
         
-        bool is_label_start(size_t index) const {
-            return str_dict_.isStartLabel(index);
-        }
+//        bool is_label_start(size_t index) const {
+//            return str_dict_.isStartLabel(index);
+//        }
         
         bool is_label_finish(size_t index) const {
             return str_dict_.isEndLabel(index);

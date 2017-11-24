@@ -1,12 +1,12 @@
 //
-//  ArrayFSATail.hpp
+//  ArrayFSATailSimple.hpp
 //  array_fsa
 //
 //  Created by 松本拓真 on 2017/11/03.
 //
 
-#ifndef ArrayFSATail_hpp
-#define ArrayFSATail_hpp
+#ifndef ArrayFSATailSimple_hpp
+#define ArrayFSATailSimple_hpp
 
 #include "Rank.hpp"
 #include "DacUnit.hpp"
@@ -21,17 +21,17 @@ namespace array_fsa {
     
     class ArrayFSATailBuilder;
     
-    class ArrayFSATail : public ArrayFSA {
+    class ArrayFSATailSimple : public ArrayFSA {
         friend class ArrayFSATailBuilder;
         
     public:
-        ArrayFSATail() = default;
-        virtual ~ArrayFSATail() = default;
+        ArrayFSATailSimple() = default;
+        virtual ~ArrayFSATailSimple() = default;
         
-        ArrayFSATail(ArrayFSATail &&rhs) noexcept : ArrayFSATail() {
+        ArrayFSATailSimple(ArrayFSATailSimple &&rhs) noexcept : ArrayFSATailSimple() {
             this->swap(rhs);
         }
-        ArrayFSATail &operator=(ArrayFSATail &rhs) noexcept {
+        ArrayFSATailSimple &operator=(ArrayFSATailSimple &rhs) noexcept {
             this->swap(rhs);
             return *this;
         }
@@ -39,7 +39,7 @@ namespace array_fsa {
         using Builder = ArrayFSATailBuilder;
         
         static std::string name() {
-            return "ArrayTailFSA";
+            return "ArrayTailFSASimple";
         }
         
         bool translatePointer(TransPointer &pointer, uint8_t symbol) const;
@@ -69,7 +69,7 @@ namespace array_fsa {
         }
         
         bool is_label_finish(size_t index) const {
-            return label_bytes_[index + 1] == '\0';
+            return label_bytes_[index] == '\0';
         }
         
         // MARK: - setter
@@ -204,7 +204,7 @@ namespace array_fsa {
         
     };
     
-    inline bool ArrayFSATail::translatePointer(TransPointer &pointer, uint8_t symbol) const {
+    inline bool ArrayFSATailSimple::translatePointer(TransPointer &pointer, uint8_t symbol) const {
         uint8_t check;
         auto isLabelFinish = false;
         if (!pointer.onTheLabel) {
@@ -217,7 +217,7 @@ namespace array_fsa {
                 check = get_check_(pointer.arc);
             }
         } else {
-            isLabelFinish = label_bytes_[pointer.labelState + 1] == '\0';
+            isLabelFinish = label_bytes_[pointer.labelState + 1];
             if (!isLabelFinish) {
                 pointer.labelState++;
                 check = label_bytes_[pointer.labelState];
@@ -252,4 +252,4 @@ namespace array_fsa {
 }
 
 
-#endif /* ArrayFSATail_hpp */
+#endif /* ArrayFSATailSimple_hpp */

@@ -36,16 +36,12 @@ namespace array_fsa {
             return dataOf(index).place;
         }
         
-        bool isStartLabel(size_t index) const {
-            return start_flags_[index];
-        }
-        
         bool isEndLabel(size_t index) const {
-            return finish_flags_[index];
+            return label_bytes_[index + 1] == '\0';
         }
         
         bool isEndLabel() const {
-            return finish_flags_[pos_on_label_];
+            return isEndLabel(pos_on_label_);
         }
         
         uint8_t topCharOnPos(size_t index) const {
@@ -64,17 +60,11 @@ namespace array_fsa {
             return label_bytes_;
         }
         
-        std::vector<bool> &get_finish_flags() {
-            return finish_flags_;
-        }
-        
     private:
         std::vector<StrDictData> str_dicts_;
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
         std::vector<uint8_t> label_bytes_;
-        std::vector<bool> start_flags_;
-        std::vector<bool> finish_flags_;
         
         size_t pos_on_label_ = 0;
         

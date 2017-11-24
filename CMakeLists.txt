@@ -16,6 +16,7 @@ set(HEADER_FILES
   ArrayFSA.hpp
   ArrayFSABuilder.hpp
   ArrayFSATail.hpp
+  ArrayFSATailSimple.hpp
   ArrayFSATailBuilder.hpp
   ArrayFSATailDAC.hpp
   ArrayFSATailDACBuilder.hpp

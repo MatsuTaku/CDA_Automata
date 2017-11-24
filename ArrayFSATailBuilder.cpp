@@ -30,10 +30,6 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
     
     new_fsa.label_bytes_ = builder.str_dict_.get_label_bytes();
     new_fsa.calc_check_size(new_fsa.label_bytes_.size());
-    for (auto i = 0; i < new_fsa.label_bytes_.size(); i++) {
-        new_fsa.set_is_label_start(i, builder.is_label_start(i));
-        new_fsa.set_is_label_finish(i, builder.is_label_finish(i));
-    }
     
     for (size_t i = 0; i < num_elems; ++i) {
         size_t next = i ^ builder.get_target_state_(i);
@@ -42,7 +38,7 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
         if (!hasLabel) {
             new_fsa.set_check(i, builder.get_check_(i));
         } else {
-            new_fsa.set_label_number(i, builder.get_label_number(i));
+            new_fsa.set_label_index(i, builder.get_label_number(i));
         }
         new_fsa.set_is_final(i, builder.is_final_(i));
         new_fsa.set_has_label(i, hasLabel);
@@ -53,9 +49,9 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
     }
     new_fsa.buildBits();
     
-    builder.showMapping(false);
+//    builder.showMapping(false);
 
-//    showInBox(builder, new_fsa);
+    showInBox(builder, new_fsa);
     
     return new_fsa;
 }
@@ -64,7 +60,7 @@ void ArrayFSATailBuilder::showInBox(ArrayFSATailBuilder &builder, ArrayFSATail &
     auto tab = "\t";
     for (auto i = 0; i < 256; i++) {
 //        auto bLabel = builder.has_label(i) ? builder.get_label_index(i) : builder.get_check_(i);
-        auto nLabel = fsa.has_label(i) ? fsa.get_label_number(i) : fsa.get_check_(i);
+        auto nLabel = fsa.has_label(i) ? fsa.get_label_index(i) : fsa.get_check_(i);
         //        if (bLabel != nLabel) {
 //        std::cout << i << tab << builder.is_final_(i) << tab << builder.has_label(i) << tab << builder.get_next_(i) << tab << bLabel << std::endl;
 //        Rank::show_as_bytes(bLabel, 4);
@@ -135,7 +131,7 @@ void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
         auto transIndex = trans / PlainFSA::kTransSize;
         if (str_dict_.isLabelSource(transIndex)) {
             set_has_label(child_index);
-            set_label_number_(child_index, str_dict_.dictIndex(transIndex));
+            set_label_number_(child_index, str_dict_.startPos(transIndex));
             
             auto labelTrans = trans;
             str_dict_.traceOnLabel(labelTrans / PlainFSA::kTransSize);
