@@ -49,13 +49,10 @@ namespace array_fsa {
         size_t get_label_index(size_t trans) const {
             size_t labelIndex = get_check_(trans);
             // TODO: DAC
-            for (size_t size = 1, index = trans; size < check_size_ + 1; size++) {
-                auto &unit = dac_check_units_[size - 1];
-                if (!unit.get(index)) {
-                    break;
+            if (dac_check_unit_.get(trans)) {
+                for (auto i = 0; i < check_size_; i++) {
+                    labelIndex |= dac_check_unit_.getByte(trans, i) << (8 * (i + 1));
                 }
-                labelIndex |= unit.getByte(index) << (8 * size);
-                index = unit.rank(index) - 1;
             }
             return labelIndex;
         }
@@ -88,12 +85,12 @@ namespace array_fsa {
             set_check(trans, firstUnit);
             auto indexSize = 0;
             while (labelIndex >> (8 * ++indexSize));
-            for (size_t size = 1, index = trans; size < indexSize; size++) {
-                auto &unit = dac_check_units_[size - 1];
-                unit.setBit(index, true);
-                auto byte = (labelIndex >> (8 * size)) & mask;
-                unit.setByte(byte);
-                index = unit.numBytes() - 1;
+            if (indexSize > 1) {
+                dac_check_unit_.setBit(trans, true);
+                for (auto i = 1; i < check_size_ + 1; i++) {
+                    auto byte = (labelIndex >> (8 * i)) & mask;
+                    dac_check_unit_.setByte(byte);
+                }
             }
             
         }
@@ -117,13 +114,11 @@ namespace array_fsa {
             check_size_ = 0;
             while ((labelSize - 1) >> (8 * ++check_size_));
             check_size_--;
-            dac_check_units_.resize(check_size_);
+            dac_check_unit_.setByteSize(check_size_);
         }
         
         virtual void buildBits() {
-            for (auto &u : dac_check_units_) {
-                u.build();
-            }
+            dac_check_unit_.build();
         }
         
         void read(std::istream &is) override {
@@ -133,11 +128,7 @@ namespace array_fsa {
             has_label_bits_.read(is);
             label_bytes_ = read_vec<uint8_t>(is);
             check_size_ = read_val<size_t>(is);
-            for (auto i = 0; i < check_size_; i++) {
-                DacUnit unit;
-                unit.read(is);
-                dac_check_units_.push_back(unit);
-            }
+            dac_check_unit_.read(is);
         }
         
         void write(std::ostream &os) const override {
@@ -146,9 +137,7 @@ namespace array_fsa {
             has_label_bits_.write(os);
             write_vec(label_bytes_, os);
             write_val(check_size_, os);
-            for (auto &u : dac_check_units_) {
-                u.write(os);
-            }
+            dac_check_unit_.write(os);
         }
         
         size_t size_in_bytes() const override {
@@ -157,9 +146,7 @@ namespace array_fsa {
             size += is_final_bits_.size_in_bytes();
             size += has_label_bits_.size_in_bytes();
             size += size_vec(label_bytes_);
-            for (auto &unit : dac_check_units_) {
-                size += unit.size_in_bytes();
-            }
+            size += dac_check_unit_.size_in_bytes();
             size += sizeof(check_size_);
             return size;
         }
@@ -172,9 +159,7 @@ namespace array_fsa {
             os << "size:   " << size_in_bytes() << endl;
             os << "size bytes:   " << size_vec(bytes_) << endl;
             auto dacSize = 0;
-            for (auto &unit : dac_check_units_) {
-                dacSize += unit.size_in_bytes();
-            }
+            dacSize = dac_check_unit_.size_in_bytes();
             os << "size dac_check_bytes:   " << dacSize << endl;
             os << "size label:   " << size_vec(label_bytes_) << endl;
         }
@@ -188,7 +173,7 @@ namespace array_fsa {
         Rank is_final_bits_;
         Rank has_label_bits_;
         std::vector<uint8_t> label_bytes_;
-        std::vector<DacUnit> dac_check_units_;
+        DacUnit dac_check_unit_;
         size_t check_size_ = 0;
         DacUnit label_access_unit_;
         
@@ -234,9 +219,8 @@ namespace array_fsa {
         }
         auto isMatch = check == symbol;
         if (!isMatch) {
-            auto number = get_label_index(pointer.arc);
             auto index = get_label_index(pointer.arc);
-            std::cout << number << ":\t" << index << std::endl;
+            std::cout << "label index: " << index << std::endl;
             for (auto i = -10; i < 0; i++) {
                 std::cout << " ";
             }

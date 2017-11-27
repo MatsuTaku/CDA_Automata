@@ -69,7 +69,7 @@ namespace array_fsa {
         }
         
         bool is_label_finish(size_t index) const {
-            return label_bytes_[index] == '\0';
+            return label_bytes_[index + 1] == '\0';
         }
         
         // MARK: - setter
@@ -217,7 +217,7 @@ namespace array_fsa {
                 check = get_check_(pointer.arc);
             }
         } else {
-            isLabelFinish = label_bytes_[pointer.labelState + 1];
+            isLabelFinish = label_bytes_[pointer.labelState + 1] == '\0';
             if (!isLabelFinish) {
                 pointer.labelState++;
                 check = label_bytes_[pointer.labelState];

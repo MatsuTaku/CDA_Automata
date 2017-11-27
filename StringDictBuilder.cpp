@@ -18,8 +18,10 @@ using namespace array_fsa;
 StringDict StringDictBuilder::build(const PlainFSA& fsa) {
     StringDictBuilder builder(fsa);
     builder.makeDict();
-    builder.sortDicts();
+    builder.tailBound();
+//    builder.sortDicts();
     builder.flatStringArray();
+    builder.decideTargetIndexes();
     
     StringDict dict;
     dict.str_dicts_ = std::move(builder.str_dicts_);
@@ -34,7 +36,6 @@ void StringDictBuilder::makeDict() {
     fsa_target_indexes_.resize(orig_fsa_.bytes_.size() / PlainFSA::kTransSize);
     has_label_bits_.resize(orig_fsa_.bytes_.size() / PlainFSA::kTransSize);
     labelArrange(orig_fsa_.get_root_state());
-    dict_tri_ = ArrayTri(); // Clear memory
 }
 
 void StringDictBuilder::labelArrange(size_t state) {
@@ -71,62 +72,134 @@ void StringDictBuilder::labelArrange(size_t state) {
     }
 }
 
-void StringDictBuilder::sortDicts() {
-    // Sort as Descending order to time of access to stringDict.
-//    std::sort(str_dicts_.begin(), str_dicts_.end(), [](const StrDictData &lhs, const StrDictData &rhs) {
-//        return lhs.counter > rhs.counter;
-//    });
+void StringDictBuilder::appendStrDict() {
+    StrDictData dict;
+    dict.id = str_dicts_.size();
+    str_dicts_.push_back(dict);
+    cur_str_dict_index_ = str_dicts_.size() - 1;
+}
+
+void StringDictBuilder::saveStrDict(size_t index) {
+    has_label_bits_[index] = true;
     
-    std::vector<size_t> idMap;
-    idMap.resize(str_dicts_.size());
-    
-    for (auto i = 0; i < str_dicts_.size(); i++) {
-        auto &dict = str_dicts_[i];
-        idMap[dict.id] = i;
+    auto revL = reverseString(cur_str_dict().label);
+    auto sameAs = dict_reverse_tri_.isMember(revL);
+    if (sameAs != 0) {
+        str_dicts_[sameAs].counter++;
+        fsa_target_ids_[index] = str_dicts_[sameAs].id;
+        str_dicts_.pop_back();
+        return;
     }
+    fsa_target_ids_[index] = cur_str_dict().id;
     
-    for (auto i = 0; i < fsa_target_ids_.size(); i++) {
-        if (!has_label_bits_[i]) {
+    dict_reverse_tri_.add(revL, cur_str_dict_index_);
+}
+
+void StringDictBuilder::tailBound() {
+    // To protect start of 1byte zone
+    sortDicts();
+    
+    updateIdMap();
+    
+    auto numIncluded = 0;
+    auto includedRange = 0;
+    auto maxRange = 0;
+    for (auto &dict : str_dicts_) {
+        auto revL = reverseString(dict.label);
+        maxRange += revL.size();
+        if (maxRange < 0x100) {
+            // Protect start of 1byte zone
             continue;
         }
-        auto &id = fsa_target_ids_[i];
-        fsa_target_indexes_[i] = idMap[id];
+        auto isIncluded = dict_reverse_tri_.isIncluded(revL);
+        if (isIncluded) {
+            numIncluded++;
+            includedRange += revL.size();
+            setIncludedOwner(dict);
+        }
     }
     
-    { // Show mapping of byte size
-        size_t counts[4] = {0, 0, 0, 0};
-        for (auto size = 0; size < 4; size++) {
-            size_t block = 1 << (8 * (size + 1));
-            auto max = std::min(block, str_dicts_.size());
-            for (auto i = (1 << (8 * size)) - 1; i < max; i++) {
-                counts[size] += str_dicts_[i].counter + 1;
-            }
-        }
-        int map[4];
-        auto size = 0;
-        for (auto i = 0; i < 4; i++) {
-            size += counts[i];
-        }
-        for (auto i = 0; i < 4; i++) {
-            map[i] = float(counts[i]) / size * 100;
-        }
-        std::cout << "Label index per\t" << std::endl;
-        for (auto i = 0; i < 4; i++) {
-            std::cout << map[i]<< "\t" ;
-        }
-        std::cout << "%";
-        std::cout << " in " << size << std::endl;
-    }
+    std::sort(str_dicts_.begin(), str_dicts_.end(), [](const StrDictData &lhs, const StrDictData &rhs) {
+        return lhs.isIncluded < rhs.isIncluded;
+    });
+    
+//    std::cout << "Label included per : " << float(numIncluded) / str_dicts_.size() << std::endl;
+//    std::cout << "Label reductable per : " << float(includedRange) / float(maxRange) << std::endl;
+}
+
+void StringDictBuilder::setIncludedOwner(StrDictData &dict) {
+    auto revL = reverseString(dict.label);
+    auto ownerId = dict_reverse_tri_.getOwnerIdIn(revL);
+    
+    dict.isIncluded = true;
+    auto &owner = getDictFromId(ownerId);
+    dict.owner = owner.id;
+    owner.counter += dict.counter + 1;
+}
+
+void StringDictBuilder::sortDicts() {
+    // Sort as Descending order to time of access to stringDict.
+    std::sort(str_dicts_.begin(), str_dicts_.end(), [](const StrDictData &lhs, const StrDictData &rhs) {
+        return lhs.isIncluded != rhs.isIncluded ?
+        lhs.isIncluded < rhs.isIncluded :
+        lhs.entropy() > rhs.entropy();
+    });
 }
 
 void StringDictBuilder::flatStringArray() {
-    auto count = 0;
+    updateIdMap();
     for (auto &dict : str_dicts_) {
+        if (dict.isIncluded) {
+            auto &owner = getDictFromId(dict.owner);
+            dict.place = owner.place + owner.label.size() - dict.label.size();
+            continue;
+        }
         dict.place = label_bytes_.size();
         for (auto &&c : dict.label) {
             label_bytes_.push_back(c);
         }
         label_bytes_.push_back('\0');
-        count++;
     }
+}
+
+void StringDictBuilder::decideTargetIndexes() {
+    updateIdMap();
+    
+    for (auto i = 0; i < fsa_target_ids_.size(); i++) {
+        if (!has_label_bits_[i]) {
+            continue;
+        }
+        auto id = fsa_target_ids_[i];
+        fsa_target_indexes_[i] = idMap[id];
+    }
+    
+//    showMappingOfByteSize();
+}
+
+// MARK: - Log
+
+void StringDictBuilder::showMappingOfByteSize() {
+    size_t counts[4] = {0, 0, 0, 0};
+    for (auto &dict : str_dicts_) {
+        if (dict.isIncluded) {
+            continue;
+        }
+        uint8_t size = 0;
+        while (dict.place >> (8 * ++size));
+        counts[size - 1] += dict.counter + 1;
+    }
+    int map[4];
+    auto size = 0;
+    for (auto c : counts) {
+        size += c;
+    }
+    for (auto i = 0; i < 4; i++) {
+        map[i] = float(counts[i]) / size * 100;
+    }
+    std::cout << "Label index per\t" << std::endl;
+    for (auto i = 0; i < 4; i++) {
+        std::cout << map[i]<< "\t" ;
+    }
+    std::cout << "%";
+    std::cout << " in " << size << std::endl;
 }

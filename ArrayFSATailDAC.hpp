@@ -121,9 +121,7 @@ namespace array_fsa {
             }
             os << "size dac_next_bytes:   " << dacNextSize << endl;
             auto dacCheckSize = 0;
-            for (auto &u : dac_check_units_) {
-                dacCheckSize += u.size_in_bytes();
-            }
+            dacCheckSize = dac_check_unit_.size_in_bytes();
             os << "size dac_check_bytes:   " << dacCheckSize << endl;
             os << "size label:   " << size_vec(label_bytes_) << endl;
         }

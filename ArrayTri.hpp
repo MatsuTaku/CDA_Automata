@@ -19,7 +19,9 @@ namespace array_fsa {
         }
         
         void add(std::string &text, size_t index);
-        size_t isMember(std::string &text);
+        size_t isMember(std::string &text) const;
+        bool isIncluded(std::string &text) const;
+        size_t getOwnerIdIn(std::string &text) const;
         
     private:
         std::vector<std::vector<size_t>> bytes_;
@@ -47,15 +49,55 @@ namespace array_fsa {
         finishes_[trans] = index;
     }
     
-    inline size_t ArrayTri::isMember(std::string &text) {
+    inline size_t ArrayTri::isMember(std::string &text) const {
         size_t trans = 0;
-        for (auto c : text) {
+        for (uint8_t c : text) {
             auto target = bytes_[trans][c];
             if (target >= bytes_.size() || checks_[target] != trans || target == 0) {
                 return false;
             }
             trans = target;
         }
+        return finishes_[trans];
+    }
+    
+    inline bool ArrayTri::isIncluded(std::string &text) const {
+        size_t trans = 0;
+        for (uint8_t c : text) {
+            auto target = bytes_[trans][c];
+            if (target >= bytes_.size() || checks_[target] != trans || target == 0) {
+                return false;
+            }
+            trans = target;
+        }
+        for (auto num : bytes_[trans]) {
+            if (num != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    inline size_t ArrayTri::getOwnerIdIn(std::string &text) const {
+        size_t trans = 0;
+        for (uint8_t c : text) {
+            auto target = bytes_[trans][c];
+            if (target >= bytes_.size() || checks_[target] != trans || target == 0) {
+                return false;
+            }
+            trans = target;
+        }
+        bool isLeaf;
+        do {
+            isLeaf = true;
+            for (auto num : bytes_[trans]) {
+                if (num != 0) {
+                    trans = num;
+                    isLeaf = false;
+                    break;
+                }
+            }
+        } while (!isLeaf);
         return finishes_[trans];
     }
     

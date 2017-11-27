@@ -49,9 +49,9 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
     }
     new_fsa.buildBits();
     
-//    builder.showMapping(false);
+    builder.showMapping(false);
 
-    showInBox(builder, new_fsa);
+//    showInBox(builder, new_fsa);
     
     return new_fsa;
 }
@@ -59,20 +59,11 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
 void ArrayFSATailBuilder::showInBox(ArrayFSATailBuilder &builder, ArrayFSATail &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 256; i++) {
-//        auto bLabel = builder.has_label(i) ? builder.get_label_index(i) : builder.get_check_(i);
         auto nLabel = fsa.has_label(i) ? fsa.get_label_index(i) : fsa.get_check_(i);
-        //        if (bLabel != nLabel) {
-//        std::cout << i << tab << builder.is_final_(i) << tab << builder.has_label(i) << tab << builder.get_next_(i) << tab << bLabel << std::endl;
-//        Rank::show_as_bytes(bLabel, 4);
         std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.has_label(i) << tab << fsa.get_next_(i) << tab << nLabel << std::endl;;
         Rank::show_as_bytes(nLabel, 4);
         std::cout << std::endl;
-        //        }
     }
-    
-//    for (auto i = 0; i < 0xff; i++) {
-//        std::cout << i << ":\t" << fsa.get_label_number(i) << ":\t" << fsa.get_label_index(i) << std::endl;
-//    }
 }
 
 
@@ -127,7 +118,6 @@ void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
         
         freeze_state_(child_index);
         
-        // TODO: str dict
         auto transIndex = trans / PlainFSA::kTransSize;
         if (str_dict_.isLabelSource(transIndex)) {
             set_has_label(child_index);
@@ -170,6 +160,5 @@ void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
 
 void ArrayFSATailBuilder::expand_() {
     ArrayFSABuilder::expand_();
-    //    str_dict_indexes_.resize(bytes_.size() / PlainFSA::kTransSize);
 }
 

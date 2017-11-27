@@ -22,7 +22,11 @@ namespace array_fsa {
         }
         
         uint8_t getByte(size_t index) const {
-            return bytes_[(rank(index) - 1) * byte_size_];
+            return getByte(index, 0);
+        }
+        
+        uint8_t getByte(size_t index, size_t number) const {
+            return bytes_[(rank(index) - 1) * byte_size_ + number];
         }
         
         size_t numBytes() const {
@@ -67,17 +71,19 @@ namespace array_fsa {
         void read(std::istream &is) {
             bits_.read(is);
             bytes_ = read_vec<uint8_t>(is);
+            byte_size_ = read_val<uint8_t>(is);
         }
         
         void write(std::ostream &os) const {
             bits_.write(os);
             write_vec(bytes_, os);
+            write_val(byte_size_, os);
         }
         
     private:
         Rank bits_;
-        uint8_t byte_size_ = 1;
         std::vector<uint8_t> bytes_;
+        uint8_t byte_size_ = 1;
         
     };
     
