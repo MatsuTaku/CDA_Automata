@@ -44,7 +44,7 @@ namespace array_fsa {
             return str_dict_.isEndLabel(index);
         }
         
-        void set_label_number_(size_t index, size_t labelIndex) {
+        void set_label_index_(size_t index, size_t labelIndex) {
             std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &labelIndex, 4);
         }
         

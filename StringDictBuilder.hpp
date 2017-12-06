@@ -72,7 +72,7 @@ namespace array_fsa {
         void labelArrange(size_t state);
         void appendStrDict();
         void saveStrDict(size_t index);
-        void tailBound();
+        void mergeTail();
         void setIncludedOwner(StrDictData &dict);
         void sortDicts();
         void flatStringArray();

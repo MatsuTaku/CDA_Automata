@@ -36,6 +36,7 @@ namespace array_fsa {
         
         template <typename FSAType>
         static bool isMemberUsingTail(const FSAType &fsa, const std::string &str) {
+            /*
             TransPointer pointer;
             
             for (auto i = 0; i < str.size(); i++) {
@@ -48,6 +49,9 @@ namespace array_fsa {
             auto isLabelFinish = pointer.onTheLabel ? fsa.is_label_finish(pointer.labelState) : true;
             auto isEnd = isFinal && isLabelFinish;
             return isEnd;
+             */
+            auto isMember = fsa.lookup(str);
+            return isMember;
         }
         
     };

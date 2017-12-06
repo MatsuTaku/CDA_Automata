@@ -14,23 +14,17 @@ namespace array_fsa {
     struct DacUnit {
     public:
         size_t size() const {
-            return bytes_.size();
+            return bytes_.size() / unit_size_;
         }
         
-        bool get(size_t index) const {
+        bool getBit(size_t index) const {
             return bits_.get(index);
         }
         
-        uint8_t getByte(size_t index) const {
-            return getByte(index, 0);
-        }
-        
-        uint8_t getByte(size_t index, size_t number) const {
-            return bytes_[(rank(index) - 1) * byte_size_ + number];
-        }
-        
-        size_t numBytes() const {
-            return bytes_.size();
+        size_t getByte(size_t index) const {
+            size_t byte = 0;
+            std::memcpy(&byte, &bytes_[(rank(index) - 1) * unit_size_], unit_size_);
+            return byte;
         }
         
         size_t rank(size_t index) const {
@@ -41,23 +35,23 @@ namespace array_fsa {
             bits_.set(index, bit);
         }
         
-        void setOverByte(size_t value) {
-            if (value >> (8 * byte_size_) != 0) {
-                std::cout << "Set Dac Unit Over flow!" << std::endl;
-                return;
-            }
-            for (auto size = 0; value >> (8 * size); size++) {
-                uint8_t byte = (value >> size) & 0xff;
-                setByte(byte);
+        void setByte(size_t value) {
+            if (unit_size_ == 1) {
+                bytes_.push_back(value);
+            } else {
+                if (value >> (8 * unit_size_) != 0) {
+                    std::cout << "Set Dac element over flow!" << std::endl;
+                    return;
+                }
+                for (auto size = 0; size < unit_size_; size++) {
+                    uint8_t byte = (value >> (size * 8)) & 0xff;
+                    bytes_.push_back(byte);
+                }
             }
         }
         
-        void setByte(uint8_t value) {
-            bytes_.push_back(value);
-        }
-        
-        void setByteSize(uint8_t size) {
-            byte_size_ = size;
+        void setUnitSize(uint8_t size) {
+            unit_size_ = size;
         }
         
         void build() {
@@ -71,19 +65,19 @@ namespace array_fsa {
         void read(std::istream &is) {
             bits_.read(is);
             bytes_ = read_vec<uint8_t>(is);
-            byte_size_ = read_val<uint8_t>(is);
+            unit_size_ = read_val<uint8_t>(is);
         }
         
         void write(std::ostream &os) const {
             bits_.write(os);
             write_vec(bytes_, os);
-            write_val(byte_size_, os);
+            write_val(unit_size_, os);
         }
         
     private:
         Rank bits_;
         std::vector<uint8_t> bytes_;
-        uint8_t byte_size_ = 1;
+        uint8_t unit_size_ = 1;
         
     };
     

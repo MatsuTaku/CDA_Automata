@@ -121,7 +121,7 @@ void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
         auto transIndex = trans / PlainFSA::kTransSize;
         if (str_dict_.isLabelSource(transIndex)) {
             set_has_label(child_index);
-            set_label_number_(child_index, str_dict_.startPos(transIndex));
+            set_label_index_(child_index, str_dict_.startPos(transIndex));
             
             auto labelTrans = trans;
             str_dict_.traceOnLabel(labelTrans / PlainFSA::kTransSize);

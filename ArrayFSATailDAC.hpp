@@ -42,7 +42,7 @@ namespace array_fsa {
             // TODO: DAC
             for (size_t size = 1, index = trans; size < next_size_; size++) {
                 auto &unit = dac_next_units_[size - 1];
-                if (!unit.get(index)) {
+                if (!unit.getBit(index)) {
                     break;
                 }
                 next |= unit.getByte(index) << (8 * size);
@@ -62,7 +62,7 @@ namespace array_fsa {
                 unit.setBit(index, true);
                 auto byte = (next >> (8 * size)) & mask;
                 unit.setByte(byte);
-                index = unit.numBytes() - 1;
+                index = unit.size() - 1;
             }
         }
         

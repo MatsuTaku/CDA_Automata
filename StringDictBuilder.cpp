@@ -18,8 +18,8 @@ using namespace array_fsa;
 StringDict StringDictBuilder::build(const PlainFSA& fsa) {
     StringDictBuilder builder(fsa);
     builder.makeDict();
-    builder.tailBound();
-//    builder.sortDicts();
+    builder.mergeTail();
+    builder.sortDicts();
     builder.flatStringArray();
     builder.decideTargetIndexes();
     
@@ -41,16 +41,9 @@ void StringDictBuilder::makeDict() {
 void StringDictBuilder::labelArrange(size_t state) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
-    if (first_trans == 0) {
+    if (first_trans == 0 || // last trans
+        state_map_.find(state) != state_map_.end()) {// already visited state
         return;
-    }
-    
-    {
-        auto it = state_map_.find(state);
-        if (it != state_map_.end()) {
-            // already visited state
-            return;
-        }
     }
     
     state_map_.insert(std::make_pair(state, 0));
@@ -95,7 +88,7 @@ void StringDictBuilder::saveStrDict(size_t index) {
     dict_reverse_tri_.add(revL, cur_str_dict_index_);
 }
 
-void StringDictBuilder::tailBound() {
+void StringDictBuilder::mergeTail() {
     // To protect start of 1byte zone
     sortDicts();
     
@@ -107,9 +100,10 @@ void StringDictBuilder::tailBound() {
     for (auto &dict : str_dicts_) {
         auto revL = reverseString(dict.label);
         maxRange += revL.size();
-        if (maxRange < 0x100) {
+        if (maxRange - revL.size() < 0x100) {
             // Protect start of 1byte zone
-            continue;
+            // TODO: simple
+//            continue;
         }
         auto isIncluded = dict_reverse_tri_.isIncluded(revL);
         if (isIncluded) {
@@ -173,7 +167,7 @@ void StringDictBuilder::decideTargetIndexes() {
         fsa_target_indexes_[i] = idMap[id];
     }
     
-//    showMappingOfByteSize();
+    showMappingOfByteSize();
 }
 
 // MARK: - Log

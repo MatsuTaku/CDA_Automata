@@ -13,12 +13,6 @@
 
 namespace array_fsa {
     
-    struct TransPointer {
-        size_t arc = 0;
-        bool onTheLabel = false;
-        size_t labelState = 0;
-    };
-    
     class ArrayFSATailBuilder;
     
     class ArrayFSATail : public ArrayFSA {
@@ -42,18 +36,19 @@ namespace array_fsa {
             return "ArrayTailFSA";
         }
         
-        bool translatePointer(TransPointer &pointer, uint8_t symbol) const;
+        bool lookup(const std::string &str) const;
         
         // MARK: - getter
         
         size_t get_label_index(size_t trans) const {
             size_t labelIndex = get_check_(trans);
             // TODO: DAC
+            /*
             if (dac_check_unit_.get(trans)) {
-                for (auto i = 0; i < check_size_; i++) {
-                    labelIndex |= dac_check_unit_.getByte(trans, i) << (8 * (i + 1));
-                }
+                labelIndex |= dac_check_unit_.getByte(trans) << 8;
             }
+             */
+            labelIndex |= dac_check_unit_.getByte(trans) << 8;
             return labelIndex;
         }
         
@@ -62,7 +57,8 @@ namespace array_fsa {
         }
         
         bool has_label(size_t trans) const {
-            return has_label_bits_.get(trans);
+//            return has_label_bits_.get(trans);
+            return dac_check_unit_.getBit(trans);
         }
         
         bool is_label_finish(size_t index) const {
@@ -80,19 +76,23 @@ namespace array_fsa {
         }
         
         void set_label_index(size_t trans, size_t labelIndex) {
+            if (!has_label(trans)) {
+                set_has_label(trans, true);
+            }
             size_t mask = 0xff;
             auto firstUnit = labelIndex & mask;
             set_check(trans, firstUnit);
+            /*
             auto indexSize = 0;
             while (labelIndex >> (8 * ++indexSize));
             if (indexSize > 1) {
                 dac_check_unit_.setBit(trans, true);
-                for (auto i = 1; i < check_size_ + 1; i++) {
-                    auto byte = (labelIndex >> (8 * i)) & mask;
-                    dac_check_unit_.setByte(byte);
-                }
+                auto byteLink = (labelIndex >> 8);
+                dac_check_unit_.setOverByte(byteLink);
             }
-            
+             */
+            auto byteLink = (labelIndex >> 8);
+            dac_check_unit_.setByte(byteLink);
         }
         
         void set_is_final(size_t trans, bool isFinal) {
@@ -100,7 +100,8 @@ namespace array_fsa {
         }
         
         void set_has_label(size_t trans, bool hasLabel) {
-            has_label_bits_.set(trans, hasLabel);
+//            has_label_bits_.set(trans, hasLabel);
+            dac_check_unit_.setBit(trans, hasLabel);
         }
         
         // MARK: - function
@@ -114,7 +115,7 @@ namespace array_fsa {
             check_size_ = 0;
             while ((labelSize - 1) >> (8 * ++check_size_));
             check_size_--;
-            dac_check_unit_.setByteSize(check_size_);
+            dac_check_unit_.setUnitSize(check_size_);
         }
         
         virtual void buildBits() {
@@ -141,8 +142,7 @@ namespace array_fsa {
         }
         
         size_t size_in_bytes() const override {
-            auto size = 0;
-            size += ArrayFSA::size_in_bytes();
+            auto size = ArrayFSA::size_in_bytes();
             size += is_final_bits_.size_in_bytes();
             size += has_label_bits_.size_in_bytes();
             size += size_vec(label_bytes_);
@@ -158,9 +158,7 @@ namespace array_fsa {
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
             os << "size bytes:   " << size_vec(bytes_) << endl;
-            auto dacSize = 0;
-            dacSize = dac_check_unit_.size_in_bytes();
-            os << "size dac_check_bytes:   " << dacSize << endl;
+            os << "size dac_check_bytes:   " << dac_check_unit_.size_in_bytes() << endl;
             os << "size label:   " << size_vec(label_bytes_) << endl;
         }
         
@@ -189,48 +187,35 @@ namespace array_fsa {
         
     };
     
-    inline bool ArrayFSATail::translatePointer(TransPointer &pointer, uint8_t symbol) const {
-        uint8_t check;
-        auto isLabelFinish = false;
-        if (!pointer.onTheLabel) {
-            pointer.arc = get_target_state(pointer.arc) ^ symbol;
-            if (has_label(pointer.arc)) {
-                pointer.onTheLabel = true;
-                pointer.labelState = get_label_index(pointer.arc);
-                check = label_bytes_[pointer.labelState];
-            } else {
-                check = get_check_(pointer.arc);
-            }
-        } else {
-            isLabelFinish = label_bytes_[pointer.labelState + 1] == '\0';
-            if (!isLabelFinish) {
-                pointer.labelState++;
-                check = label_bytes_[pointer.labelState];
-            } else {
-                pointer.arc = get_target_state(pointer.arc) ^ symbol;
-                if (has_label(pointer.arc)) {
-                    pointer.labelState = get_label_index(pointer.arc);
-                    check = label_bytes_[pointer.labelState];
-                } else {
-                    pointer.onTheLabel = false;
-                    check = get_check_(pointer.arc);
+    inline bool ArrayFSATail::lookup(const std::string &str) const {
+        auto begin = 0;
+        auto node = 0;
+        while (begin != str.size()) {
+            uint8_t symbol = str[begin];
+            node = get_target_state(node) ^ symbol;
+            if (!has_label(node)) {
+                auto check = get_check_(node);
+                if (symbol != check) {
+                    return false;
                 }
+                begin++;
+            } else {
+                auto labelIndex = get_label_index(node);
+                std::string label;
+                auto length = 0;
+                auto c = label_bytes_[labelIndex + length];
+                while (c != '\0') {
+                    label += c;
+                    c = label_bytes_[labelIndex + ++length];
+                }
+                auto symbols = str.substr(begin, length);
+                if (symbols != label) {
+                    return false;
+                }
+                begin += length;
             }
         }
-        auto isMatch = check == symbol;
-        if (!isMatch) {
-            auto index = get_label_index(pointer.arc);
-            std::cout << "label index: " << index << std::endl;
-            for (auto i = -10; i < 0; i++) {
-                std::cout << " ";
-            }
-            std::cout << symbol << std::endl;
-            for (auto i = -10; i < 10; i++) {
-                std::cout << label_bytes_[i + index];
-            }
-            std::cout << std::endl;
-        }
-        return isMatch;
+        return is_final_trans(node);
     }
     
 }
