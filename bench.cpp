@@ -5,6 +5,9 @@
 #include <iostream>
 
 #include "ArrayFSABuilder.hpp"
+#include "ArrayDACFSABuilder.hpp"
+#include "ArrayFSATail.hpp"
+#include "ArrayFSATailDAC.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "MorfologikFSA5.hpp"
 #include "FsaTools.hpp"
@@ -44,6 +47,7 @@ namespace {
         }
         
         size_t ok = 0, ng = 0;
+        std::vector<std::string> ngs;
         Stopwatch sw;
         
         for (const auto& str : strs) {
@@ -51,12 +55,16 @@ namespace {
                 ++ok;
             } else {
                 ++ng;
+                ngs.push_back(str);
             }
         }
         
         std::cout << "Lookup time: " << sw.get_micro_sec() / (ok + ng) << " us/query" << std::endl;
         std::cout << "OK: " << ok << std::endl;
         std::cout << "NG: " << ng << std::endl;
+        for (auto s : ngs) {
+            std::cout << s << std::endl;
+        }
         
         fsa.show_stat(std::cout);
         
@@ -66,9 +74,17 @@ namespace {
 }
 
 int main(int argc, const char* argv[]) {
-    char type = *argv[1];
-    const char* fsa_name = argv[2];
-    const char* query_name = argv[3];
+    auto type = *argv[1];
+    auto fsa_name = argv[2];
+    auto query_name = argv[3];
+
+//    auto type = '5';
+//    auto fsa_name = "../../results/wikipedia/wikipedia.array_tail_fsa";
+//    auto query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+////    auto fsa_name = "../../results/ifiles/ifiles.array_tail_fsa";
+////    auto query_name = "../../data-sets/ciura-deorowicz/ifiles.1000000.rnd_dict";
+////    auto fsa_name = "../../results/deutsch/deutsch.array_tail_dac_fsa";
+////    auto query_name = "../../data-sets/ciura-deorowicz/deutsch.1000000.rnd_dict";
     
     switch (type) {
         case '1':
@@ -77,6 +93,12 @@ int main(int argc, const char* argv[]) {
             return bench<MorfologikFSA5>(fsa_name, query_name);
         case '3':
             return bench<MorfologikCFSA2>(fsa_name, query_name);
+        case '4':
+            return bench<ArrayDACFSA>(fsa_name, query_name);
+        case '5':
+            return bench<ArrayFSATail>(fsa_name, query_name);
+        case '6':
+            return bench<ArrayFSATailDAC>(fsa_name, query_name);
         default:
             break;
     }

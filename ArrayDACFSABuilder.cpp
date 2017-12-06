@@ -1,11 +1,11 @@
 //
-//  ArrayFSABuilder.cpp
+//  ArrayDACFSABuilder.cpp
 //
 //  Created by 松本拓真 on 2017/10/18.
 //
 
 #include <stdio.h>
-#include "ArrayFSABuilder.hpp"
+#include "ArrayDACFSABuilder.hpp"
 
 #include "PlainFSA.hpp"
 
@@ -13,35 +13,36 @@ using namespace array_fsa;
 
 // MARK: - public static
 
-ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
-    ArrayFSABuilder builder(orig_fsa);
+ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
+    ArrayDACFSABuilder builder(orig_fsa);
     builder.build_();
     
     // Release
-    ArrayFSA new_fsa;
-    const auto num_elems = builder.num_elems_();
+    ArrayDACFSA new_fsa;
+    const auto num_elems = builder.bytes_.size() / kElemSize;
     
     new_fsa.calc_next_size(num_elems);
-    new_fsa.element_size_ = new_fsa.next_size_ + 1;
+    new_fsa.element_size_ = 1 + 1; // TODO: DAC
     
     new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
     
     for (size_t i = 0; i < num_elems; ++i) {
-        const auto new_offset = i * new_fsa.element_size_;
-        
-        // Set final flag to top of next bit.
-        size_t next = (builder.get_next_(i) << 1) | (builder.is_final_(i) ? 1 : 0);
-        std::memcpy(&new_fsa.bytes_[new_offset], &next, new_fsa.next_size_);
-        new_fsa.bytes_[new_offset + new_fsa.next_size_] = builder.get_check_(i);
+        // TODO: DAC
+        new_fsa.set_next(i, builder.get_next_(i));
+        if (builder.is_final_(i)) {
+            new_fsa.set_is_final(i);
+        }
+        new_fsa.set_check(i, builder.get_check_(i));
         
         if (builder.is_frozen_(i)) {
             ++new_fsa.num_trans_;
         }
     }
     
-    builder.showMapping(false);
+    new_fsa.buildBits();
     
-    showInBox(builder, new_fsa);
+    builder.showMapping(false);
+    ArrayDACFSABuilder::showInBox(builder, new_fsa);
     
     return new_fsa;
 }
@@ -49,11 +50,13 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
 
 // MARK: - public
 
-void ArrayFSABuilder::showMapping(bool show_density) {
+void ArrayDACFSABuilder::showMapping(bool show_density) {
     auto tab = "\t";
     
     std::vector<size_t> next_map;
     next_map.resize(4, 0);
+    std::vector<size_t> def_next_map;
+    def_next_map.resize(4, 0);
     std::vector<size_t> dens_map;
     const auto dens_block_size = 0x100;
     dens_map.resize(num_elems_() / dens_block_size, 0);
@@ -69,16 +72,25 @@ void ArrayFSABuilder::showMapping(bool show_density) {
             num_node = 0;
         }
         
+        auto index = get_target_index(i);
         auto next = get_next_(i);
         int size = 0;
-        while (next >> (8 * ++size - 1));
+        while (next >> (8 * ++size));
         next_map[size - 1]++;
         size = 0;
+        while (index >> (8 * ++size));
+        def_next_map[size - 1]++;
     }
     
     std::cout << "Next size mapping" << std::endl;
     std::cout << "num_elems " << num_elems_() << std::endl;
     std::cout << "\t1\t2\t3\t4\tbyte size" << std::endl;
+    for (auto num: def_next_map) {
+        auto per_num = int(double(num) / num_elems_() * 100);
+        std::cout << tab << per_num;
+    }
+    std::cout << tab << "%";
+    std::cout << std::endl;
     for (auto num: next_map) {
         auto per_num = int(double(num) / num_elems_() * 100);
         std::cout << tab << per_num;
@@ -96,21 +108,25 @@ void ArrayFSABuilder::showMapping(bool show_density) {
     }
 }
 
-void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa) {
+void ArrayDACFSABuilder::showInBox(ArrayDACFSABuilder &builder, ArrayDACFSA &fsa) {
     auto tab = "\t";
-    for (auto i = 0; i < 256; i++) {
-        //        if (bLabel != nLabel) {
-        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
-        std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.get_next_(i) << tab << fsa.get_check_(i) << std::endl;;
-        std::cout << std::endl;
-        //        }
+    for (auto i = 0; i < 0x100; i++) {
+        auto bN = builder.get_next_(i);
+        auto nN = fsa.get_next_(i);
+        if (bN != nN) {
+            std::cout << i << tab << builder.is_final_(i) << tab << bN << std::endl;
+            Rank::show_as_bytes(bN, 4);
+            std::cout << i << tab << fsa.is_final_trans(i) << tab << nN << std::endl;;
+            Rank::show_as_bytes(nN, 4);
+            std::cout << std::endl;
+        }
     }
 }
 
 
 // MARK: - private
 
-void ArrayFSABuilder::build_() {
+void ArrayDACFSABuilder::build_() {
     bytes_.reserve(static_cast<size_t>(orig_fsa_.get_num_trans() * 1.1 * kElemSize));
     
     expand_();
@@ -123,7 +139,7 @@ void ArrayFSABuilder::build_() {
     state_map_ = std::unordered_map<size_t, size_t>();
 }
 
-void ArrayFSABuilder::expand_() {
+void ArrayDACFSABuilder::expand_() {
     const auto begin = index_(bytes_.size());
     const auto end = begin + kBlockSize;
     
@@ -152,10 +168,10 @@ void ArrayFSABuilder::expand_() {
     }
 }
 
-void ArrayFSABuilder::freeze_state_(size_t index) {
+void ArrayDACFSABuilder::freeze_state_(size_t index) {
     assert(!is_frozen_(index));
     
-    set_frozen_(index, true);
+    set_frozen_(index);
     
     const auto succ = get_succ_(index);
     const auto pred = get_pred_(index);
@@ -172,7 +188,7 @@ void ArrayFSABuilder::freeze_state_(size_t index) {
     }
 }
 
-void ArrayFSABuilder::close_block_(size_t begin) {
+void ArrayDACFSABuilder::close_block_(size_t begin) {
     const auto end = begin + kBlockSize;
     
     if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
@@ -183,15 +199,15 @@ void ArrayFSABuilder::close_block_(size_t begin) {
             continue;
         }
         freeze_state_(i);
-        set_frozen_(i, false);
+        set_frozen_(i);
     }
 }
 
-void ArrayFSABuilder::arrange_(size_t state, size_t index) {
+void ArrayDACFSABuilder::arrange_(size_t state, size_t index) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
-        set_next_(index, index); // to the terminal state
+        set_next_(index, 0); // to the terminal state
         return;
     }
     
@@ -199,7 +215,7 @@ void ArrayFSABuilder::arrange_(size_t state, size_t index) {
         auto it = state_map_.find(state);
         if (it != state_map_.end()) {
             // already visited state
-            set_next_(index, it->second);
+            set_target_state_(index, it->second);
             return;
         }
     }
@@ -209,9 +225,9 @@ void ArrayFSABuilder::arrange_(size_t state, size_t index) {
         expand_();
     }
     
-    set_next_(index, next);
+    set_target_state_(index, next);
     state_map_.insert(std::make_pair(state, next));
-    set_used_next_(next, true);
+    set_used_next_(next);
     
     for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
         const auto symbol = orig_fsa_.get_trans_symbol(trans);
@@ -221,7 +237,7 @@ void ArrayFSABuilder::arrange_(size_t state, size_t index) {
         set_check_(child_index, symbol);
         
         if (orig_fsa_.is_final_trans(trans)) {
-            set_final_(child_index, true);
+            set_final_(child_index);
         }
     }
     
@@ -232,7 +248,7 @@ void ArrayFSABuilder::arrange_(size_t state, size_t index) {
 }
 
 // so-called XCHECK
-size_t ArrayFSABuilder::find_next_(size_t first_trans) const {
+size_t ArrayDACFSABuilder::find_next_(size_t first_trans) const {
     const auto symbol = orig_fsa_.get_trans_symbol(first_trans);
     
     if (unfrozen_head_ != 0) {
@@ -249,13 +265,13 @@ size_t ArrayFSABuilder::find_next_(size_t first_trans) const {
     return index_(bytes_.size()) ^ symbol;
 }
 
-bool ArrayFSABuilder::check_next_(size_t next, size_t trans) const {
+bool ArrayDACFSABuilder::check_next_(size_t next, size_t trans) const {
     if (is_used_next_(next)) {
         return false;
     }
     
     do {
-        const auto index = next ^orig_fsa_.get_trans_symbol(trans);
+        const auto index = next ^ orig_fsa_.get_trans_symbol(trans);
         if (is_frozen_(index)) {
             return false;
         }
@@ -264,3 +280,4 @@ bool ArrayFSABuilder::check_next_(size_t next, size_t trans) const {
     
     return true;
 }
+

@@ -9,11 +9,13 @@
 
 namespace array_fsa {
     
+    class ArrayFSABuilder;
+    
     class ArrayFSA {
         friend class ArrayFSABuilder;
     public:
         ArrayFSA() = default;
-        ~ArrayFSA() = default;
+        virtual ~ArrayFSA() = default;
         
         ArrayFSA(ArrayFSA&& rhs) noexcept : ArrayFSA() {
             this->swap(rhs);
@@ -22,6 +24,8 @@ namespace array_fsa {
             this->swap(rhs);
             return *this;
         }
+        
+        using Builder = ArrayFSABuilder;
         
         static std::string name() {
             return "ArrayFSA";
@@ -36,14 +40,26 @@ namespace array_fsa {
         }
         size_t get_trans(size_t state, uint8_t symbol) const {
             const auto trans = state ^ symbol;
-            auto is_match = get_check_(trans) == symbol;
+            auto check = get_check_(trans);
+            auto is_match = check == symbol;
+            if (!is_match) {
+                std::cout << "error" << std::endl;
+//                for (auto i = -10; i < 0; i++) {
+//                    std::cout << " ";
+//                }
+//                std::cout << "|" << std::endl;
+//                for (auto i = -10; i < 64; i++) {
+//                    std::cout << get_check_(i + trans);
+//                }
+//                std::cout << std::endl;
+            }
             return is_match ? trans : 0;
         }
         size_t get_target_state(size_t trans) const {
             return trans ^ get_next_(trans);
         }
-        bool is_final_trans(size_t trans) const {
-            return (bytes_[trans * element_size_] & 1) == 1;
+        virtual bool is_final_trans(size_t trans) const {
+            return (bytes_[offset_(trans)] & 1) != 0;
         }
         
         size_t get_num_trans() const {
@@ -53,33 +69,34 @@ namespace array_fsa {
             return bytes_.size() / element_size_;
         }
         
-        void calc_next_size(size_t num_elems) {
+        virtual void calc_next_size(size_t num_elems) {
             next_size_ = 0;
-            while (num_elems >> (8 * ++next_size_ - 1));
+            while ((num_elems - 1) >> (8 * ++next_size_ - 1));
         }
         
-        void write(std::ostream& os) const {
-            write_vec(bytes_, os);
-            write_val(next_size_, os);
-            write_val(num_trans_, os);
-        }
-        void read(std::istream& is) {
+        virtual void read(std::istream& is) {
             bytes_ = read_vec<uint8_t>(is);
             next_size_ = read_val<size_t>(is);
             element_size_ = next_size_ + 1;
             num_trans_ = read_val<size_t>(is);
         }
+        virtual void write(std::ostream& os) const {
+            write_vec(bytes_, os);
+            write_val(next_size_, os);
+            write_val(num_trans_, os);
+        }
         
-        size_t size_in_bytes() const {
+        virtual size_t size_in_bytes() const {
             return size_vec(bytes_) + sizeof(next_size_) + sizeof(num_trans_);
         }
         
-        void show_stat(std::ostream& os) const {
+        virtual void show_stat(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << get_num_trans() << endl;
             os << "#elems: " << get_num_elements() << endl;
             os << "size:   " << size_in_bytes() << endl;
+            os << "size bytes_:   " << size_vec(bytes_) << endl;
         }
         
         void swap(ArrayFSA& rhs) {
@@ -92,18 +109,19 @@ namespace array_fsa {
         ArrayFSA(const ArrayFSA&) = delete;
         ArrayFSA& operator=(const ArrayFSA&) = delete;
         
-    private:
+    protected:
         std::vector<uint8_t> bytes_;
         size_t next_size_ = 0;
         size_t element_size_ = 0;
         size_t num_trans_ = 0;
         
-        size_t get_next_(size_t trans) const { // == get_target_state
+        virtual size_t get_next_(size_t trans) const { // == get_target_state
             size_t next = 0;
             std::memcpy(&next, &bytes_[offset_(trans)], next_size_);
             return next >> 1;
         }
-        uint8_t get_check_(size_t trans) const { // == get_trans_symbol
+        
+        virtual uint8_t get_check_(size_t trans) const { // == get_trans_symbol
             return bytes_[offset_(trans) + next_size_];
         }
     };

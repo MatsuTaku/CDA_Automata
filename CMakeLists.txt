@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(array_fsa)
 
-set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++1z")
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,17 +15,34 @@ message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 set(HEADER_FILES
   ArrayFSA.hpp
   ArrayFSABuilder.hpp
+  ArrayFSATail.hpp
+  ArrayFSATailBuilder.hpp
+  ArrayFSATailDAC.hpp
+  ArrayFSATailDACBuilder.hpp
+  ArrayTri.hpp
+  ArrayDACFSA.hpp
+  ArrayDACFSABuilder.hpp
+  ArrayDACFSARank.hpp
+  Rank.hpp
   basic.hpp
   FsaTools.hpp
   MorfologikCFSA2.hpp
   MorfologikFSA5.hpp
   PlainFSA.hpp
   PlainFSABuilder.hpp
+  StringDict.hpp
+  StringDictBuilder.hpp
+  StrDictData.hpp
+  DacUnit.hpp
   )
 
 set(SOURCE_FILES
-    ArrayFSABuilder.cpp
-    PlainFSABuilder.cpp
+  ArrayFSABuilder.cpp
+  ArrayFSATailBuilder.cpp
+  ArrayFSATailDACBuilder.cpp
+  ArrayDACFSABuilder.cpp
+  PlainFSABuilder.cpp
+  StringDictBuilder.cpp
 )
 
 add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})

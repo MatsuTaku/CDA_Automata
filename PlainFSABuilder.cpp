@@ -40,7 +40,7 @@ void PlainFSABuilder::add(const std::string& str) {
     for (auto i = lcp; i < str.length(); ++i) {
         const auto trans = active_path_[i].end;
         clear_trans_(trans);
-        auto is_final = i + 1 == str.length();
+        const auto is_final = i + 1 == str.length();
         set_final_flag_(trans, is_final);
         set_symbol_(trans, str[i]);
         set_target_(trans, !is_final ? active_path_[i + 1].begin : 0);
@@ -77,7 +77,7 @@ PlainFSA PlainFSABuilder::release() {
         if (!flags[flags_target]) {
             flags[flags_target] = true;
         } else {
-            bytes_[target] |= 4;
+            set_is_multi_src_state_(target, true);
         }
         
         i += PlainFSA::kTransSize;
@@ -164,7 +164,7 @@ size_t PlainFSABuilder::allocate_state_(size_t num_trans) {
 }
 
 PlainFSABuilder::Range PlainFSABuilder::get_range_(size_t begin) const {
-    Range range{begin, begin};
+    Range range { begin, begin };
     while (!is_last_trans_(range.end)) {
         range.append_size(PlainFSA::kTransSize);
     }
@@ -177,6 +177,7 @@ void PlainFSABuilder::expand_buffers_() {
         bytes_.reserve(bytes_.capacity() + kBufferGrowthSize);
     }
 }
+
 void PlainFSABuilder::expand_active_path_(size_t len) {
     if (active_path_.size() >= len) {
         return;
@@ -185,9 +186,10 @@ void PlainFSABuilder::expand_active_path_(size_t len) {
     active_path_.resize(len);
     for (auto i = trans; i < len; ++i) {
         const auto state = allocate_state_(0x100);
-        active_path_[i] = {state, state};
+        active_path_[i] = { state, state };
     }
 }
+
 void PlainFSABuilder::expand_register_() {
     std::vector<size_t> new_register(register_.size() * 2, 0);
     const auto bucket_mask = new_register.size() - 1;
@@ -211,5 +213,3 @@ void PlainFSABuilder::expand_register_() {
     register_ = std::move(new_register);
 }
 
-    
-    

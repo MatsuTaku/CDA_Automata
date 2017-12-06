@@ -6,6 +6,7 @@
 #define ARRAY_FSA_FSATOOLS_HPP
 
 #include "basic.hpp"
+#include "ArrayFSATail.hpp"
 
 namespace array_fsa {
     
@@ -24,6 +25,35 @@ namespace array_fsa {
             
             return fsa.is_final_trans(arc);
         }
+        
+        static bool is_member(const ArrayFSATail& fsa, const std::string& str) {
+            return isMemberUsingTail(fsa, str);
+        }
+        
+        static bool is_member(const ArrayFSATailDAC& fsa, const std::string& str) {
+            return isMemberUsingTail(fsa, str);
+        }
+        
+        template <typename FSAType>
+        static bool isMemberUsingTail(const FSAType &fsa, const std::string &str) {
+            /*
+            TransPointer pointer;
+            
+            for (auto i = 0; i < str.size(); i++) {
+                if (!fsa.translatePointer(pointer, str[i])) {
+                    return false;
+                }
+            }
+            
+            auto isFinal = fsa.is_final_trans(pointer.arc);
+            auto isLabelFinish = pointer.onTheLabel ? fsa.is_label_finish(pointer.labelState) : true;
+            auto isEnd = isFinal && isLabelFinish;
+            return isEnd;
+             */
+            auto isMember = fsa.lookup(str);
+            return isMember;
+        }
+        
     };
     
 }
