@@ -8,6 +8,8 @@
 #ifndef ArrayFSATail_hpp
 #define ArrayFSATail_hpp
 
+#include "ArrayFSA.hpp"
+
 #include "Rank.hpp"
 #include "DacUnit.hpp"
 
@@ -36,7 +38,7 @@ namespace array_fsa {
             return "ArrayTailFSA";
         }
         
-        bool lookup(const std::string &str) const;
+        bool isMember(const std::string &str) const;
         
         // MARK: - getter
         
@@ -187,7 +189,7 @@ namespace array_fsa {
         
     };
     
-    inline bool ArrayFSATail::lookup(const std::string &str) const {
+    inline bool ArrayFSATail::isMember(const std::string &str) const {
         auto begin = 0;
         auto node = 0;
         while (begin != str.size()) {

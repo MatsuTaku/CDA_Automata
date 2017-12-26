@@ -42,17 +42,6 @@ namespace array_fsa {
             const auto trans = state ^ symbol;
             auto check = get_check_(trans);
             auto is_match = check == symbol;
-            if (!is_match) {
-                std::cout << "error" << std::endl;
-//                for (auto i = -10; i < 0; i++) {
-//                    std::cout << " ";
-//                }
-//                std::cout << "|" << std::endl;
-//                for (auto i = -10; i < 64; i++) {
-//                    std::cout << get_check_(i + trans);
-//                }
-//                std::cout << std::endl;
-            }
             return is_match ? trans : 0;
         }
         size_t get_target_state(size_t trans) const {

@@ -4,14 +4,15 @@
 //  Created by 松本拓真 on 2017/10/18.
 //
 
-#include <stdio.h>
 #include "ArrayFSABuilder.hpp"
 
 #include "PlainFSA.hpp"
+#include "ArrayFSA.hpp"
 
 using namespace array_fsa;
 
-// MARK: - public static
+
+// MARK: - static
 
 ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
     ArrayFSABuilder builder(orig_fsa);
@@ -70,10 +71,9 @@ void ArrayFSABuilder::showMapping(bool show_density) {
         }
         
         auto next = get_next_(i);
-        int size = 0;
+        auto size = 0;
         while (next >> (8 * ++size - 1));
         next_map[size - 1]++;
-        size = 0;
     }
     
     std::cout << "Next size mapping" << std::endl;

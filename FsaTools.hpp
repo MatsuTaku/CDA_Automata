@@ -7,6 +7,7 @@
 
 #include "basic.hpp"
 #include "ArrayFSATail.hpp"
+#include "DArrayFSA.hpp"
 
 namespace array_fsa {
     
@@ -27,31 +28,12 @@ namespace array_fsa {
         }
         
         static bool is_member(const ArrayFSATail& fsa, const std::string& str) {
-            return isMemberUsingTail(fsa, str);
-        }
-        
-        static bool is_member(const ArrayFSATailDAC& fsa, const std::string& str) {
-            return isMemberUsingTail(fsa, str);
-        }
-        
-        template <typename FSAType>
-        static bool isMemberUsingTail(const FSAType &fsa, const std::string &str) {
-            /*
-            TransPointer pointer;
-            
-            for (auto i = 0; i < str.size(); i++) {
-                if (!fsa.translatePointer(pointer, str[i])) {
-                    return false;
-                }
-            }
-            
-            auto isFinal = fsa.is_final_trans(pointer.arc);
-            auto isLabelFinish = pointer.onTheLabel ? fsa.is_label_finish(pointer.labelState) : true;
-            auto isEnd = isFinal && isLabelFinish;
-            return isEnd;
-             */
-            auto isMember = fsa.lookup(str);
+            auto isMember = fsa.isMember(str);
             return isMember;
+        }
+        
+        static bool is_member(const double_array::DArrayFSA &fsa, const std::string &str) {
+            return fsa.lookup(str);
         }
         
     };

@@ -18,10 +18,11 @@ namespace array_fsa {
             expand(1);
         }
         
-        void add(std::string &text, size_t index);
-        size_t isMember(std::string &text) const;
-        bool isIncluded(std::string &text) const;
-        size_t getOwnerIdIn(std::string &text) const;
+        void add(const std::string &text, size_t index);
+        size_t getFinishTrans(const std::string &text) const;
+        size_t isMember(const std::string &text) const;
+        bool isIncluded(const std::string &text) const;
+        size_t getOwnerIdIn(const std::string &text) const;
         
     private:
         std::vector<std::vector<size_t>> bytes_;
@@ -35,7 +36,7 @@ namespace array_fsa {
     
     // MARK: - public
     
-    inline void ArrayTri::add(std::string &text, size_t index) {
+    inline void ArrayTri::add(const std::string &text, size_t index) {
         size_t trans = 0;
         for (uint8_t c : text) {
             auto next = bytes_[trans][c];
@@ -49,7 +50,7 @@ namespace array_fsa {
         finishes_[trans] = index;
     }
     
-    inline size_t ArrayTri::isMember(std::string &text) const {
+    inline size_t ArrayTri::getFinishTrans(const std::string &text) const {
         size_t trans = 0;
         for (uint8_t c : text) {
             auto target = bytes_[trans][c];
@@ -58,18 +59,16 @@ namespace array_fsa {
             }
             trans = target;
         }
+        return trans;
+    }
+    
+    inline size_t ArrayTri::isMember(const std::string &text) const {
+        auto trans = getFinishTrans(text);
         return finishes_[trans];
     }
     
-    inline bool ArrayTri::isIncluded(std::string &text) const {
-        size_t trans = 0;
-        for (uint8_t c : text) {
-            auto target = bytes_[trans][c];
-            if (target >= bytes_.size() || checks_[target] != trans || target == 0) {
-                return false;
-            }
-            trans = target;
-        }
+    inline bool ArrayTri::isIncluded(const std::string &text) const {
+        auto trans = getFinishTrans(text);
         for (auto num : bytes_[trans]) {
             if (num != 0) {
                 return true;
@@ -78,7 +77,7 @@ namespace array_fsa {
         return false;
     }
     
-    inline size_t ArrayTri::getOwnerIdIn(std::string &text) const {
+    inline size_t ArrayTri::getOwnerIdIn(const std::string &text) const {
         size_t trans = 0;
         for (uint8_t c : text) {
             auto target = bytes_[trans][c];

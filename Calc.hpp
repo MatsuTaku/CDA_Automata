@@ -1,0 +1,41 @@
+//
+//  Calc.hpp
+//  bench
+//
+//  Created by 松本拓真 on 2017/12/10.
+//
+
+#ifndef Calc_hpp
+#define Calc_hpp
+
+#include <stdio.h>
+
+namespace double_array {
+    
+    class Calc {
+    public:
+        static size_t sizeFitInBytes(size_t value) {
+            return sizeFitInUnits(value, 8);
+        }
+        
+        static size_t sizeFitInBits(size_t value) {
+            return sizeFitInUnits(value, 1);
+        }
+        
+        static size_t sizeFitInUnits(size_t value, size_t unit);
+    };
+    
+    // MARK: - Inline function
+    
+    inline size_t Calc::sizeFitInUnits(size_t value, size_t unit) {
+        if (value == 0) {
+            return 0;
+        }
+        auto size = 0;
+        while (value >> (unit * ++size));
+        return size;
+    }
+    
+}
+
+#endif /* Calc_hpp */

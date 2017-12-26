@@ -5,42 +5,43 @@
 #ifndef ARRAY_FSA_ARRAYFSABUILDER_HPP
 #define ARRAY_FSA_ARRAYFSABUILDER_HPP
 
+#include "basic.hpp"
 #include <unordered_map>
 
-#include "ArrayFSA.hpp"
+#include "DArrayFSA.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
+    class ArrayFSA;
     class ArrayFSABuilder {
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayFSA build(const PlainFSA& orig_fsa);
+        static ArrayFSA build(const PlainFSA &orig_fsa);
+        static double_array::DArrayFSA buildD(const PlainFSA &orig_fsa, const double_array::DArrayFSAAccessoryTypes &types);
         
         static void showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa);
+        static void showInBox(ArrayFSABuilder &builder, double_array::DArrayFSA &fsa);
         
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;
         ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
         
-        
         // MARK: - Addition Matsumoto
         
         void showMapping(bool show_density);
-        // MARK: -
         
     protected:
         static constexpr size_t kBlockSize = 0x100;
         static constexpr size_t kFreeBytes = 0x10 * kBlockSize * kElemSize; // like darts-clone
         
-        const PlainFSA& orig_fsa_;
-        
+        const PlainFSA &orig_fsa_;
         std::vector<uint8_t> bytes_;
         std::unordered_map<size_t, size_t> state_map_;
         size_t unfrozen_head_ = 0;
         
-        explicit ArrayFSABuilder(const PlainFSA& orig_fsa) : orig_fsa_(orig_fsa) {}
+        explicit ArrayFSABuilder(const PlainFSA &orig_fsa) : orig_fsa_(orig_fsa) {}
         ~ArrayFSABuilder() = default;
         
         // MARK: of array
@@ -124,19 +125,15 @@ namespace array_fsa {
         // MARK: methods
         
         virtual void build_();
-        
         virtual void expand_();
-        
         void freeze_state_(size_t index);
-        
         void close_block_(size_t begin);
-        
         virtual void arrange_(size_t state, size_t index);
         
         // so-called XCHECK
         size_t find_next_(size_t first_trans) const;
-        
         bool check_next_(size_t next, size_t trans) const;
+        
     };
     
 }
