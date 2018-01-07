@@ -1,6 +1,6 @@
 //
 //  Calc.hpp
-//  bench
+//  array_fsa
 //
 //  Created by 松本拓真 on 2017/12/10.
 //
@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-namespace double_array {
+namespace array_fsa {
     
     class Calc {
     public:
@@ -24,6 +24,7 @@ namespace double_array {
         
         static size_t sizeFitInUnits(size_t value, size_t unit);
     };
+    
     
     // MARK: - Inline function
     

@@ -9,11 +9,13 @@
 #include <unordered_map>
 
 #include "DArrayFSA.hpp"
+#include "NArrayFSA.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
     class ArrayFSA;
+    
     class ArrayFSABuilder {
     public:
         static constexpr size_t kAddrSize = 4;
@@ -21,9 +23,12 @@ namespace array_fsa {
         
         static ArrayFSA build(const PlainFSA &orig_fsa);
         static double_array::DArrayFSA buildD(const PlainFSA &orig_fsa, const double_array::DArrayFSAAccessoryTypes &types);
+        static NArrayFSA buildN(const PlainFSA &orig_fsa);
         
         static void showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa);
         static void showInBox(ArrayFSABuilder &builder, double_array::DArrayFSA &fsa);
+        template <typename T>
+        static void showInBox(ArrayFSABuilder &builder, T &fsa);
         
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;
         ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;

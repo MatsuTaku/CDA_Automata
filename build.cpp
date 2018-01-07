@@ -8,7 +8,7 @@
 #include "FsaTools.hpp"
 #include "PlainFSABuilder.hpp"
 
-#include "DArrayFSA.hpp"
+#include "NArrayFSA.hpp"
 
 using namespace array_fsa;
 using namespace double_array;
@@ -45,13 +45,10 @@ namespace {
         return FSAType::Builder::build(orig_fsa);
     }
     
-    DArrayFSA getDArrayFSAFromData(const char *data_name) {
+    template <typename T>
+    T getNArrayFSAFromData(const char *data_name) {
         PlainFSA orig_fsa = getPlainFSAFromData(data_name);
-        DArrayFSAAccessoryTypes types;
-        types.nextType = NextAccessoryType::Plain;
-        types.checkType = CheckAccessoryType::NonLabel;
-        types.finalType = FinalAccessoryType::TopNext;
-        return ArrayFSABuilder::buildD(orig_fsa, types);
+        return T::Builder::buildN(orig_fsa);
     }
 	
     template <typename FSAType>
@@ -70,6 +67,21 @@ namespace {
         }
     }
     
+    template <typename T>
+    void checkWrite(T &fsa, const char *dataName, const char *fsaName, std::ofstream &ofs) {
+        std::cout << "Test for membership" << std::endl;
+        checkFsaHasMember<T>(fsa, dataName);
+        
+        std::cout << "Write FSA into " << fsaName << std::endl;
+        fsa.write(ofs);
+    }
+    
+    template <typename T>
+    void buildTest(const char *dataName, const char *fsaName, std::ofstream &ofs) {
+        T fsa = getArrayFSAFromData<T>(dataName);
+        checkWrite(fsa, dataName, fsaName, ofs);
+    }
+    
 }
 
 int main(int argc, const char *argv[]) {
@@ -77,15 +89,9 @@ int main(int argc, const char *argv[]) {
     auto fsa_name = argv[2];
     auto fsa_type = *argv[3];
     
-////    data_name = "../../data-sets/ciura-deorowicz/files.dict";
-////    fsa_name = "../../results/files/files.array_tail_fsa";
-////    data_name = "../../data-sets/ciura-deorowicz/dimacs.dict";
-////    fsa_name = "../../results/dimacs/dimacs.array_tail_fsa";
 //    data_name = "../../data-sets/weiss/wikipedia.dict";
-//    fsa_name = "../../results/wikipedia/wikipedia.d_array_fsa";
-////    data_name = "../../data-sets/weiss/wikipedia2.dict";
-////    fsa_name = "../../results/wikipedia2/wikipedia2.array_tail_fsa";
-//    fsa_type = '0';
+//    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa";
+//    fsa_type = '5';
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
@@ -97,39 +103,16 @@ int main(int argc, const char *argv[]) {
     
     try {
         if (fsa_type == '0') {
-            ArrayFSA fsa = getArrayFSAFromData<ArrayFSA>(data_name);
-            std::cout << "Test for membership" << std::endl;
-            checkFsaHasMember<ArrayFSA>(fsa, data_name);
-            
-            std::cout << "Write FSA into " << fsa_name << std::endl;
-            fsa.write(ofs);
+            buildTest<ArrayFSA>(data_name, fsa_name, ofs);
         } else if (fsa_type == '1') {
-            ArrayDACFSA fsa = getArrayFSAFromData<ArrayDACFSA>(data_name);
-            std::cout << "Test for membership" << std::endl;
-            checkFsaHasMember<ArrayDACFSA>(fsa, data_name);
-            
-            std::cout << "Write FSA into " << fsa_name << std::endl;
-            fsa.write(ofs);
+            buildTest<ArrayDACFSA>(data_name, fsa_name, ofs);
         } else if (fsa_type == '2') {
-            ArrayFSATail fsa = getArrayFSAFromData<ArrayFSATail>(data_name);
-            std::cout << "Test for membership" << std::endl;
-            checkFsaHasMember<ArrayFSATail>(fsa, data_name);
-            
-            std::cout << "Write FSA into " << fsa_name << std::endl;
-            fsa.write(ofs);
+            buildTest<ArrayFSATail>(data_name, fsa_name, ofs);
         } else if (fsa_type == '3') {
-            ArrayFSATailDAC fsa = getArrayFSAFromData<ArrayFSATailDAC>(data_name);
-            std::cout << "Test for membership" << std::endl;
-            checkFsaHasMember<ArrayFSATailDAC>(fsa, data_name);
-            
-            std::cout << "Write FSA into " << fsa_name << std::endl;
-            fsa.write(ofs);
-        } else if (fsa_type == '4') {
-            DArrayFSA fsa = getDArrayFSAFromData(data_name);
-            std::cout << "Test for membership" << std::endl;
-            checkFsaHasMember<DArrayFSA>(fsa, data_name);
-            std::cout << "Write FSA into " << fsa_name << std::endl;
-            fsa.write(ofs);
+            buildTest<ArrayFSATailDAC>(data_name, fsa_name, ofs);
+        } else if (fsa_type == '5') {
+            NArrayFSA fsa = getNArrayFSAFromData<NArrayFSA>(data_name);
+            checkWrite(fsa, data_name, fsa_name, ofs);
         }
     } catch (DataNotFoundException e) {
         std::cerr << "Error open " << e.data_name_ << std::endl;

@@ -34,6 +34,10 @@ set(HEADER_FILES
   StringDictBuilder.hpp
   StrDictData.hpp
   DacUnit.hpp
+  FitValuesArray.hpp
+  ByteData.hpp
+  NArrayFSA.hpp
+  Calc.hpp
   )
 
 set(SOURCE_FILES
@@ -43,20 +47,9 @@ set(SOURCE_FILES
   ArrayDACFSABuilder.cpp
   PlainFSABuilder.cpp
   StringDictBuilder.cpp
+  NArrayFSABuilder.cpp
 )
 
-set(DA_HEADER_FILES
-  DArrayFSABuilder.cpp
-  DArrayFSA.hpp
-  DArrayFSAFrame.hpp
-  Accessory.hpp
-  NextAccessory.hpp
-  CheckAccessory.hpp
-  FinalAccessory.hpp
-  LookupAccessory.hpp
-  Calc.hpp
-)
-
-add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES} ${DA_HEADER_FILES})
-add_executable(bench bench.cpp ${SOURCE_FILES} ${HEADER_FILES} ${DA_HEADER_FILES})
-add_executable(build build.cpp ${SOURCE_FILES} ${HEADER_FILES} ${DA_HEADER_FILES})
+add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(bench bench.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(build build.cpp ${SOURCE_FILES} ${HEADER_FILES})

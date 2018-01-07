@@ -7,13 +7,13 @@
 
 #include "basic.hpp"
 #include "ArrayFSATail.hpp"
-#include "DArrayFSA.hpp"
+#include "NArrayFSA.hpp"
 
 namespace array_fsa {
     
     struct FsaTools {
-        template <typename FsaType>
-        static bool is_member(const FsaType& fsa, const std::string& str) {
+        template <typename FSA_TYPE>
+        static bool is_member(const FSA_TYPE &fsa, const std::string &str) {
             size_t state = fsa.get_root_state(), arc = 0;
             
             for (char c : str) {
@@ -27,13 +27,12 @@ namespace array_fsa {
             return fsa.is_final_trans(arc);
         }
         
-        static bool is_member(const ArrayFSATail& fsa, const std::string& str) {
-            auto isMember = fsa.isMember(str);
-            return isMember;
+        static bool is_member(const ArrayFSATail &fsa, const std::string &str) {
+            return fsa.isMember(str);
         }
         
-        static bool is_member(const double_array::DArrayFSA &fsa, const std::string &str) {
-            return fsa.lookup(str);
+        static bool is_member(const NArrayFSA &fsa, const std::string &str) {
+            return fsa.isMember(str);
         }
         
     };

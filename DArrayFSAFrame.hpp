@@ -119,7 +119,7 @@ namespace double_array {
         }
         
         void calcNextSize(size_t numElems) {
-            next_size_ = Calc::sizeFitInBytes(numElems);
+            next_size_ = array_fsa::Calc::sizeFitInBytes(numElems);
         }
         
         size_t getNextSize() const {

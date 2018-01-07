@@ -13,6 +13,7 @@
 #include "FsaTools.hpp"
 
 #include "DArrayFSA.hpp"
+#include "NArrayFSA.hpp"
 
 using namespace array_fsa;
 
@@ -20,7 +21,7 @@ namespace {
     
     template <typename FsaType>
     int bench(const char* fsa_name, const char* query_name) {
-//        std::cout << "Bench " << FsaType::name() << " from " << fsa_name << std::endl;
+        std::cout << "Bench " << FsaType::name() << " from " << fsa_name << std::endl;
         
         FsaType fsa;
         {
@@ -55,6 +56,7 @@ namespace {
         
         for (const auto& str : strs) {
             if (FsaTools::is_member(fsa, str)) {
+//                std::cout << str << std::endl;
                 ++ok;
                 chars += str.length();
             } else {
@@ -79,17 +81,13 @@ namespace {
 }
 
 int main(int argc, const char* argv[]) {
-    auto type = *argv[1];
-    auto fsa_name = argv[2];
-    auto query_name = argv[3];
+    auto fsa_name = argv[1];
+    auto query_name = argv[2];
+    auto type = *argv[3];
 
-//    auto type = '7';
-//    auto fsa_name = "../../results/wikipedia/wikipedia.d_array_fsa";
-//    auto query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
-////    auto fsa_name = "../../results/ifiles/ifiles.array_tail_fsa";
-////    auto query_name = "../../data-sets/ciura-deorowicz/ifiles.1000000.rnd_dict";
-////    auto fsa_name = "../../results/deutsch/deutsch.array_tail_dac_fsa";
-////    auto query_name = "../../data-sets/ciura-deorowicz/deutsch.1000000.rnd_dict";
+//    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa";
+//    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+//    type = '8';
     
     switch (type) {
         case '1':
@@ -104,8 +102,8 @@ int main(int argc, const char* argv[]) {
             return bench<ArrayFSATail>(fsa_name, query_name);
         case '6':
             return bench<ArrayFSATailDAC>(fsa_name, query_name);
-        case '7':
-            return bench<double_array::DArrayFSA>(fsa_name, query_name);
+        case '8':
+            return bench<NArrayFSA>(fsa_name, query_name);
         default:
             break;
     }
