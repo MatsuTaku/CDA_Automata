@@ -17,10 +17,10 @@ namespace array_fsa {
         friend class ArrayDACFSABuilder;
         
     public:
+        using Builder = ArrayDACFSABuilder;
+        
         ArrayDACFSA() = default;
         ~ArrayDACFSA() = default;
-        
-        using Builder = ArrayDACFSABuilder;
         
         ArrayDACFSA(ArrayDACFSA&& rhs) noexcept : ArrayDACFSA() {
             this->swap(rhs);
@@ -36,6 +36,20 @@ namespace array_fsa {
         
         size_t offset_(size_t trans) const {
             return trans * element_size_;
+        }
+        
+        bool isMember(const std::string &str) const {
+            size_t state = get_root_state(), arc = 0;
+            
+            for (char c : str) {
+                arc = get_trans(state, static_cast<uint8_t>(c));
+                if (arc == 0) {
+                    return false;
+                }
+                state = get_target_state(arc);
+            }
+            
+            return is_final_trans(arc);
         }
         
         size_t get_root_state() const {

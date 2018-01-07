@@ -13,7 +13,8 @@
 
 using namespace array_fsa;
 
-NArrayFSA ArrayFSABuilder::buildN(const PlainFSA &orig_fsa) {
+template<>
+NArrayFSA ArrayFSABuilder::build<NArrayFSA>(const PlainFSA &orig_fsa) {
     ArrayFSABuilder builder(orig_fsa);
     builder.build_();
     
@@ -27,9 +28,7 @@ NArrayFSA ArrayFSABuilder::buildN(const PlainFSA &orig_fsa) {
     
     auto numTrans = 0;
     for (size_t i = 0; i < numElems; ++i) {
-//        newFsa.setNext(i, builder.get_next_(i));
         newFsa.setCheck(i, builder.get_check_(i));
-//        newFsa.setIsFinal(i, builder.is_final_(i));
         newFsa.setNextAndFinal(i, builder.get_next_(i), builder.is_final_(i));
         
         if (builder.is_frozen_(i)) {
@@ -43,7 +42,8 @@ NArrayFSA ArrayFSABuilder::buildN(const PlainFSA &orig_fsa) {
     return newFsa;
 }
 
-NArrayFSADACs ArrayFSABuilder::buildND(const PlainFSA &orig_fsa) {
+template<>
+NArrayFSADACs ArrayFSABuilder::build<NArrayFSADACs>(const PlainFSA &orig_fsa) {
     ArrayFSABuilder builder(orig_fsa);
     builder.build_();
     
@@ -73,14 +73,14 @@ NArrayFSADACs ArrayFSABuilder::buildND(const PlainFSA &orig_fsa) {
     return newFsa;
 }
 
-template <typename T>
+template <class T>
 void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 0x100; i++) {
         std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
         std::cout << i << tab << fsa.isFinal(i) << tab << fsa.getNext(i) << tab << fsa.getCheck(i) << std::endl;;
-        Rank::show_as_bytes(builder.get_next_(i), 4);
-        Rank::show_as_bytes(fsa.getNext(i), 4);
+//        Rank::show_as_bytes(builder.get_next_(i), 4);
+//        Rank::show_as_bytes(fsa.getNext(i), 4);
         std::cout << std::endl;
     }
 }

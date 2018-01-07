@@ -9,7 +9,6 @@
 #define ArrayFSA_TailBuilder_hpp
 
 #include "ArrayFSABuilder.hpp"
-#include "ArrayFSATail.hpp"
 #include "Rank.hpp"
 #include "StringDict.hpp"
 
@@ -24,10 +23,11 @@ namespace array_fsa {
         
         ArrayFSATailBuilder(const PlainFSA& orig_fsa) : ArrayFSABuilder(orig_fsa) {}
         
-        static ArrayFSATail build(const PlainFSA& orig_fsa);
-        static NArrayFSATextEdge buildN(const PlainFSA& orig_fsa);
+        template <class T>
+        static T build(const PlainFSA& orig_fsa);
         
-        static void showInBox(ArrayFSATailBuilder &builder, ArrayFSATail &fsa);
+        template <typename T>
+        static void showInBox(ArrayFSATailBuilder &builder, T &fsa);
         
     protected:
         StringDict str_dict_;

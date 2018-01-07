@@ -8,8 +8,6 @@
 #include "basic.hpp"
 #include <unordered_map>
 
-#include "DArrayFSA.hpp"
-
 namespace array_fsa {
     
     class PlainFSA;
@@ -22,14 +20,10 @@ namespace array_fsa {
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayFSA build(const PlainFSA &orig_fsa);
-        static double_array::DArrayFSA buildD(const PlainFSA &orig_fsa, const double_array::DArrayFSAAccessoryTypes &types);
-        static NArrayFSA buildN(const PlainFSA &orig_fsa);
-        static NArrayFSADACs buildND(const PlainFSA &orig_fsa);
+        template <class T>
+        static T build(const PlainFSA &origFsa);
         
-        static void showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa);
-        static void showInBox(ArrayFSABuilder &builder, double_array::DArrayFSA &fsa);
-        template <typename T>
+        template <class T>
         static void showInBox(ArrayFSABuilder &builder, T &fsa);
         
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;

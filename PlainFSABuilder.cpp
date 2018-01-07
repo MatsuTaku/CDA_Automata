@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include "PlainFSABuilder.hpp"
 
+#include "PlainFSA.hpp"
+
 using namespace array_fsa;
 
 // MARK: - constructor

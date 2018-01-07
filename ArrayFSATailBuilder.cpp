@@ -8,6 +8,7 @@
 #include "ArrayFSATailBuilder.hpp"
 
 #include "PlainFSA.hpp"
+#include "ArrayFSATail.hpp"
 #include "StringDictBuilder.hpp"
 #include "StringDict.hpp"
 
@@ -15,7 +16,8 @@ using namespace array_fsa;
 
 // MARK: - public static
 
-ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
+template <>
+ArrayFSATail ArrayFSATailBuilder::build<ArrayFSATail>(const PlainFSA& orig_fsa) {
     ArrayFSATailBuilder builder(orig_fsa);
     builder.build_();
     
@@ -56,7 +58,8 @@ ArrayFSATail ArrayFSATailBuilder::build(const PlainFSA& orig_fsa) {
     return new_fsa;
 }
 
-void ArrayFSATailBuilder::showInBox(ArrayFSATailBuilder &builder, ArrayFSATail &fsa) {
+template <>
+void ArrayFSATailBuilder::showInBox<ArrayFSATail>(ArrayFSATailBuilder &builder, ArrayFSATail &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 256; i++) {
         auto nLabel = fsa.has_label(i) ? fsa.get_label_index(i) : fsa.get_check_(i);

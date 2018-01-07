@@ -9,6 +9,7 @@
 #define ArrayFSATailDAC_hpp
 
 #include "ArrayFSATail.hpp"
+
 #include "DacUnit.hpp"
 
 namespace array_fsa {

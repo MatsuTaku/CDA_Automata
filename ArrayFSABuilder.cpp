@@ -14,7 +14,8 @@ using namespace array_fsa;
 
 // MARK: - static
 
-ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
+template <>
+ArrayFSA ArrayFSABuilder::build<ArrayFSA>(const PlainFSA& orig_fsa) {
     ArrayFSABuilder builder(orig_fsa);
     builder.build_();
     
@@ -45,6 +46,18 @@ ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
 //    showInBox(builder, new_fsa);
     
     return new_fsa;
+}
+
+template <>
+void ArrayFSABuilder::showInBox<ArrayFSA>(ArrayFSABuilder &builder, ArrayFSA &fsa) {
+    auto tab = "\t";
+    for (auto i = 0; i < 256; i++) {
+        //        if (bLabel != nLabel) {
+        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
+        std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.get_next_(i) << tab << fsa.get_check_(i) << std::endl;;
+        std::cout << std::endl;
+        //        }
+    }
 }
 
 
@@ -93,17 +106,6 @@ void ArrayFSABuilder::showMapping(bool show_density) {
             std::cout << tab << double(dens_map[i]) / 10 << "%";
         }
         std::cout << std::endl;
-    }
-}
-
-void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa) {
-    auto tab = "\t";
-    for (auto i = 0; i < 256; i++) {
-        //        if (bLabel != nLabel) {
-        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
-        std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.get_next_(i) << tab << fsa.get_check_(i) << std::endl;;
-        std::cout << std::endl;
-        //        }
     }
 }
 

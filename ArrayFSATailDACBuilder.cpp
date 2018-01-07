@@ -6,11 +6,13 @@
 //
 
 #include "ArrayFSATailDACBuilder.hpp"
+
 #include "ArrayFSATailDAC.hpp"
 
 using namespace array_fsa;
 
-ArrayFSATailDAC ArrayFSATailDACBuilder::build(const PlainFSA &orig_fsa) {
+template <>
+ArrayFSATailDAC ArrayFSATailDACBuilder::build<ArrayFSATailDAC>(const PlainFSA &orig_fsa) {
     ArrayFSATailDACBuilder builder(orig_fsa);
     builder.build_();
     

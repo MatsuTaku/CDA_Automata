@@ -16,6 +16,7 @@
 namespace array_fsa {
     
     class DACs : ByteData {
+        friend class NArrayFSATextEdge;
     public:
         DACs() = default;
         ~DACs() = default;
@@ -68,14 +69,21 @@ namespace array_fsa {
             return (size_t(1) << (8 * unit_size_)) - 1;
         }
         
+        void useLink(bool use) {
+            use_link_ = use;
+        }
+        
         void setValue(size_t index, size_t value) {
             auto mask = getMask();
+            auto depth = 0;
             for (auto &unit : units_) {
-                if (value == 0) break;
+                if (value == 0 && (!use_link_ || depth > 0)) break;
                 unit.setBit(index, true);
                 unit.setByte(value & mask);
                 index = unit.size() - 1;
                 value >>= (8 * unit_size_);
+                
+                depth++;
             }
         }
         
@@ -117,6 +125,7 @@ namespace array_fsa {
         uint8_t unit_size_ = 1;
         size_t num_units_ = 0;
         std::vector<DacUnit> units_ = {};
+        bool use_link_ = false;
     };
     
 }

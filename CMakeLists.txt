@@ -14,15 +14,12 @@ message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
 set(HEADER_FILES
   ArrayFSA.hpp
+  NArrayFSA.hpp
+  NArrayFSADACs.hpp
+  NArrayFSATextEdge.hpp
   ArrayFSABuilder.hpp
-  ArrayFSATail.hpp
   ArrayFSATailBuilder.hpp
-  ArrayFSATailDAC.hpp
-  ArrayFSATailDACBuilder.hpp
   ArrayTri.hpp
-  ArrayDACFSA.hpp
-  ArrayDACFSABuilder.hpp
-  ArrayDACFSARank.hpp
   Rank.hpp
   basic.hpp
   FsaTools.hpp
@@ -33,25 +30,20 @@ set(HEADER_FILES
   StringDict.hpp
   StringDictBuilder.hpp
   StrDictData.hpp
+  DACs.hpp
   DacUnit.hpp
   FitValuesArray.hpp
   ByteData.hpp
-  NArrayFSA.hpp
-  NArrayFSADACs.hpp
-  NArrayFSATextEdge.hpp
   Calc.hpp
-DACs.hpp
   )
 
 set(SOURCE_FILES
   ArrayFSABuilder.cpp
+  NArrayFSABuilder.cpp
   ArrayFSATailBuilder.cpp
-  ArrayFSATailDACBuilder.cpp
-  ArrayDACFSABuilder.cpp
+  NArrayFSATextEdgeBuilder.cpp
   PlainFSABuilder.cpp
   StringDictBuilder.cpp
-  NArrayFSABuilder.cpp
-  NArrayFSATextEdgeBuilder.cpp
 )
 
 add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})

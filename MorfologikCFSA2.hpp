@@ -18,6 +18,20 @@ namespace array_fsa {
             return "MorfologikCFSA2";
         }
         
+        bool isMember(const std::string &str) const {
+            size_t state = get_root_state(), arc = 0;
+            
+            for (char c : str) {
+                arc = get_trans(state, static_cast<uint8_t>(c));
+                if (arc == 0) {
+                    return false;
+                }
+                state = get_target_state(arc);
+            }
+            
+            return is_final_trans(arc);
+        }
+        
         size_t get_root_state() const {
             return get_dest_state_offset_(get_first_trans(0));
         }

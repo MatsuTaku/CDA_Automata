@@ -8,9 +8,9 @@
 #define ArrayFSATailDACBuilder_hpp
 
 #include "ArrayFSATailBuilder.hpp"
-#include "ArrayFSATailDAC.hpp"
 
 namespace array_fsa {
+    
     class PlainFSA;
     
     class ArrayFSATailDACBuilder : public ArrayFSATailBuilder {
@@ -19,7 +19,8 @@ namespace array_fsa {
         
         ArrayFSATailDACBuilder(const PlainFSA& orig_fsa) : ArrayFSATailBuilder(orig_fsa) {}
         
-        static ArrayFSATailDAC build(const PlainFSA& orig_fsa);
+        template <class T>
+        static T build(const PlainFSA& orig_fsa);
         
     };
     

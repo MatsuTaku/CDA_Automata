@@ -8,12 +8,14 @@
 #include "ArrayDACFSABuilder.hpp"
 
 #include "PlainFSA.hpp"
+#include "ArrayDACFSA.hpp"
 
 using namespace array_fsa;
 
 // MARK: - public static
 
-ArrayDACFSA ArrayDACFSABuilder::build(const PlainFSA& orig_fsa) {
+template <>
+ArrayDACFSA ArrayDACFSABuilder::build<ArrayDACFSA>(const PlainFSA& orig_fsa) {
     ArrayDACFSABuilder builder(orig_fsa);
     builder.build_();
     

@@ -131,8 +131,8 @@ void StringDictBuilder::setIncludedOwner(StrDictData &dict) {
     owner.counter += dict.counter + 1;
 }
 
+// Sort as Descending order to time of access to stringDict.
 void StringDictBuilder::sortDicts() {
-    // Sort as Descending order to time of access to stringDict.
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](const StrDictData &lhs, const StrDictData &rhs) {
         return lhs.isIncluded != rhs.isIncluded ?
         lhs.isIncluded < rhs.isIncluded :

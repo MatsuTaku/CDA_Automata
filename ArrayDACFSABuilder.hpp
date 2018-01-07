@@ -5,19 +5,20 @@
 #ifndef ARRAY_FSA_ArrayDACFSABUILDER_HPP
 #define ARRAY_FSA_ArrayDACFSABUILDER_HPP
 
+#include "basic.hpp"
 #include <unordered_map>
-
-#include "ArrayDACFSA.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
+    class ArrayDACFSA;
     class ArrayDACFSABuilder {
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayDACFSA build(const PlainFSA& orig_fsa);
+        template <class T>
+        static T build(const PlainFSA& orig_fsa);
         
         ArrayDACFSABuilder(const ArrayDACFSABuilder&) = delete;
         ArrayDACFSABuilder& operator=(const ArrayDACFSABuilder&) = delete;
