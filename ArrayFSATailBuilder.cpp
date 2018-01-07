@@ -8,66 +8,10 @@
 #include "ArrayFSATailBuilder.hpp"
 
 #include "PlainFSA.hpp"
-#include "ArrayFSATail.hpp"
 #include "StringDictBuilder.hpp"
 #include "StringDict.hpp"
 
 using namespace array_fsa;
-
-// MARK: - public static
-
-template <>
-ArrayFSATail ArrayFSATailBuilder::build<ArrayFSATail>(const PlainFSA& orig_fsa) {
-    ArrayFSATailBuilder builder(orig_fsa);
-    builder.build_();
-    
-    // Release
-    ArrayFSATail new_fsa;
-    const auto num_elems = builder.num_elems_();
-    
-    new_fsa.calc_next_size(num_elems);
-    new_fsa.element_size_ = new_fsa.next_size_ + 1;
-    
-    new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
-    
-    new_fsa.label_bytes_ = builder.str_dict_.get_label_bytes();
-    new_fsa.calc_check_size(new_fsa.label_bytes_.size());
-    
-    for (size_t i = 0; i < num_elems; ++i) {
-        size_t next = i ^ builder.get_target_state_(i);
-        new_fsa.set_next(i, next);
-        auto hasLabel = builder.has_label(i);
-        if (!hasLabel) {
-            new_fsa.set_check(i, builder.get_check_(i));
-        } else {
-            new_fsa.set_label_index(i, builder.get_label_number(i));
-        }
-        new_fsa.set_is_final(i, builder.is_final_(i));
-        new_fsa.set_has_label(i, hasLabel);
-        
-        if (builder.is_frozen_(i)) {
-            ++new_fsa.num_trans_;
-        }
-    }
-    new_fsa.buildBits();
-    
-    builder.showMapping(false);
-
-//    showInBox(builder, new_fsa);
-    
-    return new_fsa;
-}
-
-template <>
-void ArrayFSATailBuilder::showInBox<ArrayFSATail>(ArrayFSATailBuilder &builder, ArrayFSATail &fsa) {
-    auto tab = "\t";
-    for (auto i = 0; i < 256; i++) {
-        auto nLabel = fsa.has_label(i) ? fsa.get_label_index(i) : fsa.get_check_(i);
-        std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.has_label(i) << tab << fsa.get_next_(i) << tab << nLabel << std::endl;;
-        Rank::show_as_bytes(nLabel, 4);
-        std::cout << std::endl;
-    }
-}
 
 
 // MARK: - private

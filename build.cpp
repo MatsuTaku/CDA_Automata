@@ -4,9 +4,6 @@
 #include "FsaTools.hpp"
 
 #include "ArrayFSA.hpp"
-#include "ArrayDACFSA.hpp"
-#include "ArrayFSATail.hpp"
-#include "ArrayFSATailDAC.hpp"
 #include "NArrayFSA.hpp"
 #include "NArrayFSADACs.hpp"
 #include "NArrayFSATextEdge.hpp"
@@ -52,12 +49,6 @@ int main(int argc, const char *argv[]) {
     switch (fsa_type) {
         case '0':
             return buildFSA<ArrayFSA>(data_name, fsa_name);
-        case '1':
-            return buildFSA<ArrayDACFSA>(data_name, fsa_name);
-        case '2':
-            return buildFSA<ArrayFSATail>(data_name, fsa_name);
-        case '3':
-            return buildFSA<ArrayFSATailDAC>(data_name, fsa_name);
         case '4':
             return buildFSA<NArrayFSA>(data_name, fsa_name);
         case '5':

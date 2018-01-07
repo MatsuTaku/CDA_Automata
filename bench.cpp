@@ -8,9 +8,6 @@
 #include "MorfologikFSA5.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "ArrayFSA.hpp"
-#include "ArrayDACFSA.hpp"
-#include "ArrayFSATail.hpp"
-#include "ArrayFSATailDAC.hpp"
 #include "NArrayFSA.hpp"
 #include "NArrayFSADACs.hpp"
 #include "NArrayFSATextEdge.hpp"
@@ -58,12 +55,6 @@ int main(int argc, const char* argv[]) {
             return bench<MorfologikFSA5>(fsa_name, query_name);
         case '2':
             return bench<MorfologikCFSA2>(fsa_name, query_name);
-        case '3':
-            return bench<ArrayDACFSA>(fsa_name, query_name);
-        case '4':
-            return bench<ArrayFSATail>(fsa_name, query_name);
-        case '5':
-            return bench<ArrayFSATailDAC>(fsa_name, query_name);
         case '6':
             return bench<NArrayFSA>(fsa_name, query_name);
         case '7':

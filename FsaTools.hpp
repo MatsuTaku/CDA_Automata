@@ -10,8 +10,6 @@
 #include "PlainFSABuilder.hpp"
 #include "ArrayFSABuilder.hpp"
 #include "ArrayFSATailBuilder.hpp"
-#include "ArrayDACFSABuilder.hpp"
-#include "ArrayFSATailDACBuilder.hpp"
 
 namespace array_fsa {
     
