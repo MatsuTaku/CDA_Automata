@@ -1,12 +1,12 @@
 //
-//  NArrayFSA.hpp
+//  NArrayFSATextEdge.hpp
 //  bench
 //
-//  Created by 松本拓真 on 2018/01/05.
+//  Created by 松本拓真 on 2018/01/07.
 //
 
-#ifndef NArrayFSA_hpp
-#define NArrayFSA_hpp
+#ifndef NArrayFSATextEdge_hpp
+#define NArrayFSATextEdge_hpp
 
 #include "ByteData.hpp"
 
@@ -16,31 +16,31 @@ namespace array_fsa {
     
     class ArrayFSABuilder;
     
-    class NArrayFSA : ByteData {
+    class NArrayFSATextEdge : ByteData {
         friend class ArrayFSABuilder;
     public:
-        using Builder = ArrayFSABuilder;
+        using Builder = ArrayFSATailBuilder;
         
         // MARK: Constructor
         
-        NArrayFSA() = default;
-        ~NArrayFSA() = default;
+        NArrayFSATextEdge() = default;
+        ~NArrayFSATextEdge() = default;
         
-        NArrayFSA(NArrayFSA&& rhs) noexcept : NArrayFSA() {
+        NArrayFSATextEdge(NArrayFSATextEdge&& rhs) noexcept : NArrayFSATextEdge() {
             this->swap(rhs);
         }
-        NArrayFSA& operator=(NArrayFSA&& rhs) noexcept {
+        NArrayFSATextEdge& operator=(NArrayFSATextEdge&& rhs) noexcept {
             this->swap(rhs);
             return *this;
         }
         
-        NArrayFSA(const NArrayFSA&) = delete;
-        NArrayFSA& operator=(const NArrayFSA&) = delete;
+        NArrayFSATextEdge(const NArrayFSATextEdge&) = delete;
+        NArrayFSATextEdge& operator=(const NArrayFSATextEdge&) = delete;
         
         // MARK: - Function
         
         static std::string name() {
-            return "NArrayFSA";
+            return "NArrayFSATextEdge";
         }
         
         bool isMember(const std::string &str) const {
@@ -137,7 +137,7 @@ namespace array_fsa {
             num_trans_ = read_val<size_t>(is);
         }
         
-        void swap(NArrayFSA &rhs) {
+        void swap(NArrayFSATextEdge &rhs) {
             byte_array_.swap(rhs.byte_array_);
             std::swap(num_trans_, rhs.num_trans_);
         }
@@ -150,4 +150,5 @@ namespace array_fsa {
     
 }
 
-#endif /* NArrayFSA_hpp */
+#endif /* NArrayFSATextEdge_hpp *///
+

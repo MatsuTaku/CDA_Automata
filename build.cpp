@@ -9,6 +9,8 @@
 #include "PlainFSABuilder.hpp"
 
 #include "NArrayFSA.hpp"
+#include "NArrayFSADACs.hpp"
+#include "NArrayFSATextEdge.hpp"
 
 using namespace array_fsa;
 using namespace double_array;
@@ -49,6 +51,11 @@ namespace {
     T getNArrayFSAFromData(const char *data_name) {
         PlainFSA orig_fsa = getPlainFSAFromData(data_name);
         return T::Builder::buildN(orig_fsa);
+    }
+    
+    NArrayFSADACs getNArrayFSADACsFromData(const char *dataName) {
+        PlainFSA origFsa = getPlainFSAFromData(dataName);
+        return NArrayFSADACs::Builder::buildND(origFsa);
     }
 	
     template <typename FSAType>
@@ -91,7 +98,7 @@ int main(int argc, const char *argv[]) {
     
 //    data_name = "../../data-sets/weiss/wikipedia.dict";
 //    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa";
-//    fsa_type = '5';
+//    fsa_type = '6';
     
     std::cout << "Build FSA from " << data_name << std::endl;
     
@@ -112,6 +119,9 @@ int main(int argc, const char *argv[]) {
             buildTest<ArrayFSATailDAC>(data_name, fsa_name, ofs);
         } else if (fsa_type == '5') {
             NArrayFSA fsa = getNArrayFSAFromData<NArrayFSA>(data_name);
+            checkWrite(fsa, data_name, fsa_name, ofs);
+        } else if (fsa_type == '6') {
+            NArrayFSADACs fsa = getNArrayFSADACsFromData(data_name);
             checkWrite(fsa, data_name, fsa_name, ofs);
         }
     } catch (DataNotFoundException e) {

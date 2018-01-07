@@ -1,46 +1,48 @@
 //
-//  NArrayFSA.hpp
+//  NArrayFSADACs.hpp
 //  bench
 //
-//  Created by 松本拓真 on 2018/01/05.
+//  Created by 松本拓真 on 2018/01/07.
 //
 
-#ifndef NArrayFSA_hpp
-#define NArrayFSA_hpp
+#ifndef NArrayFSADACs_hpp
+#define NArrayFSADACs_hpp
 
 #include "ByteData.hpp"
 
 #include "FitValuesArray.hpp"
+#include "DACs.hpp"
+#include "Rank.hpp"
 
 namespace array_fsa {
     
     class ArrayFSABuilder;
     
-    class NArrayFSA : ByteData {
+    class NArrayFSADACs : ByteData {
         friend class ArrayFSABuilder;
     public:
         using Builder = ArrayFSABuilder;
         
         // MARK: Constructor
         
-        NArrayFSA() = default;
-        ~NArrayFSA() = default;
+        NArrayFSADACs() = default;
+        ~NArrayFSADACs() = default;
         
-        NArrayFSA(NArrayFSA&& rhs) noexcept : NArrayFSA() {
+        NArrayFSADACs(NArrayFSADACs&& rhs) noexcept : NArrayFSADACs() {
             this->swap(rhs);
         }
-        NArrayFSA& operator=(NArrayFSA&& rhs) noexcept {
+        NArrayFSADACs& operator=(NArrayFSADACs&& rhs) noexcept {
             this->swap(rhs);
             return *this;
         }
         
-        NArrayFSA(const NArrayFSA&) = delete;
-        NArrayFSA& operator=(const NArrayFSA&) = delete;
+        NArrayFSADACs(const NArrayFSADACs&) = delete;
+        NArrayFSADACs& operator=(const NArrayFSADACs&) = delete;
         
         // MARK: - Function
         
         static std::string name() {
-            return "NArrayFSA";
+            return "NArrayFSADACs";
         }
         
         bool isMember(const std::string &str) const {
@@ -67,25 +69,29 @@ namespace array_fsa {
             return index ^ getNext(index);
         }
         
+        // MARK: - DACs
+        
         size_t getNext(size_t index) const {
-            return byte_array_.getValue<size_t>(index, 0) >> 1;
-        }
-        
-        uint8_t getCheck(size_t index) const {
-            return byte_array_.getValue<uint8_t>(index, 1);
-        }
-        
-        bool isFinal(size_t index) const {
-            return (byte_array_.getValue<uint8_t>(index, 0) & 1) != 0;
+            auto next = byte_array_.getValue<size_t>(index, 0);
+            return next | flows_.getValue(index) << 8;
         }
         
         void setNext(size_t index, size_t next) {
-            auto byte = next << 1 | isFinal(index);
-            byte_array_.setValue(index, 0, byte);
-            
-            if (getNext(index) != next) { // Test
-                std::cout << "Error: setNext " << index << std::endl;
+            byte_array_.setValue(index, 0, next & 0xff);
+            auto flow = next >> 8;
+            if (flow != 0) {
+                flows_.setValue(index, flow);
             }
+            
+//            if (getNext(index) != next) { // Test
+//                std::cout << "Error: setNext " << index << std::endl;
+//            }
+        }
+        
+        // MARK: -
+        
+        uint8_t getCheck(size_t index) const {
+            return byte_array_.getValue<uint8_t>(index, 1);
         }
         
         void setCheck(size_t index, uint8_t check) {
@@ -96,18 +102,12 @@ namespace array_fsa {
             }
         }
         
-        void setIsFinal(size_t index, bool isFinal) {
-            uint8_t byte = byte_array_.getValue<uint8_t>(index, 0);
-            if (isFinal)
-                byte |= 1;
-            else
-                byte &= ~1;
-            byte_array_.setValue(index, 0, byte);
+        bool isFinal(size_t index) const {
+            return final_bits_.get(index);
         }
         
-        void setNextAndFinal(size_t index, size_t next, bool isFinal) {
-            auto value = next << 1 | isFinal;
-            byte_array_.setValue(index, 0, value);
+        void setIsFinal(size_t index, bool isFinal) {
+            final_bits_.set(index, isFinal);
         }
         
         // MARK: Information
@@ -119,35 +119,47 @@ namespace array_fsa {
             os << "#elems: " << byte_array_.numElements() << endl;
             os << "size:   " << sizeInBytes() << endl;
             os << "size bytes_:   " << byte_array_.sizeBytes() << endl;
+            os << "size flows_:   " << flows_.sizeInBytes() << endl;
+            os << "size final_bits_:" << final_bits_.size_in_bytes() << endl;
         }
         
         size_t sizeInBytes() const override {
             auto size = byte_array_.sizeInBytes();
             size += sizeof(num_trans_);
+            size += flows_.sizeInBytes();
+            size += final_bits_.size_in_bytes();
             return size;
         }
         
         void write(std::ostream &os) const override {
             byte_array_.write(os);
             write_val(num_trans_, os);
+            flows_.write(os);
+            final_bits_.write(os);
         }
         
         void read(std::istream &is) override {
             byte_array_.read(is);
             num_trans_ = read_val<size_t>(is);
+            flows_.read(is);
+            final_bits_.read(is);
         }
         
-        void swap(NArrayFSA &rhs) {
+        void swap(NArrayFSADACs &rhs) {
             byte_array_.swap(rhs.byte_array_);
             std::swap(num_trans_, rhs.num_trans_);
+            flows_.swap(rhs.flows_);
+            final_bits_.swap(rhs.final_bits_);
         }
         
     private:
         FitValuesArray byte_array_;
-        size_t num_trans_;
+        size_t num_trans_ = 0;
+        DACs flows_;
+        Rank final_bits_;
         
     };
     
 }
 
-#endif /* NArrayFSA_hpp */
+#endif /* NArrayFSADACs_hpp */

@@ -16,6 +16,7 @@
 namespace array_fsa {
     
     class PlainFSATail;
+    class NArrayFSATextEdge;
     
     class ArrayFSATailBuilder : public ArrayFSABuilder {
     public:
@@ -24,6 +25,7 @@ namespace array_fsa {
         ArrayFSATailBuilder(const PlainFSA& orig_fsa) : ArrayFSABuilder(orig_fsa) {}
         
         static ArrayFSATail build(const PlainFSA& orig_fsa);
+        static NArrayFSATextEdge buildN(const PlainFSA& orig_fsa);
         
         static void showInBox(ArrayFSATailBuilder &builder, ArrayFSATail &fsa);
         

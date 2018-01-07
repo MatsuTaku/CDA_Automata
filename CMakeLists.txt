@@ -37,7 +37,10 @@ set(HEADER_FILES
   FitValuesArray.hpp
   ByteData.hpp
   NArrayFSA.hpp
+  NArrayFSADACs.hpp
+  NArrayFSATextEdge.hpp
   Calc.hpp
+DACs.hpp
   )
 
 set(SOURCE_FILES
@@ -48,6 +51,7 @@ set(SOURCE_FILES
   PlainFSABuilder.cpp
   StringDictBuilder.cpp
   NArrayFSABuilder.cpp
+  NArrayFSATextEdgeBuilder.cpp
 )
 
 add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})

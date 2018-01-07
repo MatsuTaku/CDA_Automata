@@ -8,6 +8,7 @@
 #define DacUnit_hpp
 
 #include "basic.hpp"
+#include "Rank.hpp"
 
 namespace array_fsa {
     
@@ -77,6 +78,7 @@ namespace array_fsa {
     private:
         Rank bits_;
         std::vector<uint8_t> bytes_;
+        
         uint8_t unit_size_ = 1;
         
     };

@@ -14,8 +14,8 @@ namespace array_fsa {
     
     class ByteData {
         virtual size_t sizeInBytes() const = 0;
-        virtual void read(std::istream &is) = 0;
         virtual void write(std::ostream &os) const = 0;
+        virtual void read(std::istream &is) = 0;
     };
     
 }

@@ -8,6 +8,7 @@
 #include "basic.hpp"
 #include "ArrayFSATail.hpp"
 #include "NArrayFSA.hpp"
+#include "NArrayFSADACs.hpp"
 
 namespace array_fsa {
     
@@ -32,6 +33,10 @@ namespace array_fsa {
         }
         
         static bool is_member(const NArrayFSA &fsa, const std::string &str) {
+            return fsa.isMember(str);
+        }
+        
+        static bool is_member(const NArrayFSADACs &fsa, const std::string &str) {
             return fsa.isMember(str);
         }
         

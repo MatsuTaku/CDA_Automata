@@ -4,16 +4,15 @@
 
 #include <iostream>
 
-#include "ArrayFSABuilder.hpp"
-#include "ArrayDACFSABuilder.hpp"
-#include "ArrayFSATail.hpp"
-#include "ArrayFSATailDAC.hpp"
+#include "FsaTools.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "MorfologikFSA5.hpp"
-#include "FsaTools.hpp"
-
-#include "DArrayFSA.hpp"
+#include "ArrayFSA.hpp"
+#include "ArrayDACFSA.hpp"
+#include "ArrayFSATail.hpp"
+#include "ArrayFSATailDAC.hpp"
 #include "NArrayFSA.hpp"
+#include "NArrayFSADACs.hpp"
 
 using namespace array_fsa;
 
@@ -87,7 +86,7 @@ int main(int argc, const char* argv[]) {
 
 //    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa";
 //    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
-//    type = '8';
+//    type = '9';
     
     switch (type) {
         case '1':
@@ -104,6 +103,8 @@ int main(int argc, const char* argv[]) {
             return bench<ArrayFSATailDAC>(fsa_name, query_name);
         case '8':
             return bench<NArrayFSA>(fsa_name, query_name);
+        case '9':
+            return bench<NArrayFSADACs>(fsa_name, query_name);
         default:
             break;
     }

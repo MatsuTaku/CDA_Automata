@@ -310,7 +310,7 @@ namespace array_fsa {
     }
     
     inline Rank::rankBlock Rank::rank(size_t index) const {
-        auto& tip = rank_tips_[block(index)];
+        auto &tip = rank_tips_[block(index)];
         return tip.L1 + tip.L2[abs(index) % kBlockInTipSize] + pop_count(bits_[abs(index)] & (-1U >> (kBitSize - rel(index + 1))));
     }
     
