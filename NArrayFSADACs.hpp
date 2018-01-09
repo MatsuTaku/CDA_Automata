@@ -10,19 +10,16 @@
 
 #include "ByteData.hpp"
 
+#include "ArrayFSABuilder.hpp"
 #include "FitValuesArray.hpp"
 #include "DACs.hpp"
 #include "Rank.hpp"
 
 namespace array_fsa {
     
-    class ArrayFSABuilder;
-    
     class NArrayFSADACs : ByteData {
         friend class ArrayFSABuilder;
     public:
-        using Builder = ArrayFSABuilder;
-        
         // MARK: Constructor
         
         NArrayFSADACs() = default;
@@ -41,12 +38,16 @@ namespace array_fsa {
         
         // MARK: - Function
         
+        static NArrayFSADACs build(PlainFSA &origFsa) {
+            return ArrayFSABuilder::buildNArrayFSADACs(origFsa);
+        }
+        
         static std::string name() {
             return "NArrayFSADACs";
         }
         
-        bool isMember(const std::string &str) const {
-            size_t edge = 0;
+        bool isMember(const std::string& str) const {
+            auto edge = 0;
             for (uint8_t c : str) {
                 edge = getTargetState(edge) ^ c;
                 if (c != getCheck(edge)) return false;

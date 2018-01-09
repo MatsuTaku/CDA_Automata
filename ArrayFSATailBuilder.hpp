@@ -23,10 +23,9 @@ namespace array_fsa {
         
         ArrayFSATailBuilder(const PlainFSA& orig_fsa) : ArrayFSABuilder(orig_fsa) {}
         
-        template <class T>
-        static T build(const PlainFSA& orig_fsa);
+        static NArrayFSATextEdge buildNArrayFSATextEdge(const PlainFSA&);
         
-        template <typename T>
+        template <class T>
         static void showInBox(ArrayFSATailBuilder &builder, T &fsa);
         
     protected:

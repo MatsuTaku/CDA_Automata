@@ -5,17 +5,15 @@
 #ifndef ARRAY_FSA_ARRAYFSA_HPP
 #define ARRAY_FSA_ARRAYFSA_HPP
 
+#include "ArrayFSABuilder.hpp"
+
 #include "basic.hpp"
 
 namespace array_fsa {
     
-    class ArrayFSABuilder;
-    
     class ArrayFSA {
         friend class ArrayFSABuilder;
     public:
-        using Builder = ArrayFSABuilder;
-        
         ArrayFSA() = default;
         virtual ~ArrayFSA() = default;
         
@@ -27,6 +25,10 @@ namespace array_fsa {
             return *this;
         }
         
+        static ArrayFSA build(PlainFSA &origFsa) {
+            return ArrayFSABuilder::buildArrayFSA(origFsa);
+        }
+        
         static std::string name() {
             return "ArrayFSA";
         }
@@ -35,14 +37,12 @@ namespace array_fsa {
             return trans * element_size_;
         }
         
-        bool isMember(const std::string &str) const {
+        bool isMember(const std::string& str) const {
             size_t state = get_root_state(), arc = 0;
             
             for (char c : str) {
                 arc = get_trans(state, static_cast<uint8_t>(c));
-                if (arc == 0) {
-                    return false;
-                }
+                if (arc == 0) return false;
                 state = get_target_state(arc);
             }
             
@@ -127,6 +127,7 @@ namespace array_fsa {
         virtual uint8_t get_check_(size_t trans) const { // == get_trans_symbol
             return bytes_[offset_(trans) + next_size_];
         }
+        
     };
     
 }

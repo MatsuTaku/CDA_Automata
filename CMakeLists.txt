@@ -22,7 +22,9 @@ set(HEADER_FILES
   ArrayTri.hpp
   Rank.hpp
   basic.hpp
+  Exception.hpp
   FsaTools.hpp
+  FsaGenerator.hpp
   MorfologikCFSA2.hpp
   MorfologikFSA5.hpp
   PlainFSA.hpp
@@ -35,17 +37,26 @@ set(HEADER_FILES
   FitValuesArray.hpp
   ByteData.hpp
   Calc.hpp
-  )
+)
 
 set(SOURCE_FILES
   ArrayFSABuilder.cpp
-  NArrayFSABuilder.cpp
   ArrayFSATailBuilder.cpp
-  NArrayFSATextEdgeBuilder.cpp
   PlainFSABuilder.cpp
   StringDictBuilder.cpp
 )
 
-add_executable(test_PlainFSA test_PlainFSA.cpp ${SOURCE_FILES} ${HEADER_FILES})
-add_executable(bench bench.cpp ${SOURCE_FILES} ${HEADER_FILES})
-add_executable(build build.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_library(ArrayFSA STATIC
+  ${SOURCE_FILES}
+  ${HEADER_FILES}
+)
+
+add_executable(test_PlainFSA test_PlainFSA.cpp)
+target_link_libraries(test_PlainFSA ArrayFSA)
+
+add_executable(bench bench.cpp)
+target_link_libraries(bench ArrayFSA)
+
+add_executable(build build.cpp)
+target_link_libraries(build ArrayFSA)
+

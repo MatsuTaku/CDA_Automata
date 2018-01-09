@@ -1,5 +1,6 @@
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeFiles/bench.dir
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeFiles/build.dir
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeFiles/test_PlainFSA.dir
+/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeFiles/ArrayFSA.dir
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeFiles/ALL_BUILD.dir
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/CMakeFiles/ZERO_CHECK.dir

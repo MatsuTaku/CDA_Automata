@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc libBuild.a  CMakeFiles/Build.dir/build.cpp.o CMakeFiles/Build.dir/ArrayFSABuilder.cpp.o CMakeFiles/Build.dir/NArrayFSABuilder.cpp.o CMakeFiles/Build.dir/ArrayFSATailBuilder.cpp.o CMakeFiles/Build.dir/NArrayFSATextEdgeBuilder.cpp.o CMakeFiles/Build.dir/PlainFSABuilder.cpp.o CMakeFiles/Build.dir/StringDictBuilder.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib libBuild.a

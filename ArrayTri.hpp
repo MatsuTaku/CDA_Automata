@@ -54,9 +54,11 @@ namespace array_fsa {
         size_t trans = 0;
         for (uint8_t c : text) {
             auto target = bytes_[trans][c];
-            if (target >= bytes_.size() || checks_[target] != trans || target == 0) {
+            auto overflow = target >= bytes_.size();
+            auto failedTrans = checks_[target] != trans;
+            auto isNotExist = target == 0;
+            if (overflow || failedTrans || isNotExist)
                 return false;
-            }
             trans = target;
         }
         return trans;
@@ -69,11 +71,9 @@ namespace array_fsa {
     
     inline bool ArrayTri::isIncluded(const std::string &text) const {
         auto trans = getFinishTrans(text);
-        for (auto num : bytes_[trans]) {
-            if (num != 0) {
+        for (auto num : bytes_[trans])
+            if (num != 0)
                 return true;
-            }
-        }
         return false;
     }
     
@@ -81,9 +81,11 @@ namespace array_fsa {
         size_t trans = 0;
         for (uint8_t c : text) {
             auto target = bytes_[trans][c];
-            if (target >= bytes_.size() || checks_[target] != trans || target == 0) {
+            auto overflow = target >= bytes_.size();
+            auto failedTrans = checks_[target] != trans;
+            auto isNotExist = target == 0;
+            if (overflow || failedTrans || isNotExist)
                 return false;
-            }
             trans = target;
         }
         bool isLeaf;

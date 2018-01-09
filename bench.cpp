@@ -1,10 +1,11 @@
 //
 // Created by Kampersanda on 2017/05/29.
 //
-
-#include <iostream>
+#include "basic.hpp"
 
 #include "FsaTools.hpp"
+#include "Exception.hpp"
+
 #include "MorfologikFSA5.hpp"
 #include "MorfologikCFSA2.hpp"
 #include "ArrayFSA.hpp"
@@ -27,14 +28,14 @@ namespace {
             
             FsaTools::measureBenchmark(fsa, query_name);
             
-            return 0;
         } catch (DataNotFoundException e) {
             std::cerr << "Error open " << e.data_name_ << std::endl;
             return 1;
-        } catch (DoesntHaveMemberExceptipn e) {
+        } catch (DoesntHaveMemberException e) {
             std::cout << "Doesn't have member: " << e.text << std::endl;
             return 1;
         }
+        return 0;
     }
     
 }
@@ -44,10 +45,10 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = *argv[3];
     
-//    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa_text";
-//    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
-//    type = '8';
-    
+    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa";
+    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+    type = '3';
+
     switch (type) {
         case '0':
             return bench<ArrayFSA>(fsa_name, query_name);
@@ -55,15 +56,14 @@ int main(int argc, const char* argv[]) {
             return bench<MorfologikFSA5>(fsa_name, query_name);
         case '2':
             return bench<MorfologikCFSA2>(fsa_name, query_name);
-        case '6':
+        case '3':
             return bench<NArrayFSA>(fsa_name, query_name);
-        case '7':
+        case '4':
             return bench<NArrayFSADACs>(fsa_name, query_name);
-        case '8':
+        case '5':
             return bench<NArrayFSATextEdge>(fsa_name, query_name);
         default:
-            break;
+            return 1;
     }
-    
-    return 1;
+
 }

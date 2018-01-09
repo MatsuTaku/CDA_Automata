@@ -8,14 +8,15 @@
 
 #include "PlainFSA.hpp"
 #include "ArrayFSA.hpp"
+#include "NArrayFSA.hpp"
+#include "NArrayFSADACs.hpp"
+#include "Calc.hpp"
 
 using namespace array_fsa;
 
-
 // MARK: - static
 
-template <>
-ArrayFSA ArrayFSABuilder::build<ArrayFSA>(const PlainFSA& orig_fsa) {
+ArrayFSA ArrayFSABuilder::buildArrayFSA(const PlainFSA& orig_fsa) {
     ArrayFSABuilder builder(orig_fsa);
     builder.build_();
     
@@ -48,15 +49,83 @@ ArrayFSA ArrayFSABuilder::build<ArrayFSA>(const PlainFSA& orig_fsa) {
     return new_fsa;
 }
 
+NArrayFSA ArrayFSABuilder::buildNArrayFSA(const PlainFSA &orig_fsa) {
+    ArrayFSABuilder builder(orig_fsa);
+    builder.build_();
+    
+    // Release
+    NArrayFSA newFsa;
+    
+    const auto numElems = builder.num_elems_();
+    auto nextSize = Calc::sizeFitInBytes(numElems << 1);
+    newFsa.setValuesSizes(nextSize, 1);
+    newFsa.byte_array_.resize(numElems);
+    
+    auto numTrans = 0;
+    for (size_t i = 0; i < numElems; ++i) {
+        newFsa.setCheck(i, builder.get_check_(i));
+        newFsa.setNextAndFinal(i, builder.get_next_(i), builder.is_final_(i));
+        
+        if (builder.is_frozen_(i)) {
+            numTrans++;
+        }
+    }
+    newFsa.set_num_trans_(numTrans);
+    
+    //    showInBox(builder, newFsa);
+    
+    return newFsa;
+}
+
+NArrayFSADACs ArrayFSABuilder::buildNArrayFSADACs(const PlainFSA &orig_fsa) {
+    ArrayFSABuilder builder(orig_fsa);
+    builder.build_();
+    
+    // Release
+    NArrayFSADACs newFsa;
+    
+    const auto numElems = builder.num_elems_();
+    newFsa.flows_.setMaxValue(numElems);
+    newFsa.setValuesSizes(1, 1);
+    newFsa.byte_array_.resize(numElems);
+    
+    auto numTrans = 0;
+    for (size_t i = 0; i < numElems; ++i) {
+        newFsa.setNext(i, builder.get_next_(i));
+        newFsa.setCheck(i, builder.get_check_(i));
+        newFsa.setIsFinal(i, builder.is_final_(i));
+        
+        if (builder.is_frozen_(i)) {
+            numTrans++;
+        }
+    }
+    newFsa.flows_.build();
+    newFsa.set_num_trans_(numTrans);
+    
+//    showInBox(builder, newFsa);
+    
+    return newFsa;
+}
+
+template <class T>
+void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
+    auto tab = "\t";
+    for (auto i = 0; i < 0x100; i++) {
+        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
+        std::cout << i << tab << fsa.isFinal(i) << tab << fsa.getNext(i) << tab << fsa.getCheck(i) << std::endl;;
+        //        Rank::show_as_bytes(builder.get_next_(i), 4);
+        //        Rank::show_as_bytes(fsa.getNext(i), 4);
+        std::cout << std::endl;
+    }
+}
+
 template <>
-void ArrayFSABuilder::showInBox<ArrayFSA>(ArrayFSABuilder &builder, ArrayFSA &fsa) {
+void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 256; i++) {
-        //        if (bLabel != nLabel) {
         std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
         std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.get_next_(i) << tab << fsa.get_check_(i) << std::endl;;
         std::cout << std::endl;
-        //        }
     }
 }
 

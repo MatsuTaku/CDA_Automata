@@ -10,17 +10,14 @@
 
 #include "ByteData.hpp"
 
+#include "ArrayFSABuilder.hpp"
 #include "FitValuesArray.hpp"
 
 namespace array_fsa {
     
-    class ArrayFSABuilder;
-    
     class NArrayFSA : ByteData {
         friend class ArrayFSABuilder;
     public:
-        using Builder = ArrayFSABuilder;
-        
         // MARK: Constructor
         
         NArrayFSA() = default;
@@ -39,12 +36,16 @@ namespace array_fsa {
         
         // MARK: - Function
         
+        static NArrayFSA build(PlainFSA &origFsa) {
+            return ArrayFSABuilder::buildNArrayFSA(origFsa);
+        }
+        
         static std::string name() {
             return "NArrayFSA";
         }
         
-        bool isMember(const std::string &str) const {
-            size_t edge = 0;
+        bool isMember(const std::string& str) const {
+            auto edge = 0;
             for (uint8_t c : str) {
                 edge = getTargetState(edge) ^ c;
                 if (c != getCheck(edge)) return false;
@@ -144,7 +145,7 @@ namespace array_fsa {
         
     private:
         FitValuesArray byte_array_;
-        size_t num_trans_;
+        size_t num_trans_ = 0;
         
     };
     

@@ -20,8 +20,9 @@ namespace array_fsa {
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        template <class T>
-        static T build(const PlainFSA &origFsa);
+        static ArrayFSA buildArrayFSA(const PlainFSA &origFsa);
+        static NArrayFSA buildNArrayFSA(const PlainFSA &origFsa);
+        static NArrayFSADACs buildNArrayFSADACs(const PlainFSA &origFsa);
         
         template <class T>
         static void showInBox(ArrayFSABuilder &builder, T &fsa);

@@ -8,6 +8,7 @@ array_fsa.build/
 *.build
 DerivedData/
 Debug/
+CMAkeCache.txt
 
 ### https://raw.github.com/github/gitignore//C++.gitignore
 

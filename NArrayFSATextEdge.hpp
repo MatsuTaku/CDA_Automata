@@ -10,19 +10,16 @@
 
 #include "ByteData.hpp"
 
+#include "ArrayFSATailBuilder.hpp"
 #include "FitValuesArray.hpp"
 #include "Rank.hpp"
 #include "DACs.hpp"
 
 namespace array_fsa {
     
-    class ArrayFSATailBuilder;
-    
     class NArrayFSATextEdge : ByteData {
         friend class ArrayFSATailBuilder;
     public:
-        using Builder = ArrayFSATailBuilder;
-        
         // MARK: Constructor
         
         NArrayFSATextEdge() = default;
@@ -41,12 +38,15 @@ namespace array_fsa {
         
         // MARK: - Function
         
+        static NArrayFSATextEdge build(PlainFSA &origFsa) {
+            return ArrayFSATailBuilder::buildNArrayFSATextEdge(origFsa);
+        }
+        
         static std::string name() {
             return "NArrayFSATextEdge";
         }
         
-        bool isMember(const std::string &str) const {
-//            std::cout << std::endl;
+        bool isMember(const std::string& str) const {
             auto edge = 0;
             for (auto begin = 0; begin < str.size();) {
                 uint8_t symbol = str[begin];
@@ -59,8 +59,7 @@ namespace array_fsa {
                     auto c = labels_[labelIndex];
                     while (symbol == c) {
                         c = labels_[++labelIndex];
-                        if (++begin >= str.size())
-                            break;
+                        if (++begin >= str.size()) break;
                         symbol = str[begin];
                     }
                     if (c != '\0') return false;
