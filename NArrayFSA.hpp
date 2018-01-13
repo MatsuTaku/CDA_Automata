@@ -44,14 +44,12 @@ namespace array_fsa {
             return "NArrayFSA";
         }
         
-        bool isMember(const std::string& str) const {
-            auto edge = 0;
-            for (uint8_t c : str) {
-                edge = getTargetState(edge) ^ c;
-                if (c != getCheck(edge)) return false;
-            }
-            return isFinal(edge);
+        bool transition(size_t trans, uint8_t c) const {
+            trans = getTargetState(trans) ^ c;
+            return c == getCheck(trans);
         }
+        
+        bool isMember(const std::string& str) const;
         
         void set_num_trans_(size_t num) {
             num_trans_ = num;
@@ -65,7 +63,7 @@ namespace array_fsa {
         // MARK: Double-array
         
         size_t getTargetState(size_t index) const {
-            return index ^ getNext(index);
+            return getNext(index) ^ index;
         }
         
         size_t getNext(size_t index) const {
@@ -77,24 +75,16 @@ namespace array_fsa {
         }
         
         bool isFinal(size_t index) const {
-            return (byte_array_.getValue<uint8_t>(index, 0) & 1) != 0;
+            return (byte_array_.getValue<size_t>(index, 0) & 1) != 0;
         }
         
         void setNext(size_t index, size_t next) {
             auto byte = next << 1 | isFinal(index);
             byte_array_.setValue(index, 0, byte);
-            
-            if (getNext(index) != next) { // Test
-                std::cout << "Error: setNext " << index << std::endl;
-            }
         }
         
         void setCheck(size_t index, uint8_t check) {
             byte_array_.setValue(index, 1, check);
-            
-            if (getCheck(index) != check) { // Test
-                std::cout << "Error: setCheck " << index << std::endl;
-            }
         }
         
         void setIsFinal(size_t index, bool isFinal) {
@@ -119,7 +109,7 @@ namespace array_fsa {
             os << "#trans: " << num_trans_ << endl;
             os << "#elems: " << byte_array_.numElements() << endl;
             os << "size:   " << sizeInBytes() << endl;
-            os << "size bytes_:   " << byte_array_.sizeBytes() << endl;
+            os << "size bytes_:   " << byte_array_.sizeInBytes() << endl;
         }
         
         size_t sizeInBytes() const override {
@@ -148,6 +138,15 @@ namespace array_fsa {
         size_t num_trans_ = 0;
         
     };
+    
+    inline bool NArrayFSA::isMember(const std::string& str) const {
+        size_t trans = 0;
+        for (uint8_t c : str) {
+            if (!transition(trans, c))
+                return false;
+        }
+        return isFinal(trans);
+    }
     
 }
 

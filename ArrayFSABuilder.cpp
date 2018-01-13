@@ -85,8 +85,8 @@ NArrayFSADACs ArrayFSABuilder::buildNArrayFSADACs(const PlainFSA &orig_fsa) {
     NArrayFSADACs newFsa;
     
     const auto numElems = builder.num_elems_();
-    newFsa.flows_.setMaxValue(numElems);
-    newFsa.setValuesSizes(1, 1);
+    newFsa.flows_.setMaxValue((numElems - 1) >> 8);
+    newFsa.setValuesSizes(NArrayFSADACs::kNextSize, 1);
     newFsa.byte_array_.resize(numElems);
     
     auto numTrans = 0;

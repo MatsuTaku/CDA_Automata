@@ -22,20 +22,16 @@ namespace array_fsa {
             return sizeFitInUnits(value, 1);
         }
         
-        static size_t sizeFitInUnits(size_t value, size_t unit);
-    };
-    
-    
-    // MARK: - Inline function
-    
-    inline size_t Calc::sizeFitInUnits(size_t value, size_t unit) {
-        if (value == 0) {
-            return 0;
+        static size_t sizeFitInUnits(size_t value, size_t unit) {
+            if (value == 0)
+                return 0;
+            auto size = 0;
+            while (value >> (unit * ++size))
+                if (size > 4)
+                    abort();
+            return size;
         }
-        auto size = 0;
-        while (value >> (unit * ++size));
-        return size;
-    }
+    };
     
 }
 

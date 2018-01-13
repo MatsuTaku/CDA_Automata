@@ -14,12 +14,12 @@ namespace array_fsa {
     public:
         KeySet() = delete;
         
-        static std::vector<const std::string> getKeySets(const char *queryName) {
+        static std::vector<std::string> getKeySets(const char *queryName) {
             std::ifstream ifs(queryName);
             if (!ifs)
                 throw DataNotFoundException(queryName);
             
-            std::vector<const std::string> strs;
+            std::vector<std::string> strs;
             for (std::string line; std::getline(ifs, line);)
                 strs.push_back(line);
             strs.shrink_to_fit();
@@ -49,14 +49,7 @@ namespace array_fsa {
             auto ng = 0;
             Stopwatch sw;
             // TODO: Error: iterator broken when release build
-//            auto begin = strs.begin(), end = strs.end();
-            for (const auto& str : strs) {
-//            for (auto i = 0; i < strs.size(); i++) {
-//                const auto& str = strs[i];
-//                if (begin != strs.begin())
-//                    std::cout << "begin: " << std::endl;
-//                if (end != strs.end())
-//                    std::cout << "end: " << std::endl;
+            for (const std::string& str : strs) {
                 if (!fsa.isMember(str))
                     ++ng;
             }

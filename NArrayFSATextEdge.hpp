@@ -46,27 +46,7 @@ namespace array_fsa {
             return "NArrayFSATextEdge";
         }
         
-        bool isMember(const std::string& str) const {
-            auto edge = 0;
-            for (auto begin = 0; begin < str.size();) {
-                uint8_t symbol = str[begin];
-                edge = getTargetState(edge) ^ symbol;
-                if (!hasLabel(edge)) {
-                    if (symbol != getCheck(edge)) return false;
-                    begin++;
-                } else {
-                    auto labelIndex = getLabelIndex(edge);
-                    auto c = labels_[labelIndex];
-                    while (symbol == c) {
-                        c = labels_[++labelIndex];
-                        if (++begin >= str.size()) break;
-                        symbol = str[begin];
-                    }
-                    if (c != '\0') return false;
-                }
-            }
-            return isFinal(edge);
-        }
+        bool isMember(const std::string& str) const;
         
         void set_num_trans_(size_t num) {
             num_trans_ = num;
@@ -95,10 +75,6 @@ namespace array_fsa {
         void setNext(size_t index, size_t next) {
             auto byte = next << 1 | isFinal(index);
             byte_array_.setValue(index, 0, byte);
-            
-            if (getNext(index) != next) { // Test
-                std::cout << "Error: setNext " << index << std::endl;
-            }
         }
         
         uint8_t getCheck(size_t index) const {
@@ -107,14 +83,10 @@ namespace array_fsa {
         
         void setCheck(size_t index, uint8_t check) {
             byte_array_.setValue(index, 1, check);
-            
-            if (getCheck(index) != check) { // Test
-                std::cout << "Error: setCheck " << index << std::endl;
-            }
         }
         
         bool isFinal(size_t index) const {
-            return (byte_array_.getValue<uint8_t>(index, 0) & 1) != 0;
+            return (byte_array_.getValue<size_t>(index, 0) & 1) != 0;
         }
         
         void setIsFinal(size_t index, bool isFinal) {
@@ -140,12 +112,12 @@ namespace array_fsa {
         
         size_t getLabelIndex(size_t index) const {
             auto labelIndex = getCheck(index);
-            return labelIndex | label_index_flows_.getValue(index) << 8;
+            return labelIndex | label_index_flows_[index] << kCheckSizeBit;
         }
         
         void setLabelIndex(size_t index, size_t labelIndex) {
             setCheck(index, labelIndex & 0xff);
-            label_index_flows_.setValue(index, labelIndex >> 8);
+            label_index_flows_.setValue(index, labelIndex >> kCheckSizeBit);
         }
         
         // MARK: -
@@ -158,9 +130,9 @@ namespace array_fsa {
             os << "#trans: " << num_trans_ << endl;
             os << "#elems: " << byte_array_.numElements() << endl;
             os << "size:   " << sizeInBytes() << endl;
-            os << "size bytes_:   " << byte_array_.sizeBytes() << endl;
+            os << "size bytes_:   " << byte_array_.sizeInBytes() << endl;
             os << "size labels_:  " << size_vec(labels_) << endl;
-            os << "size has_label_bits_: " << has_label_bits_.size_in_bytes() << endl;
+            os << "size has_label_bits_: " << has_label_bits_.sizeInBytes() << endl;
             os << "size label_index_flows_: " << label_index_flows_.sizeInBytes() << endl;
         }
         
@@ -168,7 +140,7 @@ namespace array_fsa {
             auto size = byte_array_.sizeInBytes();
             size += sizeof(num_trans_);
             size += size_vec(labels_);
-            size += has_label_bits_.size_in_bytes();
+            size += has_label_bits_.sizeInBytes();
             size += label_index_flows_.sizeInBytes();
             return size;
         }
@@ -194,10 +166,13 @@ namespace array_fsa {
             std::swap(num_trans_, rhs.num_trans_);
             labels_.swap(rhs.labels_);
             has_label_bits_.swap(rhs.has_label_bits_);
-            label_index_flows_.swap(rhs.label_index_flows_);
+            label_index_flows_ = std::move(rhs.label_index_flows_);
         }
         
     private:
+        static constexpr auto kCheckSize = 1;
+        static constexpr auto kCheckSizeBit = 8 * kCheckSize;
+        
         FitValuesArray byte_array_;
         size_t num_trans_ = 0;
         std::vector<uint8_t> labels_;
@@ -205,6 +180,31 @@ namespace array_fsa {
         DACs label_index_flows_;
         
     };
+    
+    inline bool NArrayFSATextEdge::isMember(const std::string& str) const {
+        auto trans = 0;
+        for (auto begin = 0; begin < str.size();) {
+            uint8_t symbol = str[begin];
+            trans = getTargetState(trans) ^ symbol;
+            if (!hasLabel(trans)) {
+                if (symbol != getCheck(trans))
+                    return false;
+                begin++;
+            } else {
+                auto labelIndex = getLabelIndex(trans);
+                auto c = labels_[labelIndex];
+                while (symbol == c) {
+                    c = labels_[++labelIndex];
+                    if (++begin >= str.size())
+                        break;
+                    symbol = str[begin];
+                }
+                if (c != '\0')
+                    return false;
+            }
+        }
+        return isFinal(trans);
+    }
     
 }
 

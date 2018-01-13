@@ -21,8 +21,8 @@ namespace array_fsa {
         bool isMember(const std::string &str) const {
             size_t state = get_root_state(), arc = 0;
             
-            for (char c : str) {
-                arc = get_trans(state, static_cast<uint8_t>(c));
+            for (uint8_t c : str) {
+                arc = get_trans(state, c);
                 if (arc == 0) {
                     return false;
                 }

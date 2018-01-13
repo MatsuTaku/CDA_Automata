@@ -12,19 +12,25 @@
 
 namespace array_fsa {
     
-    struct DacUnit {
+    struct DacUnit : ByteData {
     public:
+        DacUnit() = default;
+        DacUnit(std::istream& is) {
+            read(is);
+        }
+        
         size_t size() const {
-            return bytes_.size() / unit_size_;
+            return unit_size_ > 0 ? bytes_.size() / unit_size_ : 0;
         }
         
         bool getBit(size_t index) const {
             return bits_.get(index);
         }
         
-        size_t getByte(size_t index) const {
+        size_t getByteUnit(size_t rank) const {
             size_t byte = 0;
-            std::memcpy(&byte, &bytes_[(rank(index) - 1) * unit_size_], unit_size_);
+            for (auto i = 0; i < unit_size_; i++)
+                byte |= bytes_[rank * unit_size_ + i] << (i * 8);
             return byte;
         }
         
@@ -37,18 +43,10 @@ namespace array_fsa {
         }
         
         void setByte(size_t value) {
-            if (unit_size_ == 1) {
-                bytes_.push_back(value);
-            } else {
-                if (value >> (8 * unit_size_) != 0) {
-                    std::cout << "Set Dac element over flow!" << std::endl;
-                    return;
-                }
-                for (auto size = 0; size < unit_size_; size++) {
-                    uint8_t byte = (value >> (size * 8)) & 0xff;
-                    bytes_.push_back(byte);
-                }
-            }
+            assert(value >> (8 * unit_size_) != 0);
+            
+            for (auto size = 0; size < unit_size_; size++)
+                bytes_.push_back((value >> (size * 8)) & 0xff);
         }
         
         void setUnitSize(uint8_t size) {
@@ -59,17 +57,19 @@ namespace array_fsa {
             bits_.build(true, false);
         }
         
-        size_t size_in_bytes() const {
-            return bits_.size_in_bytes() + size_vec(bytes_);
+        size_t sizeInBytes() const override {
+            auto size = bits_.sizeInBytes();
+            size += size_vec(bytes_);
+            return size;
         }
         
-        void read(std::istream &is) {
+        void read(std::istream& is) override {
             bits_.read(is);
             bytes_ = read_vec<uint8_t>(is);
             unit_size_ = read_val<uint8_t>(is);
         }
         
-        void write(std::ostream &os) const {
+        void write(std::ostream& os) const override {
             bits_.write(os);
             write_vec(bytes_, os);
             write_val(unit_size_, os);

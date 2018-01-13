@@ -28,7 +28,7 @@ NArrayFSATextEdge ArrayFSATailBuilder::buildNArrayFSATextEdge(const PlainFSA &or
     newFsa.labels_ = builder.str_dict_.get_label_bytes();
     auto labelIndexSize = Calc::sizeFitInBytes(newFsa.labels_.size() - 1);
     newFsa.label_index_flows_.setUnitSize(labelIndexSize - 1);
-    newFsa.label_index_flows_.setMaxValue(newFsa.labels_.size() - 1);
+    newFsa.label_index_flows_.setMaxValue((newFsa.labels_.size() - 1) >> 8);
     newFsa.label_index_flows_.useLink(true);
     
     for (size_t i = 0; i < numElems; ++i) {

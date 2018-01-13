@@ -8,6 +8,8 @@
 #ifndef Rank_hpp
 #define Rank_hpp
 
+#include "ByteData.hpp"
+
 #include "basic.hpp"
 
 namespace array_fsa {
@@ -178,7 +180,7 @@ namespace array_fsa {
         }
     };
     
-    class Rank {
+    class Rank : ByteData {
     protected:
         using rankBlock = uint32_t;
         static constexpr size_t kBlockSize { 0x100 };
@@ -207,6 +209,10 @@ namespace array_fsa {
         
         void build(bool useRank, bool useSelect);
         
+        void buildRank();
+        
+        void buildSelect();
+        
         rankBlock rank(size_t index) const;
         
         rankBlock select(size_t index) const;
@@ -221,17 +227,17 @@ namespace array_fsa {
             bits_.resize(size);
         }
         
-        void write(std::ostream& os) const {
+        size_t sizeInBytes() const override {
+            return size_vec(bits_) + size_vec(rank_tips_);
+        }
+        
+        void write(std::ostream& os) const override {
             write_vec(bits_, os);
             write_vec(rank_tips_, os);
         }
-        void read(std::istream& is) {
+        void read(std::istream& is) override {
             bits_ = read_vec<rankBlock>(is);
             rank_tips_ = read_vec<RankTip>(is);
-        }
-        
-        size_t size_in_bytes() const {
-            return size_vec(bits_) + size_vec(rank_tips_);
         }
         
         void swap(Rank &rank) {
@@ -280,33 +286,39 @@ namespace array_fsa {
     };
     
     inline void Rank::build(bool useRank, bool useSelect) {
-        if (useRank) {
-            rank_tips_.resize(bits_.size() / kBlockInTipSize + 1);
-            size_t count = 0;
-            for (auto i = 0; i < rank_tips_.size(); i++) {
-                auto& tip = rank_tips_[i];
-                tip.L1 = count;
-                for (auto offset = 0; offset < kBlockInTipSize; offset++) {
-                    tip.L2[offset] = count - tip.L1;
-                    auto index = i * kBlockInTipSize + offset;
-                    if (index < bits_.size()) {
-                        count += pop_count(bits_[index]);
-                    }
-                }
-            }
-        }
+        if (!useRank) return;
+        buildRank();
         
-        if (useSelect) {
-            auto count = kNum1sPerTip;
-            select_tips_.push_back(0);
-            for (rankBlock i = 0; i < rank_tips_.size(); i++) {
-                if (count < rank_tips_[i].L1) {
-                    select_tips_.push_back(i - 1);
-                    count += kNum1sPerTip;
+        if (!useSelect) return;
+        buildSelect();
+    }
+    
+    inline void Rank::buildRank() {
+        rank_tips_.resize(bits_.size() / kBlockInTipSize + 1);
+        auto count = 0;
+        for (auto i = 0; i < rank_tips_.size(); i++) {
+            auto& tip = rank_tips_[i];
+            tip.L1 = count;
+            for (auto offset = 0; offset < kBlockInTipSize; offset++) {
+                tip.L2[offset] = count - tip.L1;
+                auto index = i * kBlockInTipSize + offset;
+                if (index < bits_.size()) {
+                    count += pop_count(bits_[index]);
                 }
             }
-            select_tips_.push_back(rank_tips_.size() - 1);
         }
+    }
+    
+    inline void Rank::buildSelect() {
+        auto count = kNum1sPerTip;
+        select_tips_.push_back(0);
+        for (rankBlock i = 0; i < rank_tips_.size(); i++) {
+            if (count < rank_tips_[i].L1) {
+                select_tips_.push_back(i - 1);
+                count += kNum1sPerTip;
+            }
+        }
+        select_tips_.push_back(rank_tips_.size() - 1);
     }
     
     inline Rank::rankBlock Rank::rank(size_t index) const {

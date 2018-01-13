@@ -21,7 +21,6 @@ namespace array_fsa {
         friend class ArrayFSABuilder;
     public:
         // MARK: Constructor
-        
         NArrayFSADACs() = default;
         ~NArrayFSADACs() = default;
         
@@ -46,14 +45,12 @@ namespace array_fsa {
             return "NArrayFSADACs";
         }
         
-        bool isMember(const std::string& str) const {
-            auto edge = 0;
-            for (uint8_t c : str) {
-                edge = getTargetState(edge) ^ c;
-                if (c != getCheck(edge)) return false;
-            }
-            return isFinal(edge);
+        bool transition(size_t trans, uint8_t c) const {
+            trans = getTargetState(trans) ^ c;
+            return c == getCheck(trans);
         }
+        
+        bool isMember(const std::string& str) const;
         
         void set_num_trans_(size_t num) {
             num_trans_ = num;
@@ -74,19 +71,15 @@ namespace array_fsa {
         
         size_t getNext(size_t index) const {
             auto next = byte_array_.getValue<size_t>(index, 0);
-            return next | flows_.getValue(index) << 8;
+            return next | (flows_[index] << kNextSizeBit);
         }
         
         void setNext(size_t index, size_t next) {
             byte_array_.setValue(index, 0, next & 0xff);
-            auto flow = next >> 8;
+            auto flow = next >> kNextSizeBit;
             if (flow != 0) {
                 flows_.setValue(index, flow);
             }
-            
-//            if (getNext(index) != next) { // Test
-//                std::cout << "Error: setNext " << index << std::endl;
-//            }
         }
         
         // MARK: -
@@ -97,10 +90,6 @@ namespace array_fsa {
         
         void setCheck(size_t index, uint8_t check) {
             byte_array_.setValue(index, 1, check);
-            
-            if (getCheck(index) != check) { // Test
-                std::cout << "Error: setCheck " << index << std::endl;
-            }
         }
         
         bool isFinal(size_t index) const {
@@ -109,6 +98,10 @@ namespace array_fsa {
         
         void setIsFinal(size_t index, bool isFinal) {
             final_bits_.set(index, isFinal);
+            
+            if (this->isFinal(index) != isFinal) {
+                std::cout << "Error: setIsFinal " << index << std::endl;
+            }
         }
         
         // MARK: Information
@@ -119,16 +112,16 @@ namespace array_fsa {
             os << "#trans: " << num_trans_ << endl;
             os << "#elems: " << byte_array_.numElements() << endl;
             os << "size:   " << sizeInBytes() << endl;
-            os << "size bytes_:   " << byte_array_.sizeBytes() << endl;
+            os << "size bytes_:   " << byte_array_.sizeInBytes() << endl;
             os << "size flows_:   " << flows_.sizeInBytes() << endl;
-            os << "size final_bits_:" << final_bits_.size_in_bytes() << endl;
+            os << "size final_bits_:" << final_bits_.sizeInBytes() << endl;
         }
         
         size_t sizeInBytes() const override {
             auto size = byte_array_.sizeInBytes();
             size += sizeof(num_trans_);
             size += flows_.sizeInBytes();
-            size += final_bits_.size_in_bytes();
+            size += final_bits_.sizeInBytes();
             return size;
         }
         
@@ -149,17 +142,30 @@ namespace array_fsa {
         void swap(NArrayFSADACs &rhs) {
             byte_array_.swap(rhs.byte_array_);
             std::swap(num_trans_, rhs.num_trans_);
-            flows_.swap(rhs.flows_);
+//            flows_.swap(rhs.flows_);
+            flows_ = std::move(rhs.flows_);
             final_bits_.swap(rhs.final_bits_);
         }
         
     private:
+        static constexpr auto kNextSize = 1;
+        static constexpr auto kNextSizeBit = 8 * kNextSize;
+        
         FitValuesArray byte_array_;
         size_t num_trans_ = 0;
         DACs flows_;
         Rank final_bits_;
         
     };
+    
+    inline bool NArrayFSADACs::isMember(const std::string& str) const {
+        auto trans = 0;
+        for (uint8_t c : str) {
+            if (!transition(trans, c))
+                return false;
+        }
+        return isFinal(trans);
+    }
     
 }
 

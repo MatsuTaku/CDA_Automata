@@ -11,47 +11,87 @@
 #include "PlainFSABuilder.hpp"
 #include "PlainFSA.hpp"
 
-#include "FsaTools.hpp"
 #include "Exception.hpp"
 
 namespace array_fsa {
     
+    template <class T>
     class FsaGenerator {
     public:
-        FsaGenerator() = delete;
+        FsaGenerator(const char* dataName) {
+            generate(dataName);
+        }
         
-        static PlainFSA getPlainFSA(const char *queryName) {
+        static int buildFSA(const char *dataName, const char *fsaName) {
+            try {
+                std::cout << "Build FSA from " << dataName << std::endl;
+                FsaGenerator<T> generator(dataName);
+                
+                std::cout << "Test for membership" << std::endl;
+                generator.checkHasMember(dataName);
+                
+                std::cout << "Write FSA into " << fsaName << std::endl;
+                generator.save(fsaName);
+                
+            } catch (DataNotFoundException e) {
+                std::cerr << "Error open: " << e.data_name_ << std::endl;
+                return 1;
+            } catch (DoesntHaveMemberException e) {
+                std::cout << "Doesn't have member: " << e.text << std::endl;
+                return 1;
+            }
+            return 0;
+        }
+        
+        // May throw DataNotFoundException
+        PlainFSA getPlainFSA(const char* dataName) {
+            std::ifstream ifs(dataName);
+            if (!ifs)
+                throw DataNotFoundException(dataName);
+            return getPlainFSA(ifs);
+        }
+        
+        PlainFSA getPlainFSA(std::ifstream& ifs) {
             PlainFSABuilder builder;
-            
-            const auto strs = KeySet::getKeySets(queryName);
-            for (const auto& str : strs)
-                builder.add(str);
+            for (std::string line; getline(ifs, line);)
+                builder.add(line);
             return builder.release();
         }
         
-        template <class T>
-        static T generateFSA(const char *queryName) {
-            PlainFSA plainFsa = getPlainFSA(queryName);
-            return T::build(plainFsa);
+        void generate(const char* dataName) {
+            PlainFSA plainFsa = getPlainFSA(dataName);
+            fsa_ = T::build(plainFsa);
         }
         
-        template <class T>
-        static void checkHasMember(const T &fsa, const char *dataName) {
-            const auto strs = KeySet::getKeySets(dataName);
-            
-            for (const auto& str : strs) {
-                if (!fsa.isMember(str))
-                    throw DoesntHaveMemberException(str);
+        /** May throw
+        *    DataNotFoundException
+        *    DoesntHaveMemberException
+        */
+        void checkHasMember(const char* dataName) {
+            std::ifstream ifs(dataName);
+            if (!ifs)
+                throw DataNotFoundException(dataName);
+            checkHasMember(ifs);
+        }
+        
+        // May throw DoesntHaveMemberException
+        void checkHasMember(std::ifstream& ifs) {
+            for (std::string line; std::getline(ifs, line);) {
+                if (!fsa_.isMember(line))
+                    throw DoesntHaveMemberException(line);
             }
         }
         
-        template <class T>
-        static void saveFSA(const T &fsa, const char *fsaName) {
+        // May throw DataNotFoundException
+        void save(const char* fsaName) {
             std::ofstream ofs(fsaName);
             if (!ofs)
                 throw DataNotFoundException(fsaName);
-            fsa.write(ofs);
+            fsa_.write(ofs);
         }
+        
+    private:
+        T fsa_;
     };
     
 }

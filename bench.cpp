@@ -45,9 +45,11 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = *argv[3];
     
-    fsa_name = "../../results/wikipedia/wikipedia.n_array_fsa";
-    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
-    type = '3';
+//    fsa_name = "../../results/indochina-2004/indochina-2004.n_array_fsa_text";
+//    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
+//    fsa_name = "../../results/indochina-2004/indochina-2004.morfologik_fsa5";
+//    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
+//    type = '1';
 
     switch (type) {
         case '0':
