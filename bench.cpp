@@ -8,10 +8,12 @@
 
 #include "MorfologikFSA5.hpp"
 #include "MorfologikCFSA2.hpp"
-#include "ArrayFSA.hpp"
-#include "NArrayFSA.hpp"
-#include "NArrayFSADACs.hpp"
-#include "NArrayFSATextEdge.hpp"
+//#include "ArrayFSA.hpp"
+//#include "NArrayFSA.hpp"
+//#include "NArrayFSADACs.hpp"
+//#include "NArrayFSATextEdge.hpp"
+#include "FSA.hpp"
+#include "StringTransFSA.hpp"
 
 using namespace array_fsa;
 
@@ -45,25 +47,33 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = *argv[3];
     
-//    fsa_name = "../../results/indochina-2004/indochina-2004.n_array_fsa_text";
+//    fsa_name = "../../results/indochina-2004/indochina-2004.fsa";
 //    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
-//    fsa_name = "../../results/indochina-2004/indochina-2004.morfologik_fsa5";
-//    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
-//    type = '1';
+////    fsa_name = "../../results/wikipedia/wikipedia.fsa";
+////    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+//    type = '7';
 
     switch (type) {
-        case '0':
-            return bench<ArrayFSA>(fsa_name, query_name);
+//        case '0':
+//            return bench<ArrayFSA>(fsa_name, query_name);
         case '1':
             return bench<MorfologikFSA5>(fsa_name, query_name);
         case '2':
             return bench<MorfologikCFSA2>(fsa_name, query_name);
-        case '3':
-            return bench<NArrayFSA>(fsa_name, query_name);
-        case '4':
-            return bench<NArrayFSADACs>(fsa_name, query_name);
-        case '5':
-            return bench<NArrayFSATextEdge>(fsa_name, query_name);
+//        case '3':
+//            return bench<NArrayFSA>(fsa_name, query_name);
+//        case '4':
+//            return bench<NArrayFSADACs>(fsa_name, query_name);
+//        case '5':
+//            return bench<NArrayFSATextEdge>(fsa_name, query_name);
+        case '6':
+            return bench<OriginalFSA>(fsa_name, query_name);
+        case '7':
+            return bench<DacFSA>(fsa_name, query_name);
+        case '8':
+            return bench<STFSA>(fsa_name, query_name);
+        case '9':
+            return bench<DacSTFSA>(fsa_name, query_name);
         default:
             return 1;
     }

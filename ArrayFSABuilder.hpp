@@ -11,21 +11,27 @@
 namespace array_fsa {
     
     class PlainFSA;
-    class ArrayFSA;
-    class NArrayFSA;
-    class NArrayFSADACs;
+//    class ArrayFSA;
+//    class NArrayFSA;
+//    class NArrayFSADACs;
+    template <bool DAC>
+    class FSA;
     
     class ArrayFSABuilder {
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        static ArrayFSA buildArrayFSA(const PlainFSA &origFsa);
-        static NArrayFSA buildNArrayFSA(const PlainFSA &origFsa);
-        static NArrayFSADACs buildNArrayFSADACs(const PlainFSA &origFsa);
+//        static ArrayFSA buildArrayFSA(const PlainFSA&);
+//        static NArrayFSA buildNArrayFSA(const PlainFSA&);
+//        static NArrayFSADACs buildNArrayFSADACs(const PlainFSA&);
+//        template <bool DAC>
+//        static FSA<DAC> buildFSA(const PlainFSA&);
+        template <bool DAC>
+        static FSA<DAC> build(const PlainFSA&);
         
         template <class T>
-        static void showInBox(ArrayFSABuilder &builder, T &fsa);
+        static void showInBox(ArrayFSABuilder&, T&);
         
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;
         ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
@@ -55,6 +61,13 @@ namespace array_fsa {
             return index * kElemSize;
         }
         
+        size_t getAddress(size_t offset) const {
+            size_t v = 0;
+            for (auto i = 0; i < kAddrSize; i++)
+                v |= bytes_[offset + i] << (8 * i);
+            return v;
+        }
+        
         size_t num_elems_() const {
             return bytes_.size() / kElemSize;
         }
@@ -73,22 +86,16 @@ namespace array_fsa {
             return index ^ get_next_(index);
         }
         size_t get_next_(size_t index) const {
-            size_t next = 0;
-            std::memcpy(&next, &bytes_[offset_(index) + 1], kAddrSize);
-            return next;
+            return getAddress(offset_(index) + 1);
         }
         uint8_t get_check_(size_t index) const {
             return bytes_[offset_(index) + 1 + kAddrSize];
         }
         size_t get_succ_(size_t index) const {
-            size_t succ = 0;
-            std::memcpy(&succ, &bytes_[offset_(index) + 1], kAddrSize);
-            return succ;
+            return getAddress(offset_(index) + 1) ^ index;
         }
         size_t get_pred_(size_t index) const {
-            size_t pred = 0;
-            std::memcpy(&pred, &bytes_[offset_(index) + 1 + kAddrSize], kAddrSize);
-            return pred;
+            return getAddress(offset_(index) + 1 + kAddrSize) ^ index;
         }
         
         // MARK: Setters
@@ -118,10 +125,12 @@ namespace array_fsa {
             bytes_[offset_(index) + 1 + kAddrSize] = check;
         }
         void set_succ_(size_t index, size_t succ) {
-            std::memcpy(&bytes_[offset_(index) + 1], &succ, kAddrSize);
+            auto v = index ^ succ;
+            std::memcpy(&bytes_[offset_(index) + 1], &v, kAddrSize);
         }
         void set_pred_(size_t index, size_t pred) {
-            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &pred, kAddrSize);
+            auto v = index ^ pred;
+            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &v, kAddrSize);
         }
         
         // MARK: methods

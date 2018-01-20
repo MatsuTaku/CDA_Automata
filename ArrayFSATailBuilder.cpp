@@ -12,53 +12,99 @@
 #include "StringDictBuilder.hpp"
 #include "StringDict.hpp"
 
+#include "StringTransFSA.hpp"
+
 using namespace array_fsa;
 
-NArrayFSATextEdge ArrayFSATailBuilder::buildNArrayFSATextEdge(const PlainFSA &origFsa) {
+//NArrayFSATextEdge ArrayFSATailBuilder::buildNArrayFSATextEdge(const PlainFSA &origFsa) {
+//    ArrayFSATailBuilder builder(origFsa);
+//    builder.build_();
+//
+//    // Release
+//    NArrayFSATextEdge newFsa;
+//
+//    const auto numElems = builder.num_elems_();
+//    auto nextSize = Calc::sizeFitInBytes((numElems - 1) << 1);
+//    newFsa.setValuesSizes(nextSize, 1);
+//    newFsa.byte_array_.resize(numElems);
+//    newFsa.labels_ = builder.str_dict_.get_label_bytes();
+//    auto labelIndexSize = Calc::sizeFitInBytes(newFsa.labels_.size() - 1);
+//    newFsa.label_index_flows_.setUnitSize(labelIndexSize - 1);
+//    newFsa.label_index_flows_.setMaxValue((newFsa.labels_.size() - 1) >> 8);
+//    newFsa.label_index_flows_.useLink(true);
+//
+//    for (size_t i = 0; i < numElems; ++i) {
+//        if (!builder.has_label(i)) {
+//            newFsa.setCheck(i, builder.get_check_(i));
+//        } else {
+//            newFsa.setHasLabel(i, true);
+//            newFsa.setLabelIndex(i, builder.get_label_number(i));
+//        }
+//        newFsa.setNextAndFinal(i, builder.get_next_(i), builder.is_final_(i));
+//
+//        if (builder.is_frozen_(i)) {
+//            newFsa.num_trans_++;
+//        }
+//    }
+//    newFsa.label_index_flows_.build();
+//
+//    //    showInBox(builder, newFsa);
+//
+//    return newFsa;
+//}
+
+template <bool B>
+StringTransFSA<B> ArrayFSATailBuilder::build(const PlainFSA& origFsa) {
     ArrayFSATailBuilder builder(origFsa);
     builder.build_();
     
     // Release
-    NArrayFSATextEdge newFsa;
+    StringTransFSA<B> newFsa;
     
     const auto numElems = builder.num_elems_();
-    auto nextSize = Calc::sizeFitInBytes((numElems - 1) << 1);
-    newFsa.setValuesSizes(nextSize, 1);
-    newFsa.byte_array_.resize(numElems);
-    newFsa.labels_ = builder.str_dict_.get_label_bytes();
-    auto labelIndexSize = Calc::sizeFitInBytes(newFsa.labels_.size() - 1);
-    newFsa.label_index_flows_.setUnitSize(labelIndexSize - 1);
-    newFsa.label_index_flows_.setMaxValue((newFsa.labels_.size() - 1) >> 8);
-    newFsa.label_index_flows_.useLink(true);
-    
-    for (size_t i = 0; i < numElems; ++i) {
-        if (!builder.has_label(i)) {
-            newFsa.setCheck(i, builder.get_check_(i));
-        } else {
-            newFsa.setHasLabel(i, true);
-            newFsa.setLabelIndex(i, builder.get_label_number(i));
-        }
-        newFsa.setNextAndFinal(i, builder.get_next_(i), builder.is_final_(i));
-        
-        if (builder.is_frozen_(i)) {
-            newFsa.num_trans_++;
-        }
+    newFsa.setNumElement(numElems);
+    {
+        auto& strings = builder.str_dict_.get_label_bytes();
+        newFsa.setNumStrings(strings.size());
+        newFsa.setStringArray(strings);
     }
-    newFsa.label_index_flows_.build();
     
-    //    showInBox(builder, newFsa);
+    auto numTrans = 0;
+    for (auto i = 0; i < numElems; i++) {
+        newFsa.setNextAndIsFinal(i, builder.get_next_(i), builder.is_final_(i));
+        newFsa.setCheck(i, builder.get_check_(i));
+        auto isStrTrans = builder.has_label(i);
+        newFsa.setIsStringTrans(i, isStrTrans);
+        if (isStrTrans) {
+            newFsa.setStringIndex(i, builder.get_label_number(i));
+        } else {
+            newFsa.setCheck(i, builder.get_check_(i));
+        }
+        
+        if (builder.is_frozen_(i))
+            numTrans++;
+    }
+    newFsa.buildBitArray();
+    newFsa.setNumTrans(numTrans);
+    
+//    showInBox(builder, newFsa);
     
     return newFsa;
 }
+
+template StringTransFSA<false> ArrayFSATailBuilder::build(const array_fsa::PlainFSA &);
+template StringTransFSA<true> ArrayFSATailBuilder::build(const array_fsa::PlainFSA &);
 
 template <class T>
 void ArrayFSATailBuilder::showInBox(array_fsa::ArrayFSATailBuilder &builder, T &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 0x100; i++) {
         std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << tab << builder.has_label(i) << std::endl;
-        std::cout << i << tab << fsa.isFinal(i) << tab << fsa.getNext(i) << tab << fsa.getCheck(i) << tab << fsa.hasLabel(i) << std::endl;;
-        //        Rank::show_as_bytes(builder.get_label_number(i), 4);
-        //        Rank::show_as_bytes(fsa.getLabelIndex(i), 4);
+        std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << tab << fsa.isStringTrans(i) << std::endl;
+        if (builder.has_label(i)) {
+            Rank::show_as_bytes(builder.get_label_number(i), 4);
+            Rank::show_as_bytes(fsa.stringIndex(i), 4);
+        }
         std::cout << std::endl;
     }
 }

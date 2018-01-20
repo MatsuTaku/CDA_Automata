@@ -20,6 +20,7 @@ namespace array_fsa {
     class NArrayFSADACs : ByteData {
         friend class ArrayFSABuilder;
     public:
+        using Builder = ArrayFSABuilder;
         // MARK: Constructor
         NArrayFSADACs() = default;
         ~NArrayFSADACs() = default;
@@ -37,9 +38,9 @@ namespace array_fsa {
         
         // MARK: - Function
         
-        static NArrayFSADACs build(PlainFSA &origFsa) {
-            return ArrayFSABuilder::buildNArrayFSADACs(origFsa);
-        }
+//        static NArrayFSADACs build(PlainFSA &origFsa) {
+//            return ArrayFSABuilder::buildNArrayFSADACs(origFsa);
+//        }
         
         static std::string name() {
             return "NArrayFSADACs";
@@ -57,8 +58,8 @@ namespace array_fsa {
         }
         
         void setValuesSizes(size_t nextSize, size_t checkSize) {
-            byte_array_.insertValueSize(0, nextSize);
-            byte_array_.insertValueSize(1, checkSize);
+            byte_array_.setValueSize(0, nextSize);
+            byte_array_.setValueSize(1, checkSize);
         }
         
         // MARK: Double-array

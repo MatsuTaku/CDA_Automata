@@ -12,6 +12,7 @@
 #include "PlainFSA.hpp"
 #include "StringDict.hpp"
 #include <unordered_map>
+#include "Calc.hpp"
 
 using namespace array_fsa;
 
@@ -22,6 +23,8 @@ StringDict StringDictBuilder::build(const PlainFSA& fsa) {
     builder.sortDicts();
     builder.flatStringArray();
     builder.decideTargetIndexes();
+    
+    builder.showMappingOfByteSize();
     
     StringDict dict;
     dict.str_dicts_ = std::move(builder.str_dicts_);
@@ -160,14 +163,11 @@ void StringDictBuilder::decideTargetIndexes() {
     updateIdMap();
     
     for (auto i = 0; i < fsa_target_ids_.size(); i++) {
-        if (!has_label_bits_[i]) {
+        if (!has_label_bits_[i])
             continue;
-        }
         auto id = fsa_target_ids_[i];
         fsa_target_indexes_[i] = idMap[id];
     }
-    
-    showMappingOfByteSize();
 }
 
 // MARK: - Log
@@ -175,24 +175,20 @@ void StringDictBuilder::decideTargetIndexes() {
 void StringDictBuilder::showMappingOfByteSize() {
     size_t counts[4] = {0, 0, 0, 0};
     for (auto &dict : str_dicts_) {
-        if (dict.isIncluded) {
+        if (dict.isIncluded)
             continue;
-        }
-        uint8_t size = 0;
-        while (dict.place >> (8 * ++size));
+        auto size = Calc::sizeFitInBytes(dict.place);
         counts[size - 1] += dict.counter + 1;
     }
-    int map[4];
     auto size = 0;
-    for (auto c : counts) {
+    for (auto c : counts)
         size += c;
-    }
-    for (auto i = 0; i < 4; i++) {
+    float map[4];
+    for (auto i = 0; i < 4; i++)
         map[i] = float(counts[i]) / size * 100;
-    }
     std::cout << "Label index per\t" << std::endl;
     for (auto i = 0; i < 4; i++) {
-        std::cout << map[i]<< "\t" ;
+        std::cout << int(map[i]) << "\t| " ;
     }
     std::cout << "%";
     std::cout << " in " << size << std::endl;

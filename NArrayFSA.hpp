@@ -10,7 +10,7 @@
 
 #include "ByteData.hpp"
 
-#include "ArrayFSABuilder.hpp"
+//#include "ArrayFSABuilder.hpp"
 #include "FitValuesArray.hpp"
 
 namespace array_fsa {
@@ -18,6 +18,8 @@ namespace array_fsa {
     class NArrayFSA : ByteData {
         friend class ArrayFSABuilder;
     public:
+        using Builder = ArrayFSABuilder;
+        
         // MARK: Constructor
         
         NArrayFSA() = default;
@@ -36,9 +38,9 @@ namespace array_fsa {
         
         // MARK: - Function
         
-        static NArrayFSA build(PlainFSA &origFsa) {
-            return ArrayFSABuilder::buildNArrayFSA(origFsa);
-        }
+//        static NArrayFSA build(PlainFSA &origFsa) {
+//            return ArrayFSABuilder::buildNArrayFSA(origFsa);
+//        }
         
         static std::string name() {
             return "NArrayFSA";
@@ -56,8 +58,8 @@ namespace array_fsa {
         }
         
         void setValuesSizes(size_t nextSize, size_t checkSize) {
-            byte_array_.insertValueSize(0, nextSize);
-            byte_array_.insertValueSize(1, checkSize);
+            byte_array_.setValueSize(0, nextSize);
+            byte_array_.setValueSize(1, checkSize);
         }
         
         // MARK: Double-array

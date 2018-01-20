@@ -12,12 +12,14 @@
 
 namespace array_fsa {
     
-    struct DacUnit : ByteData {
+    class DacUnit : ByteData {
     public:
         DacUnit() = default;
         DacUnit(std::istream& is) {
             read(is);
         }
+        
+        ~DacUnit() = default;
         
         size_t size() const {
             return unit_size_ > 0 ? bytes_.size() / unit_size_ : 0;
@@ -43,7 +45,7 @@ namespace array_fsa {
         }
         
         void setByte(size_t value) {
-            assert(value >> (8 * unit_size_) != 0);
+            assert(value >> (8 * unit_size_) == 0);
             
             for (auto size = 0; size < unit_size_; size++)
                 bytes_.push_back((value >> (size * 8)) & 0xff);
@@ -74,6 +76,12 @@ namespace array_fsa {
             write_vec(bytes_, os);
             write_val(unit_size_, os);
         }
+        
+        DacUnit(const DacUnit&) = delete;
+        DacUnit& operator =(const DacUnit&) = delete;
+        
+        DacUnit(DacUnit&&) noexcept = default;
+        DacUnit& operator =(DacUnit&&) noexcept = default;
         
     private:
         Rank bits_;

@@ -5,7 +5,7 @@
 #ifndef ARRAY_FSA_ARRAYFSA_HPP
 #define ARRAY_FSA_ARRAYFSA_HPP
 
-#include "ArrayFSABuilder.hpp"
+//#include "ArrayFSABuilder.hpp"
 
 #include "basic.hpp"
 
@@ -14,6 +14,8 @@ namespace array_fsa {
     class ArrayFSA {
         friend class ArrayFSABuilder;
     public:
+        using Builder = ArrayFSABuilder;
+        
         ArrayFSA() = default;
         virtual ~ArrayFSA() = default;
         
@@ -25,9 +27,9 @@ namespace array_fsa {
             return *this;
         }
         
-        static ArrayFSA build(PlainFSA &origFsa) {
-            return ArrayFSABuilder::buildArrayFSA(origFsa);
-        }
+//        static ArrayFSA build(PlainFSA &origFsa) {
+//            return ArrayFSABuilder::buildArrayFSA(origFsa);
+//        }
         
         static std::string name() {
             return "ArrayFSA";

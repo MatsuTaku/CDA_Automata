@@ -10,6 +10,8 @@
 
 #include "PlainFSABuilder.hpp"
 #include "PlainFSA.hpp"
+#include "ArrayFSABuilder.hpp"
+#include "FSA.hpp"
 
 #include "Exception.hpp"
 
@@ -18,26 +20,25 @@ namespace array_fsa {
     template <class T>
     class FsaGenerator {
     public:
-        FsaGenerator(const char* dataName) {
-            generate(dataName);
-        }
-        
         static int buildFSA(const char *dataName, const char *fsaName) {
             try {
+                FsaGenerator<T> generator;
                 std::cout << "Build FSA from " << dataName << std::endl;
-                FsaGenerator<T> generator(dataName);
+                generator.generate(dataName);
                 
                 std::cout << "Test for membership" << std::endl;
-                generator.checkHasMember(dataName);
+                try {
+                    generator.checkHasMember(dataName);
+                } catch (DoesntHaveMemberException e) {
+                    std::cout << "Doesn't have member: " << e.text << std::endl;
+                    return 1;
+                }
                 
                 std::cout << "Write FSA into " << fsaName << std::endl;
                 generator.save(fsaName);
                 
             } catch (DataNotFoundException e) {
                 std::cerr << "Error open: " << e.data_name_ << std::endl;
-                return 1;
-            } catch (DoesntHaveMemberException e) {
-                std::cout << "Doesn't have member: " << e.text << std::endl;
                 return 1;
             }
             return 0;
@@ -92,6 +93,7 @@ namespace array_fsa {
         
     private:
         T fsa_;
+        
     };
     
 }

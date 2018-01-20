@@ -13,10 +13,6 @@ message(STATUS "CXX_FLAGS_DEBUG are ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
 set(HEADER_FILES
-  ArrayFSA.hpp
-  NArrayFSA.hpp
-  NArrayFSADACs.hpp
-  NArrayFSATextEdge.hpp
   ArrayFSABuilder.hpp
   ArrayFSATailBuilder.hpp
   ArrayTri.hpp
@@ -37,6 +33,10 @@ set(HEADER_FILES
   FitValuesArray.hpp
   ByteData.hpp
   Calc.hpp
+  NextCheck.hpp
+  FSA.hpp
+  StringTransFSA.hpp
+  StringArray.hpp
 )
 
 set(SOURCE_FILES
@@ -44,6 +44,8 @@ set(SOURCE_FILES
   ArrayFSATailBuilder.cpp
   PlainFSABuilder.cpp
   StringDictBuilder.cpp
+  FSA.cpp
+  StringTransFSA.cpp
 )
 
 add_library(ArrayFSA STATIC

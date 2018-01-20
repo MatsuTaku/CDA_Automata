@@ -20,27 +20,23 @@ namespace array_fsa {
     class NArrayFSATextEdge : ByteData {
         friend class ArrayFSATailBuilder;
     public:
+        using Builder = ArrayFSABuilder;
         // MARK: Constructor
         
         NArrayFSATextEdge() = default;
         ~NArrayFSATextEdge() = default;
         
-        NArrayFSATextEdge(NArrayFSATextEdge&& rhs) noexcept : NArrayFSATextEdge() {
-            this->swap(rhs);
-        }
-        NArrayFSATextEdge& operator=(NArrayFSATextEdge&& rhs) noexcept {
-            this->swap(rhs);
-            return *this;
-        }
+        NArrayFSATextEdge(NArrayFSATextEdge&& rhs) noexcept = default;
+        NArrayFSATextEdge& operator=(NArrayFSATextEdge&& rhs) noexcept = default;
         
         NArrayFSATextEdge(const NArrayFSATextEdge&) = delete;
         NArrayFSATextEdge& operator=(const NArrayFSATextEdge&) = delete;
         
         // MARK: - Function
         
-        static NArrayFSATextEdge build(PlainFSA &origFsa) {
-            return ArrayFSATailBuilder::buildNArrayFSATextEdge(origFsa);
-        }
+//        static NArrayFSATextEdge build(PlainFSA &origFsa) {
+//            return ArrayFSATailBuilder::buildNArrayFSATextEdge(origFsa);
+//        }
         
         static std::string name() {
             return "NArrayFSATextEdge";
@@ -53,8 +49,8 @@ namespace array_fsa {
         }
         
         void setValuesSizes(size_t nextSize, size_t checkSize) {
-            byte_array_.insertValueSize(0, nextSize);
-            byte_array_.insertValueSize(1, checkSize);
+            byte_array_.setValueSize(0, nextSize);
+            byte_array_.setValueSize(1, checkSize);
         }
         
         // MARK: Double-array
@@ -159,14 +155,6 @@ namespace array_fsa {
             labels_ = read_vec<uint8_t>(is);
             has_label_bits_.read(is);
             label_index_flows_.read(is);
-        }
-        
-        void swap(NArrayFSATextEdge &rhs) {
-            byte_array_.swap(rhs.byte_array_);
-            std::swap(num_trans_, rhs.num_trans_);
-            labels_.swap(rhs.labels_);
-            has_label_bits_.swap(rhs.has_label_bits_);
-            label_index_flows_ = std::move(rhs.label_index_flows_);
         }
         
     private:

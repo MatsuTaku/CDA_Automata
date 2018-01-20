@@ -24,7 +24,7 @@ namespace array_fsa {
         ~DACs() = default;
         
         DACs(const DACs&) = delete;
-        DACs &operator=(const DACs&) = delete;
+        DACs& operator =(const DACs&) = delete;
         
         DACs(DACs&& rhs) noexcept = default;
         DACs& operator =(DACs&& rhs) noexcept = default;
@@ -40,6 +40,14 @@ namespace array_fsa {
         }
         
         void setMaxValue(size_t max);
+        
+        bool getBitInFirstUnit(size_t index) const {
+            return units_[0].getBit(index);
+        }
+        
+        void setBitInFirstUnit(size_t index, bool bit) {
+            units_[0].setBit(index, bit);
+        }
         
         void build() {
             for (auto &unit : units_)
@@ -73,9 +81,10 @@ namespace array_fsa {
         void read(std::istream &is) override {
             unit_size_ = read_val<uint8_t>(is);
             num_units_ = read_val<size_t>(is);
+            units_.resize(num_units_);
             for (auto i = 0; i < num_units_; i++) {
                 DacUnit unit(is);
-                units_.push_back(unit);
+                units_[i] = std::move(unit);
             }
         }
         
@@ -90,14 +99,13 @@ namespace array_fsa {
     // MARK: - inline function
     
     inline void DACs::setMaxValue(size_t max) {
-        auto size = unit_size_ > 0 ? Calc::sizeFitInUnits(max,unit_size_ * 8) : 1;
-        if (num_units_ >= size) return;
-        num_units_ = size;
-        for (auto i = units_.size(); i < size; i++) {
-            DacUnit unit;
-            unit.setUnitSize(unit_size_);
-            units_.push_back(unit);
+        auto depth = unit_size_ > 0 ? Calc::sizeFitInUnits(max, unit_size_ * 8) : 1;
+        if (num_units_ >= depth) return;
+        units_.resize(depth);
+        for (auto i = num_units_; i < depth; i++) {
+            units_[i].setUnitSize(unit_size_);
         }
+        num_units_ = depth;
     }
     
     inline size_t DACs::getValue(size_t index) const {

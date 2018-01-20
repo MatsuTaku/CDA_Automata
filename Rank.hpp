@@ -189,7 +189,8 @@ namespace array_fsa {
         static constexpr size_t kNum1sPerTip { 0x200 };
         
     public:
-        virtual ~Rank() = default;
+        Rank() = default;
+        ~Rank() = default;
         
         bool get(size_t index) const {
             if (abs(index) + 1 > bits_.size()) {
@@ -252,6 +253,12 @@ namespace array_fsa {
             std::cout << std::endl;
         }
         
+        Rank(const Rank&) = delete;
+        Rank& operator =(const Rank&) = delete;
+        
+        Rank(Rank&&) noexcept = default;
+        Rank& operator =(Rank&&) noexcept = default;
+        
     protected:
         std::vector<rankBlock> bits_;
         struct RankTip {
@@ -286,6 +293,8 @@ namespace array_fsa {
     };
     
     inline void Rank::build(bool useRank, bool useSelect) {
+        if (bits_.size() == 0) return;
+        
         if (!useRank) return;
         buildRank();
         

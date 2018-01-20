@@ -10,25 +10,24 @@
 
 #include "ByteData.hpp"
 
+#include "basic.hpp"
+
 namespace array_fsa {
     
     class FitValuesArray : ByteData {
     public:
-        FitValuesArray() = default;
-        ~FitValuesArray() = default;
+        using IdType = uint8_t;
         
-        FitValuesArray(FitValuesArray &&rhs) noexcept : FitValuesArray() {
-            this->swap(rhs);
+        void setValueSize(size_t index, size_t size);
+        
+        template <typename T>
+        void setValueSizes(std::vector<T>& sizes) {
+            value_sizes_ = {};
+            value_positions_ = {};
+            element_size_ = 0;
+            for (auto i = 0; i < sizes.size(); i++)
+                setValueSize(i, sizes[i]);
         }
-        FitValuesArray& operator=(FitValuesArray &&rhs) noexcept {
-            this->swap(rhs);
-            return *this;
-        }
-        
-        FitValuesArray(const FitValuesArray&) = delete;
-        FitValuesArray& operator=(const FitValuesArray&) = delete;
-        
-        void insertValueSize(size_t index, size_t size);
         
         size_t offset(size_t index) const {
             return index * element_size_;
@@ -52,6 +51,8 @@ namespace array_fsa {
             bytes_.resize(offset(indexSize));
         }
         
+        // MARK: - ByteData method
+        
         size_t sizeInBytes() const override {
             auto size = size_vec(bytes_);
             size += size_vec(value_sizes_);
@@ -64,40 +65,46 @@ namespace array_fsa {
         }
         
         void read(std::istream &is) override {
-            bytes_ = read_vec<uint8_t>(is);
+            bytes_ = read_vec<IdType>(is);
             
             auto sizes = read_vec<uint8_t>(is);
             for (auto i = 0; i < sizes.size(); i++) {
-                insertValueSize(i, sizes[i]);
+                setValueSize(i, sizes[i]);
             }
         }
         
-        void swap(FitValuesArray &rhs) {
-            bytes_.swap(rhs.bytes_);
-            value_sizes_.swap(rhs.value_sizes_);
-            std::swap(element_size_, rhs.element_size_);
-            value_positions_.swap(rhs.value_positions_);
-        }
+        // MARK: copy guard
+        
+        FitValuesArray() = default;
+        ~FitValuesArray() = default;
+        
+        FitValuesArray(const FitValuesArray&) = delete;
+        FitValuesArray& operator=(const FitValuesArray&) = delete;
+        
+        FitValuesArray(FitValuesArray &&rhs) noexcept = default;
+        FitValuesArray& operator=(FitValuesArray &&rhs) noexcept = default;
         
     private:
-        std::vector<uint8_t> bytes_ = {};
+        std::vector<IdType> bytes_ = {};
         std::vector<uint8_t> value_sizes_ = {};
         uint8_t element_size_ = 0;
         std::vector<size_t> value_positions_ = {};
         
     };
     
-    inline void FitValuesArray::insertValueSize(size_t index, size_t size) {
+    // MARK: - inline function
+    
+    inline void FitValuesArray::setValueSize(size_t index, size_t size) {
         element_size_ += size;
         value_sizes_.insert(value_sizes_.begin() + index, size);
         
         auto pos = value_positions_.size() > 0 ? value_positions_[index - 1] + value_sizes_[index - 1] : 0;
         value_positions_.insert(value_positions_.begin() + index, pos);
+        
         if (index == value_positions_.size() - 1)
             return;
-        for (auto i = index + 1; i < value_positions_.size(); i++) {
+        for (auto i = index + 1; i < value_positions_.size(); i++)
             value_positions_[i] += size;
-        }
     }
     
     template <typename T>
@@ -105,9 +112,8 @@ namespace array_fsa {
         assert(sizeof(T) >= value_sizes_[num]);
         T value = 0;
         auto pos = offset(index) + value_positions_[num];
-        for (auto i = 0; i < value_sizes_[num]; i++) {
-            value |= (bytes_[pos + i] << (8 * i));
-        }
+        for (auto i = 0; i < value_sizes_[num]; i++)
+            value |= bytes_[pos + i] << (8 * i);
         return value;
     }
     
@@ -115,9 +121,8 @@ namespace array_fsa {
     inline void FitValuesArray::setValue(size_t index, size_t num, T value) {
         assert(sizeof(T) >= value_sizes_[num]);
         auto pos = offset(index) + value_positions_[num];
-        for (auto i = 0; i < value_sizes_[num]; i++) {
-            bytes_[pos + i] = (value >> (8 * i)) & 0xff;
-        }
+        for (auto i = 0; i < value_sizes_[num]; i++)
+            bytes_[pos + i] = static_cast<IdType>(value >> (8 * i));
     }
     
 }

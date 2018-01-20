@@ -31,6 +31,24 @@ namespace array_fsa {
                     abort();
             return size;
         }
+        
+        static std::vector<size_t> separateCountsInSizeOf(std::vector<size_t> &list) {
+            std::vector<size_t> counts(4);
+            for (auto v : list) {
+                auto size = sizeFitInBytes(v);
+                ++counts[size - 1];
+            }
+            return counts;
+        }
+        
+        static std::vector<size_t> separateCountsInXorSizeOf(std::vector<size_t> &list) {
+            std::vector<size_t> counts(4);
+            for (auto i = 0; i < list.size(); i++) {
+                auto size = sizeFitInBytes(list[i] ^ i);
+                ++counts[size - 1];
+            }
+            return counts;
+        }
     };
     
 }
