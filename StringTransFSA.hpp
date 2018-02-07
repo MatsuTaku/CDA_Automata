@@ -187,7 +187,7 @@ namespace array_fsa {
         
     private:
         size_t num_trans_ = 0;
-        NextCheck nc_;
+        NextCheck<DACs> nc_;
         Rank is_final_bits_;
         Rank is_string_bits_;
         StringArray strings_;

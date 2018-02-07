@@ -77,10 +77,15 @@ namespace array_fsa {
         
         // May throw DoesntHaveMemberException
         void checkHasMember(std::ifstream& ifs) {
+            auto length = 0;
+            auto count = 0;
             for (std::string line; std::getline(ifs, line);) {
+                count++;
+                length += line.size();
                 if (!fsa_.isMember(line))
                     throw DoesntHaveMemberException(line);
             }
+            std::cout << "average length: " << float(length) / count << std::endl;
         }
         
         // May throw DataNotFoundException

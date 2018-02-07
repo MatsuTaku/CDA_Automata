@@ -37,6 +37,9 @@ set(HEADER_FILES
   FSA.hpp
   StringTransFSA.hpp
   StringArray.hpp
+  SACs.hpp
+  CodeArray.hpp
+  CodesMeasurer.hpp
 )
 
 set(SOURCE_FILES
@@ -46,6 +49,7 @@ set(SOURCE_FILES
   StringDictBuilder.cpp
   FSA.cpp
   StringTransFSA.cpp
+  NextCheck.cpp
 )
 
 add_library(ArrayFSA STATIC
@@ -61,4 +65,7 @@ target_link_libraries(bench ArrayFSA)
 
 add_executable(build build.cpp)
 target_link_libraries(build ArrayFSA)
+
+add_executable(codes codes.cpp)
+target_link_libraries(codes ArrayFSA)
 

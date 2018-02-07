@@ -14,7 +14,6 @@
 
 namespace array_fsa {
     
-//    class NArrayFSATextEdge;
     template <bool B>
     class StringTransFSA;
     
@@ -24,7 +23,6 @@ namespace array_fsa {
         
         ArrayFSATailBuilder(const PlainFSA& orig_fsa) : ArrayFSABuilder(orig_fsa) {}
         
-//        static NArrayFSATextEdge buildNArrayFSATextEdge(const PlainFSA&);
         template <bool B>
         static StringTransFSA<B> build(const PlainFSA&);
         

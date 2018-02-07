@@ -48,8 +48,7 @@ namespace array_fsa {
             auto num = strs.size();
             auto ng = 0;
             Stopwatch sw;
-            // TODO: Error: iterator broken when release build
-            for (const std::string& str : strs) {
+            for (const std::string &str : strs) {
                 if (!fsa.isMember(str))
                     ++ng;
             }

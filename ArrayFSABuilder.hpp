@@ -11,10 +11,7 @@
 namespace array_fsa {
     
     class PlainFSA;
-//    class ArrayFSA;
-//    class NArrayFSA;
-//    class NArrayFSADACs;
-    template <bool DAC>
+    template <bool DAC, class CODES>
     class FSA;
     
     class ArrayFSABuilder {
@@ -22,13 +19,8 @@ namespace array_fsa {
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-//        static ArrayFSA buildArrayFSA(const PlainFSA&);
-//        static NArrayFSA buildNArrayFSA(const PlainFSA&);
-//        static NArrayFSADACs buildNArrayFSADACs(const PlainFSA&);
-//        template <bool DAC>
-//        static FSA<DAC> buildFSA(const PlainFSA&);
-        template <bool DAC>
-        static FSA<DAC> build(const PlainFSA&);
+        template <bool DAC, class CODES>
+        static FSA<DAC, CODES> build(const PlainFSA&);
         
         template <class T>
         static void showInBox(ArrayFSABuilder&, T&);

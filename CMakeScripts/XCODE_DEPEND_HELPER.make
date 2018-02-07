@@ -26,6 +26,13 @@ PostBuild.ArrayFSA.Debug: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/
 	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/build
 
 
+PostBuild.codes.Debug:
+PostBuild.ArrayFSA.Debug: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/codes
+/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/codes:\
+	/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/libArrayFSA.a
+	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/codes
+
+
 PostBuild.test_PlainFSA.Debug:
 PostBuild.ArrayFSA.Debug: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/test_PlainFSA
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Debug/test_PlainFSA:\
@@ -50,6 +57,13 @@ PostBuild.ArrayFSA.Release: /Users/takumamatsumoto/Labolatory/array-fsa/array-fs
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/build:\
 	/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/libArrayFSA.a
 	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/build
+
+
+PostBuild.codes.Release:
+PostBuild.ArrayFSA.Release: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/codes
+/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/codes:\
+	/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/libArrayFSA.a
+	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/Release/codes
 
 
 PostBuild.test_PlainFSA.Release:
@@ -78,6 +92,13 @@ PostBuild.ArrayFSA.MinSizeRel: /Users/takumamatsumoto/Labolatory/array-fsa/array
 	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/build
 
 
+PostBuild.codes.MinSizeRel:
+PostBuild.ArrayFSA.MinSizeRel: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/codes
+/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/codes:\
+	/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/libArrayFSA.a
+	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/codes
+
+
 PostBuild.test_PlainFSA.MinSizeRel:
 PostBuild.ArrayFSA.MinSizeRel: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/test_PlainFSA
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/MinSizeRel/test_PlainFSA:\
@@ -102,6 +123,13 @@ PostBuild.ArrayFSA.RelWithDebInfo: /Users/takumamatsumoto/Labolatory/array-fsa/a
 /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/build:\
 	/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/libArrayFSA.a
 	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/build
+
+
+PostBuild.codes.RelWithDebInfo:
+PostBuild.ArrayFSA.RelWithDebInfo: /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/codes
+/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/codes:\
+	/Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/libArrayFSA.a
+	/bin/rm -f /Users/takumamatsumoto/Labolatory/array-fsa/array-fsa/RelWithDebInfo/codes
 
 
 PostBuild.test_PlainFSA.RelWithDebInfo:

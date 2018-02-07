@@ -118,12 +118,12 @@ using namespace array_fsa;
 //    return ArrayFSABuilder::build<false>(fsa);
 //}
 
-template <bool DAC>
-FSA<DAC> ArrayFSABuilder::build(const PlainFSA& origFsa) {
+template <bool USE_DAC, class CODES>
+FSA<USE_DAC, CODES> ArrayFSABuilder::build(const PlainFSA& origFsa) {
     ArrayFSABuilder builder(origFsa);
     builder.build_();
     
-    FSA<DAC> newFsa;
+    FSA<USE_DAC, CODES> newFsa;
     
     const auto numElem = builder.num_elems_();
     newFsa.setNumElement(numElem);
@@ -145,13 +145,14 @@ FSA<DAC> ArrayFSABuilder::build(const PlainFSA& origFsa) {
 
 template FSA<true> ArrayFSABuilder::build(const PlainFSA &);
 template FSA<false> ArrayFSABuilder::build(const PlainFSA &);
+template FSA<true, SACs> ArrayFSABuilder::build(const PlainFSA &);
 
 template <class T>
 void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 0x100; i++) {
         std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
-        std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << std::endl;;
+        std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << std::endl;
         //        Rank::show_as_bytes(builder.get_next_(i), 4);
         //        Rank::show_as_bytes(fsa.getNext(i), 4);
         std::cout << std::endl;

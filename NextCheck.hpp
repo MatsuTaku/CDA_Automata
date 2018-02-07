@@ -12,14 +12,16 @@
 
 #include "FitValuesArray.hpp"
 #include "DACs.hpp"
+#include "SACs.hpp"
 
 #include "Calc.hpp"
 #include "basic.hpp"
 
 namespace array_fsa {
     
+    template <class CODES>
     struct Id : ByteData {
-        DACs flows;
+        CODES flows;
         bool useDac = false;
         
         size_t sizeInBytes() const override {
@@ -40,6 +42,7 @@ namespace array_fsa {
         }
     };
     
+    template <class CODES>
     class NextCheck : ByteData {
     public:
         NextCheck() = default;
@@ -54,8 +57,7 @@ namespace array_fsa {
         size_t check(size_t index) const {
             auto check = bytes_.getValue<uint8_t>(index, 1);
             if (!checkId.useDac) return check;
-            auto flow = checkId.flows[index];
-            return check | flow << 8;
+            return check | checkId.flows[index] << 8;
         }
         
         size_t numElements() const {
@@ -108,8 +110,6 @@ namespace array_fsa {
             std::vector<size_t> sizes = { nextId.useDac ? 1 : nextSize, 1 };
             bytes_.setValueSizes(sizes);
             bytes_.resize(num);
-            if (!nextId.useDac) return;
-            nextId.flows.setMaxValue(num << (bitInto ? 1 : 0) >> 8);
         }
         
         // No.4 if use dac check
@@ -118,7 +118,6 @@ namespace array_fsa {
             checkId.flows.useLink(true);
             auto size = Calc::sizeFitInBytes(num - 1);
             checkId.flows.setUnitSize(size > 1 ? size - 1 : 1);
-            checkId.flows.setMaxValue((num - 1) >> 8);
         }
         
         // Finaly. If use dac
@@ -148,20 +147,19 @@ namespace array_fsa {
         
         void showStatus(std::ostream& os) const {
             using std::endl;
-            os << "--- Stat of " << "NextCheck" << " ---" << endl;
+            os << "--- Stat of " << "NextCheck " << CODES::name() << " ---" << endl;
             os << "size:   " << sizeInBytes() << endl;
             os << "size bytes:   " << bytes_.sizeInBytes() << endl;
             os << "size next flow:   " << nextId.flows.sizeInBytes() << endl;
             os << "size check flow:   " << checkId.flows.sizeInBytes() << endl;
-            if (!nextId.useDac)
-                showSizeMap(os);
+            showSizeMap(os);
         }
         
         void showSizeMap(std::ostream &os) const {
             auto numElem = numElements();
             std::vector<size_t> nexts(numElem);
             for (auto i = 0; i < numElem; i++)
-                nexts[i] = bytes_.getValue<size_t>(i, 0);
+                nexts[i] = next(i) >> (!nextId.useDac ? 1 : 0);
             
             auto showList = [&](const std::vector<size_t> &list) {
                 using std::endl;
@@ -186,8 +184,8 @@ namespace array_fsa {
         
     private:
         FitValuesArray bytes_;
-        Id nextId;
-        Id checkId;
+        Id<CODES> nextId;
+        Id<CODES> checkId;
         
     };
     

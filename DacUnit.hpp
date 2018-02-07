@@ -31,8 +31,9 @@ namespace array_fsa {
         
         size_t getByteUnit(size_t rank) const {
             size_t byte = 0;
+            auto offset = rank * unit_size_;
             for (auto i = 0; i < unit_size_; i++)
-                byte |= bytes_[rank * unit_size_ + i] << (i * 8);
+                byte |= bytes_[offset + i] << (i * 8);
             return byte;
         }
         

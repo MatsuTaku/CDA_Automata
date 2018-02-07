@@ -1,12 +1,12 @@
 //
-//  DACs.hpp
-//  array_fsa
+//  SACs.hpp
+//  ArrayFSA
 //
-//  Created by 松本拓真 on 2018/01/07.
+//  Created by 松本拓真 on 2018/01/20.
 //
 
-#ifndef DACs_hpp
-#define DACs_hpp
+#ifndef SACs_hpp
+#define SACs_hpp
 
 #include "ByteData.hpp"
 
@@ -15,24 +15,23 @@
 
 namespace array_fsa {
     
-    class DACs : ByteData {
-        friend class NArrayFSATextEdge;
+    class SACs : ByteData {
     public:
         // MARK: Constructor
         
-        DACs() = default;
-        ~DACs() = default;
+        SACs() = default;
+        ~SACs() = default;
         
-        DACs(const DACs&) = delete;
-        DACs& operator =(const DACs&) = delete;
+        SACs(const SACs&) = delete;
+        SACs& operator =(const SACs&) = delete;
         
-        DACs(DACs&& rhs) noexcept = default;
-        DACs& operator =(DACs&& rhs) noexcept = default;
+        SACs(SACs&& rhs) noexcept = default;
+        SACs& operator =(SACs&& rhs) noexcept = default;
         
         // MARK: Function
         
         static std::string name() {
-            return "DACs";
+            return "SACs";
         }
         
         void useLink(bool use) {
@@ -48,7 +47,7 @@ namespace array_fsa {
             units_.resize(size);
             for (auto i = num_units_; i < size; i++) {
                 DacUnit unit;
-                unit.setUnitSize(unit_size_);
+                unit.setUnitSize(unit_size_ * (i + 1));
                 units_[i] = std::move(unit);
             }
             num_units_ = size;
@@ -81,11 +80,13 @@ namespace array_fsa {
             for (const auto &unit : units_) {
                 size += unit.sizeInBytes();
             }
+            size += first_bits_.sizeInBytes();
             return size;
         }
         
         void write(std::ostream &os) const override {
             write_val(unit_size_, os);
+            first_bits_.write(os);
             write_val(num_units_, os);
             for (const auto &unit : units_) {
                 unit.write(os);
@@ -94,6 +95,7 @@ namespace array_fsa {
         
         void read(std::istream &is) override {
             unit_size_ = read_val<uint8_t>(is);
+            first_bits_.read(is);
             num_units_ = read_val<size_t>(is);
             units_.resize(num_units_);
             for (auto i = 0; i < num_units_; i++) {
@@ -104,6 +106,7 @@ namespace array_fsa {
         
     private:
         uint8_t unit_size_ = 1;
+        Rank first_bits_;
         size_t num_units_ = 0;
         std::vector<DacUnit> units_ = {};
         bool use_link_ = false;
@@ -112,35 +115,28 @@ namespace array_fsa {
     
     // MARK: - inline function
     
-    inline size_t DACs::getValue(size_t index) const {
-        size_t value = 0;
-        auto depth = 0;
+    inline size_t SACs::getValue(size_t index) const {
+        if (first_bits_.get(index)) return 0;
         for (const auto &unit : units_) {
-            if (!unit.getBit(index)) break;
-            index = unit.rank(index);
-            value |= (unit.getByteUnit(index) << (depth * 8 * unit_size_));
-            depth++;
+            if (unit.getBit(index))
+                return unit.getByteUnit(unit.rank(index));
         }
-        return value;
+        return 0;
     }
     
-    inline void DACs::setValue(size_t index, size_t value) {
+    inline void SACs::setValue(size_t index, size_t value) {
+        if (value == 0 && !use_link_) {
+            first_bits_.set(index, true);
+            return;
+        }
         auto size = Calc::sizeFitInUnits(value, unit_size_ * 8);
         if (size > num_units_)
             expand(size);
-        auto mask = (size_t(1) << (8 * unit_size_)) - 1;
-        auto depth = 0;
-        for (auto &unit : units_) {
-            if (value == 0 && (!use_link_ || depth > 0)) break;
-            unit.setBit(index, true);
-            unit.setByte(value & mask);
-            index = unit.size() - 1;
-            value >>= (8 * unit_size_);
-            
-            depth++;
-        }
+        auto &unit = units_[size - 1];
+        unit.setBit(index, true);
+        unit.setByte(value);
     }
     
 }
 
-#endif /* DACs_hpp */
+#endif /* SACs_hpp */

@@ -3,10 +3,6 @@
 
 #include "FsaGenerator.hpp"
 
-//#include "ArrayFSA.hpp"
-//#include "NArrayFSA.hpp"
-//#include "NArrayFSADACs.hpp"
-//#include "NArrayFSATextEdge.hpp"
 #include "FSA.hpp"
 #include "StringTransFSA.hpp"
 
@@ -17,21 +13,15 @@ int main(int argc, const char *argv[]) {
     auto fsa_name = argv[2];
     auto fsa_type = *argv[3];
     
-////    data_name = "../../data-sets/weiss/wikipedia.dict";
-////    fsa_name = "../../results/wikipedia/wikipedia.fsa";
+    data_name = "../../data-sets/weiss/wikipedia.dict";
+    fsa_name = "../../results/wikipedia/wikipedia.fsa";
 //    data_name = "../../data-sets/kanda/indochina-2004.dict";
 //    fsa_name = "../../results/indochina-2004/indochina-2004.fsa";
-//    fsa_type = '5';
+//    data_name = "../../data-sets/kanda/jawiki-20150118.dict";
+//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa";
+    fsa_type = '4';
 
     switch (fsa_type) {
-//        case '0':
-//            return FsaGenerator::buildFSA<ArrayFSA>(data_name, fsa_name);
-//        case '1':
-//            return FsaGenerator::buildFSA<NArrayFSA>(data_name, fsa_name);
-//        case '2':
-//            return FsaGenerator::buildFSA<NArrayFSADACs>(data_name, fsa_name);
-//        case '3':
-//            return FsaGenerator::buildFSA<NArrayFSATextEdge>(data_name, fsa_name);
         case '4':
             return FsaGenerator<OriginalFSA>::buildFSA(data_name, fsa_name);
         case '5':
@@ -40,6 +30,8 @@ int main(int argc, const char *argv[]) {
             return FsaGenerator<STFSA>::buildFSA(data_name, fsa_name);
         case '7':
             return FsaGenerator<DacSTFSA>::buildFSA(data_name, fsa_name);
+        case '8':
+            return FsaGenerator<SacFSA>::buildFSA(data_name, fsa_name);
         default:
             return 1;
     }

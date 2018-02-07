@@ -11,12 +11,22 @@
 
 using namespace array_fsa;
 
-template <>
-FSA<true> FSA<true>::build(const PlainFSA& fsa) {
-    return ArrayFSABuilder::build<true>(fsa);
-}
+template<> class FSA<false>;
+template<> class FSA<true, DACs>;
+template<> class FSA<true, SACs>;
 
 template <>
 FSA<false> FSA<false>::build(const PlainFSA& fsa) {
-    return ArrayFSABuilder::build<false>(fsa);
+    return ArrayFSABuilder::build<false, DACs>(fsa);
 }
+
+template <>
+FSA<true, DACs> FSA<true, DACs>::build(const PlainFSA& fsa) {
+    return ArrayFSABuilder::build<true, DACs>(fsa);
+}
+
+template<>
+FSA<true, SACs> FSA<true, SACs>::build(const PlainFSA& fsa) {
+    return ArrayFSABuilder::build<true, SACs>(fsa);
+}
+
