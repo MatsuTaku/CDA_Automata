@@ -1,12 +1,12 @@
 //
-//  Rank.hpp
+//  VitVector.hpp
 //  array_fsa
 //
 //  Created by 松本拓真 on 2017/10/30.
 //
 
-#ifndef Rank_hpp
-#define Rank_hpp
+#ifndef VitVector_hpp
+#define VitVector_hpp
 
 #include "ByteData.hpp"
 
@@ -180,22 +180,27 @@ namespace array_fsa {
         }
     };
     
-    class Rank : ByteData {
+    class BitVector : ByteData {
     protected:
-        using rankBlock = uint32_t;
+        using idType = uint32_t;
         static constexpr size_t kBlockSize { 0x100 };
         static constexpr uint8_t kBitSize { 0x20 };
         static constexpr uint8_t kBlockInTipSize { kBlockSize / kBitSize }; // 8
         static constexpr size_t kNum1sPerTip { 0x200 };
         
     public:
-        Rank() = default;
-        ~Rank() = default;
+        BitVector() = default;
         
-        bool get(size_t index) const {
-            if (abs(index) + 1 > bits_.size()) {
-                return false;
+        BitVector(const std::vector<bool> &bools, bool useRank = false, bool useSelect = false) {
+            for (auto i = 0; i < bools.size(); i++) {
+                set(i, bools[i]);
             }
+            build(useRank, useSelect);
+        }
+        
+        ~BitVector() = default;
+        
+        bool operator[](size_t index) const {
             return (bits_[abs(index)] & (1U << rel(index))) != 0;
         }
         
@@ -214,18 +219,18 @@ namespace array_fsa {
         
         void buildSelect();
         
-        rankBlock rank(size_t index) const;
+        idType rank(size_t index) const;
         
-        rankBlock select(size_t index) const;
+        idType select(size_t index) const;
         
         void check_resize(size_t index) {
             if (abs(index) + 1 > bits_.size()) {
-                resize(abs(index) + 1);
+                resize(index);
             }
         }
         
-        void resize(size_t size) {
-            bits_.resize(size);
+        void resize(size_t index) {
+            bits_.resize(abs(index) + 1);
         }
         
         size_t sizeInBytes() const override {
@@ -237,36 +242,29 @@ namespace array_fsa {
             write_vec(rank_tips_, os);
         }
         void read(std::istream& is) override {
-            bits_ = read_vec<rankBlock>(is);
+            bits_ = read_vec<idType>(is);
             rank_tips_ = read_vec<RankTip>(is);
         }
         
-        void swap(Rank &rank) {
-            bits_.swap(rank.bits_);
-            rank_tips_.swap(rank.rank_tips_);
+        void swap(BitVector &src) {
+            bits_.swap(src.bits_);
+            rank_tips_.swap(src.rank_tips_);
         }
         
-        static void show_as_bytes(rankBlock value, size_t size) {
-            for (int i = size * 8 - 1; i >= 0; i--) {
-                std::cout << ((value >> i & 1) == 1);
-            }
-            std::cout << std::endl;
-        }
+        BitVector(const BitVector&) = delete;
+        BitVector& operator =(const BitVector&) = delete;
         
-        Rank(const Rank&) = delete;
-        Rank& operator =(const Rank&) = delete;
-        
-        Rank(Rank&&) noexcept = default;
-        Rank& operator =(Rank&&) noexcept = default;
+        BitVector(BitVector&&) noexcept = default;
+        BitVector& operator =(BitVector&&) noexcept = default;
         
     protected:
-        std::vector<rankBlock> bits_;
+        std::vector<idType> bits_;
         struct RankTip {
-            rankBlock L1;
+            idType L1;
             uint8_t L2[kBlockInTipSize];
         };
         std::vector<RankTip> rank_tips_;
-        std::vector<rankBlock> select_tips_;
+        std::vector<idType> select_tips_;
         
         virtual size_t block(size_t index) const {
             return index / kBlockSize;
@@ -292,7 +290,7 @@ namespace array_fsa {
         
     };
     
-    inline void Rank::build(bool useRank, bool useSelect) {
+    inline void BitVector::build(bool useRank, bool useSelect) {
         if (bits_.size() == 0) return;
         
         if (!useRank) return;
@@ -302,7 +300,7 @@ namespace array_fsa {
         buildSelect();
     }
     
-    inline void Rank::buildRank() {
+    inline void BitVector::buildRank() {
         rank_tips_.resize(bits_.size() / kBlockInTipSize + 1);
         auto count = 0;
         for (auto i = 0; i < rank_tips_.size(); i++) {
@@ -318,10 +316,10 @@ namespace array_fsa {
         }
     }
     
-    inline void Rank::buildSelect() {
+    inline void BitVector::buildSelect() {
         auto count = kNum1sPerTip;
         select_tips_.push_back(0);
-        for (rankBlock i = 0; i < rank_tips_.size(); i++) {
+        for (idType i = 0; i < rank_tips_.size(); i++) {
             if (count < rank_tips_[i].L1) {
                 select_tips_.push_back(i - 1);
                 count += kNum1sPerTip;
@@ -330,13 +328,13 @@ namespace array_fsa {
         select_tips_.push_back(rank_tips_.size() - 1);
     }
     
-    inline Rank::rankBlock Rank::rank(size_t index) const {
+    inline BitVector::idType BitVector::rank(size_t index) const {
         const auto &tip = rank_tips_[block(index)];
         return tip.L1 + tip.L2[abs(index) % kBlockInTipSize] + pop_count(bits_[abs(index)] & ((1U << rel(index)) - 1));
     }
     
-    inline Rank::rankBlock Rank::select(size_t index) const {
-        rankBlock left = 0, right = rank_tips_.size();
+    inline BitVector::idType BitVector::select(size_t index) const {
+        idType left = 0, right = rank_tips_.size();
         auto i = index;
         
         if (select_tips_.size() != 0) {
@@ -368,19 +366,28 @@ namespace array_fsa {
         auto ret = (left * kBlockSize) + (offset * kBitSize);
         auto bits = bits_[ret / 0x20];
         
-        auto shiftIndex = [&](size_t blockSize) {
-            auto count = pop_count(bits % blockSize);
+        {
+            auto count = pop_count(bits % 0x10000);
             auto shiftBlock = 0;
-            while ((blockSize - 1) >> (8 * ++shiftBlock));
+            while ((0x10000 - 1) >> (8 * ++shiftBlock));
             shiftBlock *= 8;
             if (count < i) {
                 bits >>= shiftBlock;
                 ret += shiftBlock;
                 i -= count;
             }
-        };
-        shiftIndex(0x10000);
-        shiftIndex(0x100);
+        }
+        {
+            auto count = pop_count(bits % 0x100);
+            auto shiftBlock = 0;
+            while ((0x100 - 1) >> (8 * ++shiftBlock));
+            shiftBlock *= 8;
+            if (count < i) {
+                bits >>= shiftBlock;
+                ret += shiftBlock;
+                i -= count;
+            }
+        }
         
         ret += kSelectTable[i][bits % 0x100];
         return ret - 1;
@@ -388,4 +395,4 @@ namespace array_fsa {
     
 }
 
-#endif /* Rank_hpp */
+#endif /* VitVector_hpp */

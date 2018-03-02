@@ -56,6 +56,10 @@ namespace array_fsa {
         os.write(reinterpret_cast<const char*>(&vec[0]), sizeof(T) * vec.size());
     }
     
+    inline void write_bit(const bool bit, std::ostream& os) {
+        write_val(static_cast<uint8_t>(bit), os);
+    }
+    
     template<typename T>
     inline T read_val(std::istream& is) {
         T val;
@@ -69,6 +73,10 @@ namespace array_fsa {
         std::vector<T> vec(size);
         is.read(reinterpret_cast<char*>(&vec[0]), sizeof(T) * size);
         return vec; // expect move
+    }
+    
+    inline bool read_bit(std::istream& is) {
+        return static_cast<bool>(read_val<uint8_t>(is));
     }
     
     template<typename T>

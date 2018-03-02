@@ -8,9 +8,10 @@
 #include "basic.hpp"
 #include <unordered_map>
 
+#include "PlainFSA.hpp"
+
 namespace array_fsa {
     
-    class PlainFSA;
     template <bool DAC, class CODES>
     class FSA;
     
@@ -19,8 +20,30 @@ namespace array_fsa {
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 2;
         
-        template <bool DAC, class CODES>
-        static FSA<DAC, CODES> build(const PlainFSA&);
+        template <class T>
+        static T build(const PlainFSA &origFsa) {
+            ArrayFSABuilder builder(origFsa);
+            builder.build_();
+            
+            T newFsa;
+            
+            const auto numElem = builder.num_elems_();
+            newFsa.setNumElement(numElem);
+            
+            auto numTrans = 0;
+            for (auto i = 0; i < numElem; i++) {
+                newFsa.setCheck(i, builder.get_check_(i));
+                newFsa.setNextAndIsFinal(i, builder.get_next_(i), builder.is_final_(i));
+                if (builder.is_frozen_(i))
+                    numTrans++;
+            }
+            newFsa.setNumTrans(numTrans);
+            newFsa.buildBitArray();
+            
+            //    showInBox(builder, newFsa);
+            
+            return newFsa;
+        }
         
         template <class T>
         static void showInBox(ArrayFSABuilder&, T&);
@@ -127,11 +150,54 @@ namespace array_fsa {
         
         // MARK: methods
         
-        virtual void build_();
-        virtual void expand_();
+        void build_();
+        void expand_();
         void freeze_state_(size_t index);
         void close_block_(size_t begin);
-        virtual void arrange_(size_t state, size_t index);
+        
+        virtual void arrange_(size_t state, size_t index) {
+            const auto first_trans = orig_fsa_.get_first_trans(state);
+            
+            if (first_trans == 0) {
+                set_next_(index, index); // to the terminal state
+                return;
+            }
+            
+            { // Set next of offset to state's second if needed.
+                auto it = state_map_.find(state);
+                if (it != state_map_.end()) {
+                    // already visited state
+                    set_next_(index, it->second);
+                    return;
+                }
+            }
+            
+            const auto next = find_next_(first_trans);
+            if (offset_(next) >= bytes_.size()) {
+                expand_();
+            }
+            
+            set_next_(index, next);
+            state_map_.insert(std::make_pair(state, next));
+            set_used_next_(next, true);
+            
+            for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
+                const auto symbol = orig_fsa_.get_trans_symbol(trans);
+                const auto child_index = next ^ symbol;
+                
+                freeze_state_(child_index);
+                set_check_(child_index, symbol);
+                
+                if (orig_fsa_.is_final_trans(trans)) {
+                    set_final_(child_index, true);
+                }
+            }
+            
+            for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
+                const auto symbol = orig_fsa_.get_trans_symbol(trans);
+                arrange_(orig_fsa_.get_target_state(trans), next ^ symbol);
+            }
+        }
         
         // so-called XCHECK
         size_t find_next_(size_t first_trans) const;

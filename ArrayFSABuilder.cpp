@@ -7,145 +7,10 @@
 #include "ArrayFSABuilder.hpp"
 
 #include "PlainFSA.hpp"
-//#include "ArrayFSA.hpp"
-//#include "NArrayFSA.hpp"
-//#include "NArrayFSADACs.hpp"
 #include "FSA.hpp"
 #include "Calc.hpp"
 
 using namespace array_fsa;
-
-// MARK: - static
-
-//template <>
-//ArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
-//    ArrayFSABuilder builder(orig_fsa);
-//    builder.build_();
-//
-//    // Release
-//    ArrayFSA new_fsa;
-//    const auto num_elems = builder.num_elems_();
-//
-//    new_fsa.calc_next_size(num_elems);
-//    new_fsa.element_size_ = new_fsa.next_size_ + 1;
-//
-//    new_fsa.bytes_.resize(num_elems * new_fsa.element_size_);
-//
-//    for (size_t i = 0; i < num_elems; ++i) {
-//        const auto new_offset = i * new_fsa.element_size_;
-//
-//        // Set final flag to top of next bit.
-//        size_t next = (builder.get_next_(i) << 1) | (builder.is_final_(i) ? 1 : 0);
-//        std::memcpy(&new_fsa.bytes_[new_offset], &next, new_fsa.next_size_);
-//        new_fsa.bytes_[new_offset + new_fsa.next_size_] = builder.get_check_(i);
-//
-//        if (builder.is_frozen_(i)) {
-//            ++new_fsa.num_trans_;
-//        }
-//    }
-//
-//    builder.showMapping(false);
-//
-////    showInBox(builder, new_fsa);
-//
-//    return new_fsa;
-//}
-//
-//template <>
-//NArrayFSA ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
-//    ArrayFSABuilder builder(orig_fsa);
-//    builder.build_();
-//
-//    // Release
-//    NArrayFSA newFsa;
-//
-//    const auto numElems = builder.num_elems_();
-//    auto nextSize = Calc::sizeFitInBytes(numElems << 1);
-//    newFsa.setValuesSizes(nextSize, 1);
-//    newFsa.byte_array_.resize(numElems);
-//
-//    auto numTrans = 0;
-//    for (size_t i = 0; i < numElems; ++i) {
-//        newFsa.setCheck(i, builder.get_check_(i));
-//        newFsa.setNextAndFinal(i, builder.get_next_(i), builder.is_final_(i));
-//
-//        if (builder.is_frozen_(i)) {
-//            numTrans++;
-//        }
-//    }
-//    newFsa.set_num_trans_(numTrans);
-//
-//    //    showInBox(builder, newFsa);
-//
-//    return newFsa;
-//}
-//
-//template <>
-//NArrayFSADACs ArrayFSABuilder::build(const PlainFSA& orig_fsa) {
-//    ArrayFSABuilder builder(orig_fsa);
-//    builder.build_();
-//
-//    // Release
-//    NArrayFSADACs newFsa;
-//
-//    const auto numElems = builder.num_elems_();
-//    newFsa.flows_.setMaxValue((numElems - 1) >> 8);
-//    newFsa.setValuesSizes(NArrayFSADACs::kNextSize, 1);
-//    newFsa.byte_array_.resize(numElems);
-//
-//    auto numTrans = 0;
-//    for (size_t i = 0; i < numElems; ++i) {
-//        newFsa.setNext(i, builder.get_next_(i));
-//        newFsa.setCheck(i, builder.get_check_(i));
-//        newFsa.setIsFinal(i, builder.is_final_(i));
-//
-//        if (builder.is_frozen_(i)) {
-//            numTrans++;
-//        }
-//    }
-//    newFsa.flows_.build();
-//    newFsa.set_num_trans_(numTrans);
-//
-////    showInBox(builder, newFsa);
-//
-//    return newFsa;
-//}
-
-//template<> FSA<true> ArrayFSABuilder::build(const array_fsa::PlainFSA& fsa) {
-//    return ArrayFSABuilder::build<true>(fsa);
-//}
-//template<> FSA<false> ArrayFSABuilder::build(const array_fsa::PlainFSA& fsa) {
-//    return ArrayFSABuilder::build<false>(fsa);
-//}
-
-template <bool USE_DAC, class CODES>
-FSA<USE_DAC, CODES> ArrayFSABuilder::build(const PlainFSA& origFsa) {
-    ArrayFSABuilder builder(origFsa);
-    builder.build_();
-    
-    FSA<USE_DAC, CODES> newFsa;
-    
-    const auto numElem = builder.num_elems_();
-    newFsa.setNumElement(numElem);
-    
-    auto numTrans = 0;
-    for (auto i = 0; i < numElem; i++) {
-        newFsa.setCheck(i, builder.get_check_(i));
-        newFsa.setNextAndIsFinal(i, builder.get_next_(i), builder.is_final_(i));
-        if (builder.is_frozen_(i))
-            numTrans++;
-    }
-    newFsa.setNumTrans(numTrans);
-    newFsa.buildBitArray();
-    
-//    showInBox(builder, newFsa);
-    
-    return newFsa;
-}
-
-template FSA<true> ArrayFSABuilder::build(const PlainFSA &);
-template FSA<false> ArrayFSABuilder::build(const PlainFSA &);
-template FSA<true, SACs> ArrayFSABuilder::build(const PlainFSA &);
 
 template <class T>
 void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
@@ -158,16 +23,6 @@ void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
         std::cout << std::endl;
     }
 }
-
-//template <>
-//void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, ArrayFSA &fsa) {
-//    auto tab = "\t";
-//    for (auto i = 0; i < 256; i++) {
-//        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
-//        std::cout << i << tab << fsa.is_final_trans(i) << tab << fsa.get_next_(i) << tab << fsa.get_check_(i) << std::endl;;
-//        std::cout << std::endl;
-//    }
-//}
 
 
 // MARK: - public
@@ -295,50 +150,6 @@ void ArrayFSABuilder::close_block_(size_t begin) {
         }
         freeze_state_(i);
         set_frozen_(i, false);
-    }
-}
-
-void ArrayFSABuilder::arrange_(size_t state, size_t index) {
-    const auto first_trans = orig_fsa_.get_first_trans(state);
-    
-    if (first_trans == 0) {
-        set_next_(index, index); // to the terminal state
-        return;
-    }
-    
-    { // Set next of offset to state's second if needed.
-        auto it = state_map_.find(state);
-        if (it != state_map_.end()) {
-            // already visited state
-            set_next_(index, it->second);
-            return;
-        }
-    }
-    
-    const auto next = find_next_(first_trans);
-    if (offset_(next) >= bytes_.size()) {
-        expand_();
-    }
-    
-    set_next_(index, next);
-    state_map_.insert(std::make_pair(state, next));
-    set_used_next_(next, true);
-    
-    for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-        const auto symbol = orig_fsa_.get_trans_symbol(trans);
-        const auto child_index = next ^ symbol;
-        
-        freeze_state_(child_index);
-        set_check_(child_index, symbol);
-        
-        if (orig_fsa_.is_final_trans(trans)) {
-            set_final_(child_index, true);
-        }
-    }
-    
-    for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-        const auto symbol = orig_fsa_.get_trans_symbol(trans);
-        arrange_(orig_fsa_.get_target_state(trans), next ^ symbol);
     }
 }
 

@@ -11,8 +11,7 @@ namespace array_fsa {
     
     class PlainFSA {
         friend class PlainFSABuilder;
-        friend class PlainFSATail;
-        friend class StringDictBuilder;
+        
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kTransSize = 2 + kAddrSize;
@@ -65,6 +64,10 @@ namespace array_fsa {
         
         size_t get_num_trans() const {
             return num_trans_;
+        }
+        
+        size_t get_bytes_size() const {
+            return bytes_.size() / kTransSize;
         }
         
         bool is_multi_child_state(size_t state) const {

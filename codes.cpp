@@ -10,7 +10,7 @@
 using namespace array_fsa;
 
 int main() {
-    CodesMeasurer::bench<DACs>();
-    CodesMeasurer::bench<SACs>();
+    CodesMeasurer::bench<DACs<>>();
+    CodesMeasurer::bench<SACs<>>();
     
 }

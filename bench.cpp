@@ -43,29 +43,33 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = *argv[3];
     
-    fsa_name = "../../results/wikipedia/wikipedia.fsa";
-    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
-//    fsa_name = "../../results/indochina-2004/indochina-2004.fsa";
+//    fsa_name = "../../results/wikipedia/wikipedia.fsa";
+//    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
+//    fsa_name = "../../results/indochina-2004/indochina-2004.stfsa"; type = '5';
+//    fsa_name = "../../results/indochina-2004/indochina-2004.stcfsa"; type = '7';
 //    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
-//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa";
-//    query_name = "../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
-    type = '0';
-
+//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stfsa";type = '5';
+    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa";type = '7';
+    query_name = "../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
+//    type = '8';
+    
     switch (type) {
         case '1':
             return bench<MorfologikFSA5>(fsa_name, query_name);
         case '2':
             return bench<MorfologikCFSA2>(fsa_name, query_name);
-        case '6':
+        case '3':
             return bench<OriginalFSA>(fsa_name, query_name);
-        case '7':
+        case '4':
             return bench<DacFSA>(fsa_name, query_name);
-        case '8':
+        case '5':
             return bench<STFSA>(fsa_name, query_name);
-        case '9':
-            return bench<DacSTFSA>(fsa_name, query_name);
-        case '0':
+        case '6':
             return bench<SacFSA>(fsa_name, query_name);
+        case '7':
+            return bench<STCFSA>(fsa_name, query_name);
+        case '8':
+            return bench<STCFSAB>(fsa_name, query_name);
         default:
             return 1;
     }

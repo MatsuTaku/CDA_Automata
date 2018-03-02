@@ -1,4 +1,4 @@
-//
+
 //  StringTransFSA.hpp
 //  ArrayFSA
 //
@@ -11,75 +11,79 @@
 #include "ByteData.hpp"
 
 #include "NextCheck.hpp"
-#include "Rank.hpp"
+#include "BitVector.hpp"
 #include "StringArray.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
     
-    template <bool DAC>
+    template <class C_CODES, class STR_ARR>
     class StringTransFSA : ByteData {
     public:
+        using checkCodesType = C_CODES;
+        using NCType = NextCheck<false, true, DACs<>, C_CODES>;
+        static constexpr bool useLink = C_CODES::useLink;
+        using SAType = STR_ARR;
+    public:
         static std::string name() {
-            std::string name = (!DAC ? "Original" : "Dac");
-            return name + "STFSA";
+            std::string link = (useLink ? "ST" : "STC");
+            return link + "FSA";
         }
         
         static StringTransFSA build(const PlainFSA& fsa);
         
-        StringTransFSA() {
-            nc_.setUseDacNext(DAC);
-            nc_.setUseDacCheck(true);
+        StringTransFSA() = default;
+        
+        StringTransFSA(std::istream &is) {
+            read(is);
         }
+        
         ~StringTransFSA() = default;
         
         bool isMember(const std::string& str) const { // TODO: -
             size_t trans = 0;
-            for (size_t pos = 0; pos < str.size();) {
+            for (size_t pos = 0, size = str.size(); pos < size;) {
                 uint8_t c = str[pos];
                 trans = target(trans) ^ c;
                 if (!isStringTrans(trans)) {
-                    if (check(trans) != c) return false;
+                    auto checkE = check(trans);
+                    if (checkE != c)
+                        return false;
                     pos++;
                 } else {
-                    if (!strings_.isMatch(&pos, str, stringIndex(trans)))
+                    if (!strings_.isMatch(&pos, str, stringId(trans)))
                         return false;
                 }
             }
             return isFinal(trans);
         }
         
-        auto target(size_t index) const {
+        size_t target(size_t index) const {
             return next(index) ^ index;
         }
         
         size_t next(size_t index) const {
-            if (DAC)
-                return nc_.next(index);
-            else
-                return nc_.next(index) >> 1;
+            return nc_.next(index) >> 1;
         }
         
         uint8_t check(size_t index) const {
             return nc_.check(index);
         }
         
-        size_t stringIndex(size_t index) const {
-            auto i = nc_.check(index);
-            return i;
+        size_t stringId(size_t index) const {
+            return nc_.stringId(index);
         }
         
         bool isFinal(size_t index) const {
-            if (DAC)
-                return is_final_bits_.get(index);
-            else
-                return (nc_.next(index) & 1) != 0;
+            return (nc_.next(index) & 1) != 0;
         }
         
         bool isStringTrans(size_t index) const {
-//            return is_string_bits_.get(index);
-            return nc_.getBitInFlow(index);
+            if (useLink)
+                return nc_.getBitInFlow(index);
+            else
+                return is_string_bits_[index];
         }
         
         // MARK: - build
@@ -89,29 +93,24 @@ namespace array_fsa {
         }
         
         void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
-            if (DAC) {
-                nc_.setNext(index, next);
-                is_final_bits_.set(index, isFinal);
-            } else {
-                size_t value = next << 1 | isFinal;
-                nc_.setNext(index, value);
-                if (nc_.next(index) != value) {
-                    abort();
-                }
-            }
+            size_t value = next << 1 | isFinal;
+            nc_.setNext(index, value);
         }
         
         void setIsStringTrans(size_t index, bool isString) {
-//            is_string_bits_.set(index, isString);
-            nc_.setBitInFlow(index, isString);
+            if (useLink) {
+                nc_.setBitInFlow(index, isString);
+            } else {
+                is_string_bits_.set(index, isString);
+            }
         }
         
         void setStringIndex(size_t index, size_t strIndex) {
             nc_.setStringIndex(index, strIndex);
         }
         
-        void setStringArray(std::vector<uint8_t> &strs) {
-            strings_.setStringArray(strs);
+        void setStringArray(const STR_ARR& sArr) {
+            strings_ = sArr;
         }
         
         void buildBitArray() {
@@ -121,14 +120,11 @@ namespace array_fsa {
         // MARK: - Protocol setting
         
         void setNumElement(size_t num) {
-            if (DAC)
-                nc_.setNumElement(num, false);
-            else
-                nc_.setNumElement(num, true);
+            nc_.setNumElement(num, true);
         }
         
         void setNumStrings(size_t num) {
-            nc_.setNumStrings(num);
+            nc_.setNumStrings(num, useLink);
         }
         
         void setNumTrans(size_t num) {
@@ -140,9 +136,8 @@ namespace array_fsa {
         size_t sizeInBytes() const override {
             auto size = sizeof(num_trans_);
             size += nc_.sizeInBytes();
-            if (DAC)
-                size += is_final_bits_.sizeInBytes();
-            size += is_string_bits_.sizeInBytes();
+            if (!useLink)
+                size += is_string_bits_.sizeInBytes();
             size += strings_.sizeInBytes();
             return size;
         }
@@ -150,18 +145,16 @@ namespace array_fsa {
         void write(std::ostream& os) const override {
             write_val(num_trans_, os);
             nc_.write(os);
-            if (DAC)
-                is_final_bits_.write(os);
-            is_string_bits_.write(os);
+            if (!useLink)
+                is_string_bits_.write(os);
             strings_.write(os);
         }
         
         void read(std::istream& is) override {
             num_trans_ = read_val<size_t>(is);
             nc_.read(is);
-            if (DAC)
-                is_final_bits_.read(is);
-            is_string_bits_.read(is);
+            if (!useLink)
+                is_string_bits_.read(is);
             strings_.read(is);
         }
         
@@ -180,22 +173,24 @@ namespace array_fsa {
         // MARK: - Copy guard
         
         StringTransFSA (const StringTransFSA&) = delete;
-        StringTransFSA& operator =(const StringTransFSA&) = delete;
+        StringTransFSA& operator=(const StringTransFSA&) = delete;
         
         StringTransFSA(StringTransFSA&& rhs) noexcept = default;
-        StringTransFSA& operator =(StringTransFSA&& rhs) noexcept = default;
+        StringTransFSA& operator=(StringTransFSA&& rhs) noexcept = default;
         
     private:
         size_t num_trans_ = 0;
-        NextCheck<DACs> nc_;
-        Rank is_final_bits_;
-        Rank is_string_bits_;
-        StringArray strings_;
+        NCType nc_;
+        BitVector is_final_bits_;
+        BitVector is_string_bits_;
+        SAType strings_;
         
+        friend class ArrayFSATailBuilder;
     };
     
-    using STFSA = StringTransFSA<false>;
-    using DacSTFSA = StringTransFSA<true>;
+    using STFSA = StringTransFSA<DACs<true>, StringArray<false>>;
+    using STCFSA = StringTransFSA<DACs<false>, StringArray<false>>;
+    using STCFSAB = StringTransFSA<DACs<false>, StringArray<true>>;
     
 }
 

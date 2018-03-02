@@ -14,6 +14,7 @@ namespace array_fsa {
     
     struct StrDictData {
         size_t id = 0;
+        size_t node_id = 0;
         std::string label = "";
         bool isIncluded = false;
         size_t owner = 0;

@@ -9,5 +9,6 @@
 
 using namespace array_fsa;
 
-template<> class NextCheck<DACs>;
-template<> class NextCheck<SACs>;
+//template<> class NextCheck<DACs<>>;
+//template<> class NextCheck<SACs<>>;
+

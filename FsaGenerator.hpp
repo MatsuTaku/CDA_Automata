@@ -11,6 +11,7 @@
 #include "PlainFSABuilder.hpp"
 #include "PlainFSA.hpp"
 #include "ArrayFSABuilder.hpp"
+#include "ArrayFSATailBuilder.hpp"
 #include "FSA.hpp"
 
 #include "Exception.hpp"
@@ -100,6 +101,9 @@ namespace array_fsa {
         T fsa_;
         
     };
+    
+    using ArrayFSAGenerator = FsaGenerator<FSA<false>>;
+    using ArrayFSADACGenerator = FsaGenerator<FSA<true>>;
     
 }
 

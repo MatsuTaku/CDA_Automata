@@ -10,67 +10,112 @@
 
 #include "ByteData.hpp"
 
+#include "StringArrayBuilder.hpp"
+#include "BitVector.hpp"
 #include "basic.hpp"
 
 namespace array_fsa {
     
+    template<bool BINARY = false>
     class StringArray : ByteData {
-        using ArrayType = std::vector<uint8_t>;
     public:
+        static constexpr bool binaryMode = BINARY;
+    public:
+        using ArrayType = std::vector<uint8_t>;
+        static constexpr bool kBinaryMode = BINARY;
         static constexpr uint8_t kEndLabel = '\0';
         
         // MARK: - Constructor
         
         StringArray() = default;
-        StringArray(std::vector<uint8_t>& strings) {
-            setStringArray(strings);
+        StringArray(StringArrayBuilder* builder) {
+            if (BINARY != builder->isBinary()) {
+                std::cout << "StringArray error type of binary mode!!" << std::endl;
+                abort();
+            }
+            bytes_ = std::move(bytes(*builder));
+            if (BINARY) {
+                boundary_flags_ = std::move(boundaryFlags(*builder));
+            }
+        }
+        
+        explicit StringArray(std::istream& is) {
+            read(is);
         }
         
         ~StringArray() = default;
         
+        // MARK: - Property
+        
         bool isMatch(size_t* pos, const std::string& str, size_t strIndex) const {
-            // TODO:
-            uint8_t symbol = str[*pos];
-            uint8_t c = bytes_[strIndex];
-            while (symbol == c) {
-                c = bytes_[++strIndex];
-                if (++*pos >= str.size())
-                    break;
-                symbol = str[*pos];
+            for (auto size = str.size(); *pos < size;) {
+                if (static_cast<uint8_t>(str[*pos]) != bytes_[strIndex])
+                    return false;
+                ++*pos;
+                if (BINARY ? boundary_flags_[strIndex] : bytes_[strIndex + 1] == kEndLabel)
+                    return true;
+                ++strIndex;
             }
-            return c == kEndLabel;
+            return false;
         }
         
-        // MARK: - build
+        uint8_t operator[](size_t index) const {
+            return bytes_[index];
+        }
         
-        void setStringArray(std::vector<uint8_t>& strings) {
-            bytes_ = std::move(strings);
+        bool isEnd(size_t index) const {
+            if (BINARY)
+                return boundary_flags_[index];
+            else
+                return bytes_[index + 1] == kEndLabel;
+        }
+        
+        std::string string(size_t index) const {
+            std::string s;
+            uint8_t c;
+            do {
+                c = bytes_[index++];
+                s.push_back(c);
+            } while (c != kEndLabel);
+            return s;
+        }
+        
+        size_t size() const {
+            return bytes_.size();
         }
         
         // MARK: - ByteData method
         
         size_t sizeInBytes() const override {
-            return size_vec(bytes_);
+            auto size = size_vec(bytes_);
+            if (BINARY)
+                size += boundary_flags_.sizeInBytes();
+            return size;
         }
         
         void write(std::ostream& os) const override {
             write_vec(bytes_, os);
+            if (BINARY)
+                boundary_flags_.write(os);
         }
         
         void read(std::istream& is) override {
             bytes_ = read_vec<uint8_t>(is);
+            if (BINARY)
+                boundary_flags_.read(is);
         }
         
         // MARK: - Copy guard
         
         StringArray(const StringArray&) = delete;
-        StringArray& operator =(const StringArray&) = delete;
+        StringArray& operator=(const StringArray&) = delete;
         
         StringArray(StringArray&&) noexcept = default;
-        StringArray& operator =(StringArray&&) noexcept = default;
+        StringArray& operator=(StringArray&&) noexcept = default;
         
     private:
         ArrayType bytes_;
+        BitVector boundary_flags_;
         
     };
     

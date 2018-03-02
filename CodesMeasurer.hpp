@@ -20,32 +20,34 @@ namespace array_fsa {
             std::cout << "---- Benchmark of " << T::name() << "----" << std::endl;
             
             const size_t num = 100000;
-            std::vector<float_t> secs(4);
-            std::vector<size_t> sizes(4);
             
-            for (auto byte = 1; byte <= 5; byte++) {
+            for (auto byte = 1; byte <= 8; byte++) {
                 std::vector<uint8_t> highs(num);
                 
                 std::vector<size_t> numbers;
                 if (byte <= 4) {
                     numbers = byteArray(byte, num);
-                } else {
+                } else if (byte == 5) {
                     numbers = randomArray(num);
+                } else if (byte == 6) {
+                    numbers = curveArray8(num);
+                } else if (byte == 7) {
+                    numbers = curveArray9(num);
+                } else if (byte == 8) {
+                    numbers = curveArray44(num);
                 }
                 
                 CodeArray<T> code;
                 code.setCodes(numbers);
                 
                 Stopwatch sw;
+                size_t n; // never use
                 for (auto i = 0; i < num; i++) {
-                    auto n = highs[i] |code.getCode(i) << 8;
-                    n = 0;
+                    n = highs[i] | (code.getCode(i) << 8);
                 }
                 auto mSec = sw.get_micro_sec();
-                secs[byte - 1] = mSec / num * 1000;
-                sizes[byte - 1] = code.sizeInBytes();
-                std::cout << byte << " byte time: " << secs[byte - 1] << " ns/" << num << std::endl;
-                std::cout << "       size: " << sizes[byte - 1] << std::endl;
+                std::cout << byte << " byte time: " << mSec / num * 1000 << " ns/" << num << std::endl;
+                std::cout << "       size: " << code.sizeInBytes() << std::endl;
             }
         }
         
@@ -61,6 +63,37 @@ namespace array_fsa {
             std::vector<size_t> numbers(num);
             for (auto i = 0; i < num; i++) {
                 auto size = std::rand() % 4;
+                numbers[i] = (1 << (8 * size)) - 1;
+            }
+            return numbers;
+        }
+        
+        static std::vector<size_t> curveArray8(size_t num) {
+            std::vector<size_t> numbers(num);
+            for (auto i = 0; i < num; i++) {
+                auto size = std::rand() % 15;
+                if (size > 3) size = 0;
+                numbers[i] = (1 << (8 * size)) - 1;
+            }
+            return numbers;
+        }
+        
+        static std::vector<size_t> curveArray9(size_t num) {
+            std::vector<size_t> numbers(num);
+            for (auto i = 0; i < num; i++) {
+                auto size = std::rand() % 30;
+                if (size > 3) size = 0;
+                numbers[i] = (1 << (8 * size)) - 1;
+            }
+            return numbers;
+        }
+        
+        static std::vector<size_t> curveArray44(size_t num) {
+            std::vector<size_t> numbers(num);
+            for (auto i = 0; i < num; i++) {
+                auto size = std::rand() % 10;
+                if (size > 3) size = 0;
+                if (size > 6) size = 1;
                 numbers[i] = (1 << (8 * size)) - 1;
             }
             return numbers;

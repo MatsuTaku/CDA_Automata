@@ -15,8 +15,10 @@
 
 namespace array_fsa {
     
+    template<bool LINK = false>
     class DACs : ByteData {
-        friend class NArrayFSATextEdge;
+    public:
+        static constexpr bool useLink = LINK;
     public:
         // MARK: Constructor
         
@@ -35,10 +37,6 @@ namespace array_fsa {
             return "DACs";
         }
         
-        void useLink(bool use) {
-            use_link_ = use;
-        }
-        
         void setUnitSize(uint8_t size) {
             unit_size_ = size;
         }
@@ -47,9 +45,7 @@ namespace array_fsa {
             if (num_units_ >= size) return;
             units_.resize(size);
             for (auto i = num_units_; i < size; i++) {
-                DacUnit unit;
-                unit.setUnitSize(unit_size_);
-                units_[i] = std::move(unit);
+                units_[i].setUnitSize(unit_size_);
             }
             num_units_ = size;
         }
@@ -112,7 +108,8 @@ namespace array_fsa {
     
     // MARK: - inline function
     
-    inline size_t DACs::getValue(size_t index) const {
+    template<bool L>
+    inline size_t DACs<L>::getValue(size_t index) const {
         size_t value = 0;
         auto depth = 0;
         for (const auto &unit : units_) {
@@ -124,14 +121,18 @@ namespace array_fsa {
         return value;
     }
     
-    inline void DACs::setValue(size_t index, size_t value) {
+    template<bool L>
+    inline void DACs<L>::setValue(size_t index, size_t value) {
         auto size = Calc::sizeFitInUnits(value, unit_size_ * 8);
         if (size > num_units_)
             expand(size);
         auto mask = (size_t(1) << (8 * unit_size_)) - 1;
         auto depth = 0;
         for (auto &unit : units_) {
-            if (value == 0 && (!use_link_ || depth > 0)) break;
+            if (value == 0 && (!L || depth > 0)) {
+                unit.setBit(index, false);
+                break;
+            }
             unit.setBit(index, true);
             unit.setByte(value & mask);
             index = unit.size() - 1;

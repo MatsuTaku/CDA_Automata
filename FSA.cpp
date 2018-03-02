@@ -11,22 +11,19 @@
 
 using namespace array_fsa;
 
-template<> class FSA<false>;
-template<> class FSA<true, DACs>;
-template<> class FSA<true, SACs>;
 
-template <>
-FSA<false> FSA<false>::build(const PlainFSA& fsa) {
-    return ArrayFSABuilder::build<false, DACs>(fsa);
-}
-
-template <>
-FSA<true, DACs> FSA<true, DACs>::build(const PlainFSA& fsa) {
-    return ArrayFSABuilder::build<true, DACs>(fsa);
+template<>
+OriginalFSA OriginalFSA::build(const PlainFSA& fsa) {
+    return ArrayFSABuilder::build<OriginalFSA>(fsa);
 }
 
 template<>
-FSA<true, SACs> FSA<true, SACs>::build(const PlainFSA& fsa) {
-    return ArrayFSABuilder::build<true, SACs>(fsa);
+DacFSA DacFSA::build(const PlainFSA& fsa) {
+    return ArrayFSABuilder::build<DacFSA>(fsa);
+}
+
+template<>
+SacFSA SacFSA::build(const PlainFSA& fsa) {
+    return ArrayFSABuilder::build<SacFSA>(fsa);
 }
 

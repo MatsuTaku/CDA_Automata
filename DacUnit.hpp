@@ -8,7 +8,7 @@
 #define DacUnit_hpp
 
 #include "basic.hpp"
-#include "Rank.hpp"
+#include "BitVector.hpp"
 
 namespace array_fsa {
     
@@ -26,7 +26,7 @@ namespace array_fsa {
         }
         
         bool getBit(size_t index) const {
-            return bits_.get(index);
+            return bits_[index];
         }
         
         size_t getByteUnit(size_t rank) const {
@@ -85,7 +85,7 @@ namespace array_fsa {
         DacUnit& operator =(DacUnit&&) noexcept = default;
         
     private:
-        Rank bits_;
+        BitVector bits_;
         std::vector<uint8_t> bytes_;
         
         uint8_t unit_size_ = 1;

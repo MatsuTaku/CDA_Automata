@@ -15,7 +15,10 @@
 
 namespace array_fsa {
     
+    template<bool LINK = false>
     class SACs : ByteData {
+    public:
+        static constexpr bool useLink = LINK;
     public:
         // MARK: Constructor
         
@@ -32,10 +35,6 @@ namespace array_fsa {
         
         static std::string name() {
             return "SACs";
-        }
-        
-        void useLink(bool use) {
-            use_link_ = use;
         }
         
         void setUnitSize(uint8_t size) {
@@ -106,17 +105,17 @@ namespace array_fsa {
         
     private:
         uint8_t unit_size_ = 1;
-        Rank first_bits_;
+        BitVector first_bits_;
         size_t num_units_ = 0;
         std::vector<DacUnit> units_ = {};
-        bool use_link_ = false;
         
     };
     
     // MARK: - inline function
     
-    inline size_t SACs::getValue(size_t index) const {
-        if (first_bits_.get(index)) return 0;
+    template <bool L>
+    inline size_t SACs<L>::getValue(size_t index) const {
+        if (first_bits_[index]) return 0;
         for (const auto &unit : units_) {
             if (unit.getBit(index))
                 return unit.getByteUnit(unit.rank(index));
@@ -124,17 +123,27 @@ namespace array_fsa {
         return 0;
     }
     
-    inline void SACs::setValue(size_t index, size_t value) {
-        if (value == 0 && !use_link_) {
+    template <bool L>
+    inline void SACs<L>::setValue(size_t index, size_t value) {
+        // If using link, units size equal 1.
+        assert(!(L && units_.size() > 1));
+        if (value == 0 && !L) {
             first_bits_.set(index, true);
             return;
         }
+        first_bits_.set(index, false);
         auto size = Calc::sizeFitInUnits(value, unit_size_ * 8);
         if (size > num_units_)
             expand(size);
-        auto &unit = units_[size - 1];
-        unit.setBit(index, true);
-        unit.setByte(value);
+        for (auto level = 0; level < units_.size(); level++) {
+            auto &unit = units_[level];
+            if (level == size - 1) {
+                unit.setBit(index, true);
+                unit.setByte(value);
+            } else {
+                unit.setBit(index, false);
+            }
+        }
     }
     
 }

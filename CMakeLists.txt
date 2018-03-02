@@ -16,11 +16,9 @@ set(HEADER_FILES
   ArrayFSABuilder.hpp
   ArrayFSATailBuilder.hpp
   ArrayTri.hpp
-  Rank.hpp
+  BitVector.hpp
   basic.hpp
   Exception.hpp
-  FsaTools.hpp
-  FsaGenerator.hpp
   MorfologikCFSA2.hpp
   MorfologikFSA5.hpp
   PlainFSA.hpp
@@ -37,9 +35,11 @@ set(HEADER_FILES
   FSA.hpp
   StringTransFSA.hpp
   StringArray.hpp
+StringArrayBuilder.hpp
   SACs.hpp
   CodeArray.hpp
-  CodesMeasurer.hpp
+  SortedStringList.hpp
+  Log.hpp
 )
 
 set(SOURCE_FILES
@@ -60,12 +60,12 @@ add_library(ArrayFSA STATIC
 add_executable(test_PlainFSA test_PlainFSA.cpp)
 target_link_libraries(test_PlainFSA ArrayFSA)
 
-add_executable(bench bench.cpp)
+add_executable(bench bench.cpp FsaTools.hpp)
 target_link_libraries(bench ArrayFSA)
 
-add_executable(build build.cpp)
+add_executable(build build.cpp FsaGenerator.hpp)
 target_link_libraries(build ArrayFSA)
 
-add_executable(codes codes.cpp)
+add_executable(codes codes.cpp CodesMeasurer.hpp)
 target_link_libraries(codes ArrayFSA)
 

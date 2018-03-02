@@ -19,45 +19,36 @@
 
 namespace array_fsa {
     
-    template <class CODES>
-    struct Id : ByteData {
-        CODES flows;
-        bool useDac = false;
-        
-        size_t sizeInBytes() const override {
-            auto size = 1;
-            size += flows.sizeInBytes();
-            size += 1;
-            return size;
-        }
-        
-        void write(std::ostream& os) const override {
-            flows.write(os);
-            write_val(static_cast<uint8_t>(useDac), os);
-        }
-        
-        void read(std::istream& is) override {
-            flows.read(is);
-            useDac = static_cast<bool>(read_val<uint8_t>(is));
-        }
-    };
-    
-    template <class CODES>
+    template <
+    bool N,
+    bool C,
+    class N_CODES = DACs<>,
+    class C_CODES = DACs<true>
+    >
     class NextCheck : ByteData {
+    public:
+        static constexpr bool useNextCodes = N;
+        static constexpr bool useCheckCodes = C;
+        using nCodes = N_CODES;
+        using cCodes = C_CODES;
     public:
         NextCheck() = default;
         ~NextCheck() = default;
         
         size_t next(size_t index) const {
             auto next = bytes_.getValue<size_t>(index, 0);
-            if (!nextId.useDac) return next;
-            return next | nextId.flows[index] << 8;
+            if (!N) return next;
+            return next | nextFlow[index] << 8;
         }
         
-        size_t check(size_t index) const {
-            auto check = bytes_.getValue<uint8_t>(index, 1);
-            if (!checkId.useDac) return check;
-            return check | checkId.flows[index] << 8;
+        uint8_t check(size_t index) const {
+            return bytes_.getValue<uint8_t>(index, 1);
+        }
+        
+        size_t stringId(size_t index) const {
+            assert(C);
+            auto id = bytes_.getValue<uint8_t>(index, 1);
+            return id | checkFlow[index] << 8;
         }
         
         size_t numElements() const {
@@ -65,16 +56,16 @@ namespace array_fsa {
         }
         
         bool getBitInFlow(size_t index) const {
-            if (!checkId.useDac) abort();
-            return checkId.flows.getBitInFirstUnit(index);
+            if (!C) abort();
+            return checkFlow.getBitInFirstUnit(index);
         }
         
         // MARK: - build
         
         void setNext(size_t index, size_t next) {
             bytes_.setValue(index, 0, next);
-            if (!nextId.useDac) return;
-            nextId.flows.setValue(index, next >> 8);
+            if (!N) return;
+            nextFlow.setValue(index, next >> 8);
         }
         
         void setCheck(size_t index, uint8_t check) {
@@ -82,76 +73,65 @@ namespace array_fsa {
         }
         
         void setStringIndex(size_t index, size_t strIndex) {
-            if (!checkId.useDac) return;
+            assert(C);
             setCheck(index, strIndex & 0xff);
-            checkId.flows.setValue(index, strIndex >> 8);
+            checkFlow.setValue(index, strIndex >> 8);
         }
         
         void setBitInFlow(size_t index, bool bit) {
-            if (!checkId.useDac) abort();
-            checkId.flows.setBitInFirstUnit(index, bit);
+            assert(C);
+            checkFlow.setBitInFirstUnit(index, bit);
         }
         
         // MARK: - Protocol settings
         
-        // No.1 optional
-        void setUseDacNext(bool use) {
-            nextId.useDac = use;
-        }
-        
-        // No.2 optional
-        void setUseDacCheck(bool use) {
-            checkId.useDac = use;
-        }
-        
-        // No.3
+        // No.1
         void setNumElement(size_t num, bool bitInto) {
             auto nextSize = Calc::sizeFitInBytes(bitInto ? num << 1 : num);
-            std::vector<size_t> sizes = { nextId.useDac ? 1 : nextSize, 1 };
+            std::vector<size_t> sizes = { N ? 1 : nextSize, 1 };
             bytes_.setValueSizes(sizes);
             bytes_.resize(num);
         }
         
-        // No.4 if use dac check
-        void setNumStrings(size_t num) {
-            if (!checkId.useDac) return;
-            checkId.flows.useLink(true);
-            auto size = Calc::sizeFitInBytes(num - 1);
-            checkId.flows.setUnitSize(size > 1 ? size - 1 : 1);
+        // No.2 if use dac check
+        void setNumStrings(size_t num, bool useLink) {
+            assert(C);
+            auto size = Calc::sizeFitInBytes(useLink ? num - 1 : 1);
+            checkFlow.setUnitSize(size > 1 ? size - 1 : 1);
         }
         
         // Finaly. If use dac
         void buildBitArray() {
-            if (nextId.useDac) nextId.flows.build();
-            if (checkId.useDac) checkId.flows.build();
+            if (N) nextFlow.build();
+            if (C) checkFlow.build();
         }
         
         // MARK: - ByteData methods
         
         size_t sizeInBytes() const override {
             auto size = bytes_.sizeInBytes();
-            size += nextId.sizeInBytes();
-            size += checkId.sizeInBytes();
+            size += nextFlow.sizeInBytes();
+            size += checkFlow.sizeInBytes();
             return size;
         }
         void write(std::ostream& os) const override {
             bytes_.write(os);
-            nextId.write(os);
-            checkId.write(os);
+            nextFlow.write(os);
+            checkFlow.write(os);
         }
         void read(std::istream& is) override {
             bytes_.read(is);
-            nextId.read(is);
-            checkId.read(is);
+            nextFlow.read(is);
+            checkFlow.read(is);
         }
         
         void showStatus(std::ostream& os) const {
             using std::endl;
-            os << "--- Stat of " << "NextCheck " << CODES::name() << " ---" << endl;
+            os << "--- Stat of " << "NextCheck " << nCodes::name() << "|" << cCodes::name() << " ---" << endl;
             os << "size:   " << sizeInBytes() << endl;
             os << "size bytes:   " << bytes_.sizeInBytes() << endl;
-            os << "size next flow:   " << nextId.flows.sizeInBytes() << endl;
-            os << "size check flow:   " << checkId.flows.sizeInBytes() << endl;
+            os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
+            os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
             showSizeMap(os);
         }
         
@@ -159,7 +139,7 @@ namespace array_fsa {
             auto numElem = numElements();
             std::vector<size_t> nexts(numElem);
             for (auto i = 0; i < numElem; i++)
-                nexts[i] = next(i) >> (!nextId.useDac ? 1 : 0);
+                nexts[i] = next(i) >> (!N ? 1 : 0);
             
             auto showList = [&](const std::vector<size_t> &list) {
                 using std::endl;
@@ -184,8 +164,8 @@ namespace array_fsa {
         
     private:
         FitValuesArray bytes_;
-        Id<CODES> nextId;
-        Id<CODES> checkId;
+        nCodes nextFlow;
+        cCodes checkFlow;
         
     };
     

@@ -10,19 +10,22 @@
 
 #include "basic.hpp"
 #include "StrDictData.hpp"
-#include "Rank.hpp"
+#include "BitVector.hpp"
+#include "StringArrayBuilder.hpp"
 
 namespace array_fsa {
     
     class StringDict {
         friend class StringDictBuilder;
-        
     public:
+        StringDict() = default;
+        ~StringDict() = default;
+        
         bool hasLabel(size_t index) const {
             return has_label_bits_[index];
         }
         
-        bool isLabelSource(size_t index) {
+        bool isLabelSource(size_t index) const {
             return hasLabel(index);
         }
         
@@ -32,12 +35,11 @@ namespace array_fsa {
         }
         
         size_t startPos(size_t index) const {
-            auto data = dataOf(index);
             return dataOf(index).place;
         }
         
         bool isEndLabel(size_t index) const {
-            return label_bytes_[index + 1] == '\0';
+            return label_array_.isEnd(index);
         }
         
         bool isEndLabel() const {
@@ -45,7 +47,7 @@ namespace array_fsa {
         }
         
         uint8_t topCharOnPos(size_t index) const {
-            return label_bytes_[startPos(index)];
+            return label_array_[startPos(index)];
         }
         
         void posToNext() {
@@ -56,21 +58,26 @@ namespace array_fsa {
             pos_on_label_ = startPos(index);
         }
         
-        std::vector<uint8_t> &get_label_bytes() {
-            return label_bytes_;
+        friend StringArrayBuilder& labelArray(StringDict &sd) {
+            return sd.label_array_;
         }
+        
+        StringDict(const StringDict &) = delete;
+        StringDict& operator=(const StringDict &) = delete;
+        
+        StringDict(StringDict &&) noexcept = default;
+        StringDict& operator=(StringDict &&) noexcept = default;
         
     private:
         std::vector<StrDictData> str_dicts_;
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
-        std::vector<uint8_t> label_bytes_;
+        StringArrayBuilder label_array_;
         
         size_t pos_on_label_ = 0;
         
-        StrDictData dataOf(size_t index) const {
-            const StrDictData &dict = str_dicts_[dictIndex(index)];
-            return dict;
+        const StrDictData& dataOf(size_t index) const {
+            return str_dicts_[dictIndex(index)];
         }
         
     };

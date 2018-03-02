@@ -11,20 +11,16 @@
 
 using namespace array_fsa;
 
-template<> class StringTransFSA<false>;
-template<> class StringTransFSA<true>;
-
-//template <>
-//StringTransFSA<true> FSA<true>::build(const PlainFSA& fsa) {
-//    return ArrayFSABuilder::build<true>(fsa);
-//}
-
-template <>
-StringTransFSA<false> StringTransFSA<false>::build(const PlainFSA& fsa) {
-    return ArrayFSATailBuilder::build<false>(fsa);
+template<>
+STFSA STFSA::build(const PlainFSA &fsa) {
+    return ArrayFSATailBuilder::build<STFSA>(fsa);
 }
-template <>
-StringTransFSA<true> StringTransFSA<true>::build(const PlainFSA& fsa) {
-    return ArrayFSATailBuilder::build<true>(fsa);
+template<>
+STCFSA STCFSA::build(const PlainFSA &fsa) {
+    return ArrayFSATailBuilder::build<STCFSA>(fsa);
+}
+template<>
+STCFSAB STCFSAB::build(const PlainFSA &fsa) {
+    return ArrayFSATailBuilder::build<STCFSAB>(fsa);
 }
 

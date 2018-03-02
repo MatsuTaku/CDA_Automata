@@ -10,27 +10,27 @@
 
 #include "ByteData.hpp"
 
+#include "PlainFSA.hpp"
 #include "NextCheck.hpp"
-#include "Rank.hpp"
+#include "BitVector.hpp"
 
 namespace array_fsa {
     
-    class PlainFSA;
-    
-    template <bool USE_DAC, class CODES = DACs>
+    template <bool N, class N_CODES = DACs<>>
     class FSA : ByteData {
     public:
+        static constexpr bool useCodes = N;
+        using nextCodes = N_CODES;
+        using ncType = NextCheck<N, false, N_CODES>;
+    public:
         static std::string name() {
-            std::string name = (!USE_DAC ? "Original" : "Dac");
+            std::string name = (!useCodes ? "Original" : "Dac");
             return name + "FSA";
         }
         
         static FSA build(const PlainFSA& fsa);
 
-        FSA() {
-            nc_.setUseDacNext(USE_DAC);
-            nc_.setUseDacCheck(false);
-        }
+        FSA() = default;
         ~FSA() = default;
         
         bool isMember(const std::string& str) const {
@@ -47,7 +47,7 @@ namespace array_fsa {
         }
         
         auto next(size_t index) const {
-            if (USE_DAC)
+            if (useCodes)
                 return nc_.next(index);
             else
                 return nc_.next(index) >> 1;
@@ -58,8 +58,8 @@ namespace array_fsa {
         }
         
         auto isFinal(size_t index) const {
-            if (USE_DAC)
-                return is_final_bits_.get(index);
+            if (useCodes)
+                return is_final_bits_[index];
             else
                 return (nc_.next(index) & 1) != 0;
         }
@@ -71,7 +71,7 @@ namespace array_fsa {
         }
         
         void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
-            if (USE_DAC) {
+            if (useCodes) {
                 nc_.setNext(index, next);
                 is_final_bits_.set(index, isFinal);
             } else {
@@ -84,17 +84,19 @@ namespace array_fsa {
         }
         
         void buildBitArray() {
-            if (!USE_DAC) return;
+            if (!useCodes) return;
             nc_.buildBitArray();
         }
         
         // MARK: - Protocol setting
         
         void setNumElement(size_t num) {
-            if (USE_DAC)
+            if (useCodes) {
                 nc_.setNumElement(num, false);
-            else
+                is_final_bits_.resize(num);
+            } else {
                 nc_.setNumElement(num, true);
+            }
         }
         
         void setNumTrans(size_t num) {
@@ -105,7 +107,7 @@ namespace array_fsa {
         
         size_t sizeInBytes() const override {
             auto size = nc_.sizeInBytes();
-            if (USE_DAC)
+            if (useCodes)
                 size += is_final_bits_.sizeInBytes();
             size += sizeof(num_trans_);
             return size;
@@ -113,14 +115,14 @@ namespace array_fsa {
         
         void write(std::ostream& os) const override {
             nc_.write(os);
-            if (USE_DAC)
+            if (useCodes)
                 is_final_bits_.write(os);
             write_val(num_trans_, os);
         }
         
         void read(std::istream& is) override {
             nc_.read(is);
-            if (USE_DAC)
+            if (useCodes)
                 is_final_bits_.read(is);
             num_trans_ = read_val<size_t>(is);
         }
@@ -144,15 +146,16 @@ namespace array_fsa {
         FSA& operator =(FSA&& rhs) noexcept = default;
         
     private:
-        NextCheck<CODES> nc_;
-        Rank is_final_bits_;
+        ncType nc_;
+        BitVector is_final_bits_;
         size_t num_trans_ = 0;
         
+        friend class ArrayFSABuilder;
     };
     
     using OriginalFSA = FSA<false>;
-    using DacFSA = FSA<true, DACs>;
-    using SacFSA = FSA<true, SACs>;
+    using DacFSA = FSA<true, DACs<>>;
+    using SacFSA = FSA<true, SACs<>>;
     
 }
 

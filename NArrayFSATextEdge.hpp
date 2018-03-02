@@ -12,7 +12,7 @@
 
 #include "ArrayFSATailBuilder.hpp"
 #include "FitValuesArray.hpp"
-#include "Rank.hpp"
+#include "BitVector.hpp"
 #include "DACs.hpp"
 
 namespace array_fsa {
@@ -33,10 +33,6 @@ namespace array_fsa {
         NArrayFSATextEdge& operator=(const NArrayFSATextEdge&) = delete;
         
         // MARK: - Function
-        
-//        static NArrayFSATextEdge build(PlainFSA &origFsa) {
-//            return ArrayFSATailBuilder::buildNArrayFSATextEdge(origFsa);
-//        }
         
         static std::string name() {
             return "NArrayFSATextEdge";
@@ -164,7 +160,7 @@ namespace array_fsa {
         FitValuesArray byte_array_;
         size_t num_trans_ = 0;
         std::vector<uint8_t> labels_;
-        Rank has_label_bits_;
+        BitVector has_label_bits_;
         DACs label_index_flows_;
         
     };
