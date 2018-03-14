@@ -35,10 +35,9 @@ set(HEADER_FILES
   FSA.hpp
   StringTransFSA.hpp
   StringArray.hpp
-StringArrayBuilder.hpp
+  StringArrayBuilder.hpp
   SACs.hpp
   CodeArray.hpp
-  SortedStringList.hpp
   Log.hpp
 )
 

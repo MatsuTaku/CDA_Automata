@@ -14,7 +14,7 @@
 #include "StringDict.hpp"
 #include "BitVector.hpp"
 #include "ArrayTri.hpp"
-#include "SortedStringList.hpp"
+//#include "SortedStringList.hpp"
 #include "StringArrayBuilder.hpp"
 #include "StringArray.hpp"
 #include "PlainFSA.hpp"
@@ -33,7 +33,7 @@ namespace array_fsa {
             std::cout << "makeDict: " << newSW << "us" << std::endl;
             
             lastSW = newSW;
-            //            builder.mergeTail();
+                        builder.mergeTail();
             newSW = sw.get_milli_sec();
             std::cout << "mergeTail: " << newSW - lastSW << "us" << std::endl;
             

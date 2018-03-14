@@ -9,7 +9,7 @@ array_fsa.build/
 DerivedData/
 Debug/
 Release/
-CMAke*
+CMake*
 !CMakeLists.txt
 
 ### https://raw.github.com/github/gitignore//C++.gitignore

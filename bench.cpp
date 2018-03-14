@@ -49,9 +49,9 @@ int main(int argc, const char* argv[]) {
 //    fsa_name = "../../results/indochina-2004/indochina-2004.stcfsa"; type = '7';
 //    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stfsa";type = '5';
-    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa";type = '7';
-    query_name = "../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
-//    type = '8';
+//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa";type = '7';
+//    query_name = "../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
+//    type = '3';
     
     switch (type) {
         case '1':

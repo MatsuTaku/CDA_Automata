@@ -13,12 +13,19 @@
 namespace array_fsa {
     
     struct StrDictData {
+        // This data id
         size_t id = 0;
+        // place at node
         size_t node_id = 0;
+        // this label
         std::string label = "";
+        // matched with suffix of other label
         bool isIncluded = false;
+        // Data id of included owner
         size_t owner = 0;
+        // label placed index at array
         size_t place = 0;
+        // matched counter
         size_t counter = 0;
     
         void set(char c) {
