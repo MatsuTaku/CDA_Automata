@@ -54,7 +54,7 @@ namespace array_fsa {
             }
             auto mSec = sw.get_micro_sec();
             
-            std::cout << "Lookup time: " << mSec / num << " us/query" << std::endl;
+            std::cout << "Lookup time: " << mSec / num << " µs/query" << std::endl;
             std::cout << "OK: " << num - ng << std::endl;
             std::cout << "NG: " << ng << std::endl;
             

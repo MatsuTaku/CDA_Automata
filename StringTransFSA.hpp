@@ -52,8 +52,12 @@ namespace array_fsa {
                         return false;
                     pos++;
                 } else {
-                    if (!strings_.isMatch(&pos, str, stringId(trans)))
+                    auto sid = stringId(trans);
+//                    strings_.showLabels(sid - 32, sid + 32);
+                    if (!strings_.isMatch(&pos, str, sid)) {
+                        strings_.showLabels(sid - 32, sid + 32);
                         return false;
+                    }
                 }
             }
             return isFinal(trans);

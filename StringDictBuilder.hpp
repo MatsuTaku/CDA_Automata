@@ -14,7 +14,6 @@
 #include "StringDict.hpp"
 #include "BitVector.hpp"
 #include "ArrayTri.hpp"
-//#include "SortedStringList.hpp"
 #include "StringArrayBuilder.hpp"
 #include "StringArray.hpp"
 #include "PlainFSA.hpp"
@@ -23,30 +22,22 @@ namespace array_fsa {
     
     class StringDictBuilder {
     public:
-        static StringDict build(const PlainFSA &fsa, bool binaryMode) {
+        static StringDict build(const PlainFSA &fsa, bool binaryMode, bool mergeSuffix) {
             StringDictBuilder builder(fsa, binaryMode);
             std::cout << "------ StringDict build bench mark ------" << std::endl;
             Stopwatch sw;
             
             builder.makeDict();
             double lastSW, newSW = sw.get_milli_sec();
-            std::cout << "makeDict: " << newSW << "us" << std::endl;
-            
+            std::cout << "makeDict: " << newSW << "µs" << std::endl;
             lastSW = newSW;
-                        builder.mergeTail();
+            builder.setSharings(mergeSuffix);
             newSW = sw.get_milli_sec();
-            std::cout << "mergeTail: " << newSW - lastSW << "us" << std::endl;
-            
+            std::cout << "setSharings: " << newSW - lastSW << "µs" << std::endl;
             lastSW = newSW;
-            builder.sortDicts();
-            builder.flatStringArray();
+            builder.setUpLabelArray();
             newSW = sw.get_milli_sec();
-            std::cout << "flatStringArray: " << newSW - lastSW << "us" << std::endl;
-            
-            lastSW = newSW;
-            builder.decideTargetIndexes();
-            newSW = sw.get_milli_sec();
-            std::cout << "decideTargetIndexes: " << newSW - lastSW << "us" << std::endl;
+            std::cout << "setUpLabelArray: " << newSW - lastSW << "µs" << std::endl;
             
             builder.showMappingOfByteSize();
             
@@ -69,13 +60,11 @@ namespace array_fsa {
         
         std::vector<StrDictData> str_dicts_;
         size_t cur_str_dict_index_;
-        std::vector<size_t> fsa_target_ids_;
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
         StringArrayBuilder label_array_;
         std::unordered_map<size_t, size_t> state_map_;
         
-        ArrayTri sorted_string_list_;
         std::vector<size_t> idMap;
         
         std::string reverseString(std::string text) const {
@@ -129,11 +118,8 @@ namespace array_fsa {
         void saveStrDict(size_t index);
         
         void makeDict();
-        void mergeTail();
-        void setIncludedOwner(StrDictData* dict, size_t ownerId);
-        void sortDicts();
-        void flatStringArray();
-        void decideTargetIndexes();
+        void setSharings(bool mergeSuffix);
+        void setUpLabelArray();
         
         void showMappingOfByteSize();
         
@@ -149,19 +135,8 @@ namespace array_fsa {
     inline void StringDictBuilder::saveStrDict(size_t index) {
         auto &dict = curStrDict();
         has_label_bits_[index] = true;
-        
-        auto revL = reverseString(dict.label);
-        auto key = sorted_string_list_.lookup(revL);
-        if (key > -1) {
-            str_dicts_[key].counter++;
-            fsa_target_ids_[index] = str_dicts_[key].id;
-            str_dicts_.pop_back();
-            return;
-        }
         dict.node_id = index;
-        fsa_target_ids_[index] = dict.id;
-        
-        sorted_string_list_.add(revL, cur_str_dict_index_);
+        dict.counter = 1;
     }
     
 }

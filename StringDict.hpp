@@ -29,9 +29,13 @@ namespace array_fsa {
             return hasLabel(index);
         }
         
-        size_t dictIndex(size_t index) const {
+        size_t dictTrans(size_t index) const {
             assert(hasLabel(index));
             return fsa_target_indexes_[index];
+        }
+        
+        const StrDictData& dict(size_t index) const {
+            return str_dicts_[index];
         }
         
         size_t startPos(size_t index) const {
@@ -58,6 +62,10 @@ namespace array_fsa {
             pos_on_label_ = startPos(index);
         }
         
+        size_t numDicts() const {
+            return str_dicts_.size();
+        }
+        
         friend StringArrayBuilder& labelArray(StringDict &sd) {
             return sd.label_array_;
         }
@@ -76,8 +84,8 @@ namespace array_fsa {
         
         size_t pos_on_label_ = 0;
         
-        const StrDictData& dataOf(size_t index) const {
-            return str_dicts_[dictIndex(index)];
+        const StrDictData& dataOf(size_t trans) const {
+            return str_dicts_[dictTrans(trans)];
         }
         
     };

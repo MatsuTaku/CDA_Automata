@@ -13,6 +13,8 @@
 namespace array_fsa {
     
     struct StrDictData {
+        // Elabled
+        bool enabled = true;
         // This data id
         size_t id = 0;
         // place at node
@@ -24,7 +26,7 @@ namespace array_fsa {
         // Data id of included owner
         size_t owner = 0;
         // label placed index at array
-        size_t place = 0;
+        int place = -1;
         // matched counter
         size_t counter = 0;
     

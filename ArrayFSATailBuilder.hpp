@@ -21,7 +21,8 @@ namespace array_fsa {
         template <class T>
         static T build(const PlainFSA &origFsa) {
             const auto isBinary = T::SAType::kBinaryMode;
-            ArrayFSATailBuilder builder(origFsa, isBinary);
+            const auto mergeSuffix = T::useLink;
+            ArrayFSATailBuilder builder(origFsa, isBinary, mergeSuffix);
             
             // Release
             T newFsa;
@@ -60,8 +61,8 @@ namespace array_fsa {
     protected:
         StringDict str_dict_;
         
-        explicit ArrayFSATailBuilder(const PlainFSA &orig_fsa, bool binaryMode) : ArrayFSABuilder(orig_fsa) {
-            str_dict_ = StringDictBuilder::build(orig_fsa_, binaryMode);
+        explicit ArrayFSATailBuilder(const PlainFSA &orig_fsa, bool binaryMode, bool mergeSuffix) : ArrayFSABuilder(orig_fsa) {
+            str_dict_ = StringDictBuilder::build(orig_fsa_, binaryMode, mergeSuffix);
             build_(binaryMode);
         }
         

@@ -105,6 +105,25 @@ namespace array_fsa {
                 boundary_flags_.read(is);
         }
         
+        // MARK: - Show status
+        
+        void showLabels(int from, int to) const {
+            for (auto i = from; i <= to; i++) {
+                std::cout << (i == (from + to) / 2 ? '|' : ' ');
+            }
+            std::cout << std::endl;
+            for (auto i = from; i <= to; i++) {
+                if (i < 0 || i >= bytes_.size())
+                    std::cout << ' ';
+                else {
+                    auto c =  bytes_[i];
+                    if (c == '\0') c = ' ';
+                    std::cout << c;
+                }
+            }
+            std::cout << std::endl;
+        }
+        
         // MARK: - Copy guard
         
         StringArray(const StringArray&) = delete;

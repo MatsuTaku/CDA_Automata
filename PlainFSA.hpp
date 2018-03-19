@@ -66,7 +66,7 @@ namespace array_fsa {
             return num_trans_;
         }
         
-        size_t get_bytes_size() const {
+        size_t get_num_elements() const {
             return bytes_.size() / kTransSize;
         }
         
