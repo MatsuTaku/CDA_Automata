@@ -1,6 +1,9 @@
 # cmake project
 /array-fsa/build
-results
+/results
+/data-sets
+!/data-sets/*.py
+!/data-sets/README.md
 
 # xcodeproject
 /array-fsa
