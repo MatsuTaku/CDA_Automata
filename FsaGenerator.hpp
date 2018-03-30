@@ -18,14 +18,48 @@
 
 namespace array_fsa {
     
+    class PlainFsaGenerator {
+    public:
+        // May throw DataNotFoundException
+        static PlainFSA generatePlainFSA(const char* dataName) {
+            std::ifstream ifs(dataName);
+            if (!ifs)
+                throw DataNotFoundException(dataName);
+            return generatePlainFSA(ifs);
+        }
+        
+        static PlainFSA generatePlainFSA(std::ifstream& ifs) {
+            PlainFSABuilder builder;
+            for (std::string line; getline(ifs, line);)
+                builder.add(line);
+            return builder.release();
+        }
+        
+        static PlainFSA readPlainFSA(const char* plainFsaName) {
+            std::ifstream ifs(plainFsaName);
+            if (!ifs) throw DataNotFoundException(plainFsaName);
+            PlainFSA plainFsa;
+            plainFsa.read(ifs);
+            return plainFsa;
+        }
+        
+        static void savePlainFsa(const char* dataName, const char* plainFsaName) {
+            auto plainFsa = generatePlainFSA(dataName);
+            std::ofstream ofs(plainFsaName);
+            if (!ofs)
+                throw DataNotFoundException(plainFsaName);
+            plainFsa.write(ofs);
+        }
+    };
+    
     template <class T>
     class FsaGenerator {
     public:
-        static int buildFSA(const char *dataName, const char *fsaName) {
+        static int buildFSA(const char *dataName, const char *plainFsaName, const char *fsaName) {
             try {
                 FsaGenerator<T> generator;
-                std::cout << "Build FSA from " << dataName << std::endl;
-                generator.generate(dataName);
+                std::cout << "Build Array_FSA from " << plainFsaName << std::endl;
+                generator.generate(plainFsaName);
                 
                 std::cout << "Test for membership" << std::endl;
                 try {
@@ -45,23 +79,8 @@ namespace array_fsa {
             return 0;
         }
         
-        // May throw DataNotFoundException
-        PlainFSA getPlainFSA(const char* dataName) {
-            std::ifstream ifs(dataName);
-            if (!ifs)
-                throw DataNotFoundException(dataName);
-            return getPlainFSA(ifs);
-        }
-        
-        PlainFSA getPlainFSA(std::ifstream& ifs) {
-            PlainFSABuilder builder;
-            for (std::string line; getline(ifs, line);)
-                builder.add(line);
-            return builder.release();
-        }
-        
-        void generate(const char* dataName) {
-            PlainFSA plainFsa = getPlainFSA(dataName);
+        void generate(const char* plainFsaName) {
+            auto plainFsa = PlainFsaGenerator::readPlainFSA(plainFsaName);
             fsa_ = T::build(plainFsa);
         }
         
@@ -101,9 +120,6 @@ namespace array_fsa {
         T fsa_;
         
     };
-    
-    using ArrayFSAGenerator = FsaGenerator<FSA<false>>;
-    using ArrayFSADACGenerator = FsaGenerator<FSA<true>>;
     
 }
 

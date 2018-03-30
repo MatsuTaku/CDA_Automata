@@ -107,6 +107,16 @@ namespace array_fsa {
             std::swap(num_trans_, rhs.num_trans_);
         }
         
+        void write(std::ostream &os) const {
+            write_vec(bytes_, os);
+            write_val(num_trans_, os);
+        }
+        
+        void read(std::istream &is) {
+            bytes_ = read_vec<uint8_t>(is);
+            num_trans_ = read_val<size_t>(is);
+        }
+        
         PlainFSA(const PlainFSA&) = delete;
         PlainFSA& operator=(const PlainFSA&) = delete;
         

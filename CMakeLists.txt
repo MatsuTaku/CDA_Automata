@@ -65,6 +65,9 @@ target_link_libraries(bench ArrayFSA)
 add_executable(build build.cpp FsaGenerator.hpp)
 target_link_libraries(build ArrayFSA)
 
+add_executable(makefsa makefsa.cpp FsaGenerator.hpp)
+target_link_libraries(makefsa ArrayFSA)
+
 add_executable(codes codes.cpp CodesMeasurer.hpp)
 target_link_libraries(codes ArrayFSA)
 

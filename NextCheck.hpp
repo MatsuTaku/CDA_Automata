@@ -10,6 +10,7 @@
 
 #include "ByteData.hpp"
 
+#include "basic.hpp"
 #include "FitValuesArray.hpp"
 #include "DACs.hpp"
 #include "SACs.hpp"
@@ -23,7 +24,7 @@ namespace array_fsa {
     bool N,
     bool C,
     class N_CODES = DACs<>,
-    class C_CODES = DACs<true>
+    class C_CODES = SACs<true>
     >
     class NextCheck : ByteData {
     public:
@@ -94,10 +95,13 @@ namespace array_fsa {
         }
         
         // No.2 if use dac check
-        void setNumStrings(size_t num, bool useLink) {
+        void setNumStrings(size_t num) {
             assert(C);
-            auto size = Calc::sizeFitInBytes(useLink ? num - 1 : 1);
-            checkFlow.setUnitSize(size > 1 ? size - 1 : 1);
+            auto maxSize = Calc::sizeFitInBytes(num - 1);
+            auto cCodesName = typeid(cCodes).name();
+            if (cCodesName == typeid(DACs<true>).name() ||
+                cCodesName == typeid(DACs<false>).name())
+                checkFlow.setUnitSize(std::max(maxSize - 1, size_t(1)));
         }
         
         // Finaly. If use dac

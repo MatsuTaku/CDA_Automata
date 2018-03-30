@@ -87,6 +87,7 @@ void StringDictBuilder::showMappingOfByteSize() {
         if (dict.isIncluded)
             continue;
         auto size = Calc::sizeFitInBytes(dict.place);
+        if (size == 0) continue;
         counts[size - 1] += dict.counter + 1;
     }
     auto size = 0;

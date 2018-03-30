@@ -128,7 +128,7 @@ namespace array_fsa {
         }
         
         void setNumStrings(size_t num) {
-            nc_.setNumStrings(num, useLink);
+            nc_.setNumStrings(num);
         }
         
         void setNumTrans(size_t num) {
@@ -193,8 +193,8 @@ namespace array_fsa {
     };
     
     using STFSA = StringTransFSA<DACs<true>, StringArray<false>>;
-    using STCFSA = StringTransFSA<DACs<false>, StringArray<false>>;
-    using STCFSAB = StringTransFSA<DACs<false>, StringArray<true>>;
+    using STCFSA = StringTransFSA<SACs<false>, StringArray<false>>;
+    using STCFSAB = StringTransFSA<SACs<false>, StringArray<true>>;
     
 }
 

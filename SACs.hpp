@@ -45,9 +45,7 @@ namespace array_fsa {
             if (num_units_ >= size) return;
             units_.resize(size);
             for (auto i = num_units_; i < size; i++) {
-                DacUnit unit;
-                unit.setUnitSize(unit_size_ * (i + 1));
-                units_[i] = std::move(unit);
+                units_[i].setUnitSize(unit_size_ * (i + 1));
             }
             num_units_ = size;
         }
