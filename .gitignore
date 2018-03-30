@@ -3,13 +3,9 @@ build/
 results*
 
 # xcodeproject
-array_fsa.build/
-*.xcodeproj
-*.build
-DerivedData/
-Debug/
-Release/
-CMake*
+array_fsa/
+!*.cpp
+!*.hpp
 !CMakeLists.txt
 
 ### https://raw.github.com/github/gitignore//C++.gitignore
