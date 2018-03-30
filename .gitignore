@@ -1,12 +1,12 @@
 # cmake project
-build/
-results*
+/array-fsa/build
+results
 
 # xcodeproject
-array_fsa/
+/array-fsa
 !*.cpp
 !*.hpp
-!CMakeLists.txt
+!/array-fsa/CMakeLists.txt
 
 ### https://raw.github.com/github/gitignore//C++.gitignore
 
