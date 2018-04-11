@@ -40,7 +40,7 @@ namespace array_fsa {
             newFsa.setNumTrans(numTrans);
             newFsa.buildBitArray();
             
-            //    showInBox(builder, newFsa);
+            showInBox(builder, newFsa);
             
             return newFsa;
         }

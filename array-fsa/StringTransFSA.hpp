@@ -193,8 +193,8 @@ namespace array_fsa {
     };
     
     using STFSA = StringTransFSA<DACs<true>, StringArray<false>>;
-    using STCFSA = StringTransFSA<SACs<false>, StringArray<false>>;
-    using STCFSAB = StringTransFSA<SACs<false>, StringArray<true>>;
+    using STCFSA = StringTransFSA<SACs, StringArray<false>>;
+    using STCFSAB = StringTransFSA<SACs, StringArray<true>>;
     
 }
 

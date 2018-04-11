@@ -37,7 +37,8 @@ namespace array_fsa {
             size_t trans = 0;
             for (uint8_t c : str) {
                 trans = target(trans) ^ c;
-                if (check(trans) != c) return false;
+                if (check(trans) != c)
+                    return false;
             }
             return isFinal(trans);
         }
@@ -155,7 +156,7 @@ namespace array_fsa {
     
     using OriginalFSA = FSA<false>;
     using DacFSA = FSA<true, DACs<>>;
-    using SacFSA = FSA<true, SACs<>>;
+    using SacFSA = FSA<true, SACs>;
     
 }
 

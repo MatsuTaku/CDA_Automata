@@ -285,7 +285,6 @@ namespace array_fsa {
             x += (x >> 8);
             x += (x >> 16);
             return x & 0x3F;
-            return x;
         }
         
     };

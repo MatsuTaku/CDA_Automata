@@ -18,12 +18,19 @@ void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
     for (auto i = 0; i < 0x100; i++) {
         std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
         std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << std::endl;
-        //        Rank::show_as_bytes(builder.get_next_(i), 4);
-        //        Rank::show_as_bytes(fsa.getNext(i), 4);
+        auto bn = builder.get_next_(i);
+        auto fn = fsa.next(i);
+        if (bn != fn) {
+            Log::showAsBytes(builder.get_next_(i), 4);
+            Log::showAsBytes(fsa.next(i), 4);
+        }
         std::cout << std::endl;
     }
 }
 
+template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, OriginalFSA&);
+template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, DacFSA&);
+template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, SacFSA&);
 
 // MARK: - public
 

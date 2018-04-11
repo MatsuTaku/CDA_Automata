@@ -72,6 +72,12 @@ namespace array_fsa {
         
         void setValue(size_t index, size_t value);
         
+        void showStats(std::ostream &os) const {
+            using std::endl;
+            os << "--- Stat of " << "DACs " << " ---" << endl;
+            os << "size:   " << sizeInBytes() << endl;
+        }
+        
         size_t sizeInBytes() const override {
             auto size = sizeof(unit_size_) + sizeof(num_units_);
             for (const auto &unit : units_) {

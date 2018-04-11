@@ -24,7 +24,7 @@ namespace array_fsa {
     bool N,
     bool C,
     class N_CODES = DACs<>,
-    class C_CODES = SACs<true>
+    class C_CODES = SACs
     >
     class NextCheck : ByteData {
     public:
@@ -136,6 +136,7 @@ namespace array_fsa {
             os << "size bytes:   " << bytes_.sizeInBytes() << endl;
             os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
             os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
+            nextFlow.showStats(os);
             showSizeMap(os);
         }
         

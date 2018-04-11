@@ -39,6 +39,7 @@ set(HEADER_FILES
   SACs.hpp
   CodeArray.hpp
   Log.hpp
+  MultiBitVector.hpp
 )
 
 set(SOURCE_FILES
@@ -48,7 +49,6 @@ set(SOURCE_FILES
   StringDictBuilder.cpp
   FSA.cpp
   StringTransFSA.cpp
-  NextCheck.cpp
 )
 
 add_library(ArrayFSA STATIC

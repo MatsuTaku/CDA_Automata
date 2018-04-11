@@ -112,8 +112,8 @@ namespace array_fsa {
         assert(sizeof(T) >= value_sizes_[num]);
         T value = 0;
         auto pos = offset(index) + value_positions_[num];
-        for (auto i = 0; i < value_sizes_[num]; i++)
-            value |= bytes_[pos + i] << (8 * i);
+        for (size_t i = 0, size = value_sizes_[num]; i < size; i++)
+            value |= bytes_[pos + i] << (i * 8);
         return value;
     }
     
