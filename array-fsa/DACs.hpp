@@ -10,7 +10,7 @@
 
 #include "ByteData.hpp"
 
-#include "DacUnit.hpp"
+#include "BitVector.hpp"
 #include "Calc.hpp"
 
 namespace array_fsa {
@@ -37,31 +37,29 @@ namespace array_fsa {
             return "DACs";
         }
         
-        void setUnitSize(uint8_t size) {
+        void setUnitSize(size_t size) {
             unit_size_ = size;
         }
         
         void expand(size_t size) {
             if (num_units_ >= size) return;
-            units_.resize(size);
-            for (auto i = num_units_; i < size; i++) {
-                units_[i].setUnitSize(unit_size_);
-            }
             num_units_ = size;
+            bits_list_.resize(size);
+            units_.resize(size);
         }
         
         bool getBitInFirstUnit(size_t index) const {
-            return units_[0].getBit(index);
+            return bits_list_[0][index];
         }
         
         void setBitInFirstUnit(size_t index, bool bit) {
             if (num_units_ == 0) expand(1);
-            units_[0].setBit(index, bit);
+            return bits_list_[0].set(index, bit);
         }
         
         void build() {
-            for (auto &unit : units_)
-                unit.build();
+            for (auto &bits : bits_list_)
+                bits.build(true, false);
         }
         
         size_t operator [](size_t index) const {
@@ -80,34 +78,38 @@ namespace array_fsa {
         
         size_t sizeInBytes() const override {
             auto size = sizeof(unit_size_) + sizeof(num_units_);
-            for (const auto &unit : units_) {
-                size += unit.sizeInBytes();
-            }
+            for (auto &bits: bits_list_)
+                size += bits.sizeInBytes();
+            for (auto &unit: units_)
+                size += size_vec(unit);
             return size;
         }
         
         void write(std::ostream &os) const override {
             write_val(unit_size_, os);
             write_val(num_units_, os);
-            for (const auto &unit : units_) {
-                unit.write(os);
-            }
+            for (auto &bits: bits_list_)
+                bits.write(os);
+            for (auto &unit: units_)
+                write_vec(unit, os);
         }
         
         void read(std::istream &is) override {
-            unit_size_ = read_val<uint8_t>(is);
+            unit_size_ = read_val<size_t>(is);
             num_units_ = read_val<size_t>(is);
+            bits_list_.resize(num_units_);
             units_.resize(num_units_);
-            for (auto i = 0; i < num_units_; i++) {
-                DacUnit unit(is);
-                units_[i] = std::move(unit);
-            }
+            for (auto &bits: bits_list_)
+                bits.read(is);
+            for (auto i = 0; i < num_units_; i++)
+                units_[i] = read_vec<uint8_t>(is);
         }
         
     private:
-        uint8_t unit_size_ = 1;
+        size_t unit_size_ = 1;
         size_t num_units_ = 0;
-        std::vector<DacUnit> units_ = {};
+        std::vector<BitVector> bits_list_;
+        std::vector<std::vector<uint8_t>> units_;
         bool use_link_ = false;
         
     };
@@ -118,10 +120,18 @@ namespace array_fsa {
     inline size_t DACs<L>::getValue(size_t index) const {
         size_t value = 0;
         auto depth = 0;
-        for (const auto &unit : units_) {
-            if (!unit.getBit(index)) break;
-            index = unit.rank(index);
-            value |= (unit.getByteUnit(index) << (depth * 8 * unit_size_));
+//        std::cout << "---" << std::endl << index << std::endl;
+//        Log::showAsBytes(index, 8);
+        for (auto &bits : bits_list_) {
+            if (!bits[index]) break;
+            index = bits.rank(index);
+//            std::cout << index << std::endl;
+//            Log::showAsBytes(index, 8);
+            auto &unit = units_[depth];
+            const auto offset = index * unit_size_;
+            const auto shiftSize = depth * unit_size_;
+            for (auto i = 0; i < unit_size_; i++)
+                value |= unit[offset + i] << ((shiftSize + i) * 8);
             depth++;
         }
         return value;
@@ -132,19 +142,19 @@ namespace array_fsa {
         auto size = Calc::sizeFitInUnits(value, unit_size_ * 8);
         if (size > num_units_)
             expand(size);
-        auto mask = (size_t(1) << (8 * unit_size_)) - 1;
-        auto depth = 0;
-        for (auto &unit : units_) {
-            if (value == 0 && (!L || depth > 0)) {
-                unit.setBit(index, false);
-                break;
+        if (L) {
+            bits_list_[0].set(index, true);
+            for (auto i = 0; i < unit_size_; i++)
+                units_[0].push_back(value >> (i * 8) & 0xff);
+        } else {
+            for (auto depth = 0; depth < size; depth++) {
+                bits_list_[depth].set(index, true);
+                auto &unit = units_[depth];
+                const auto shiftSize = depth * unit_size_;
+                for (auto i = 0; i < unit_size_; i++)
+                    unit.push_back((value >> ((shiftSize + i) * 8)) & 0xff);
+                index = unit.size() / unit_size_ - 1;
             }
-            unit.setBit(index, true);
-            unit.setByte(value & mask);
-            index = unit.size() - 1;
-            value >>= (8 * unit_size_);
-            
-            depth++;
         }
     }
     

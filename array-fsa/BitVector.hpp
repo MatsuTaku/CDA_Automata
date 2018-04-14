@@ -11,6 +11,7 @@
 #include "ByteData.hpp"
 
 #include "basic.hpp"
+#include "Log.hpp"
 
 namespace array_fsa {
     
@@ -182,10 +183,10 @@ namespace array_fsa {
     
     class BitVector : ByteData {
     protected:
-        using idType = uint32_t;
+        using idType = uint64_t;
         static constexpr size_t kBlockSize { 0x100 };
-        static constexpr uint8_t kBitSize { 0x20 };
-        static constexpr uint8_t kBlockInTipSize { kBlockSize / kBitSize }; // 8
+        static constexpr uint8_t kBitSize { sizeof(idType) * 8 }; // 64
+        static constexpr uint8_t kBlockInTipSize { kBlockSize / kBitSize }; // 256 / 64 = 4
         static constexpr size_t kNum1sPerTip { 0x200 };
         
     public:
@@ -201,15 +202,15 @@ namespace array_fsa {
         ~BitVector() = default;
         
         bool operator[](size_t index) const {
-            return (bits_[abs(index)] & (1U << rel(index))) != 0;
+            return (bits_[abs(index)] & (1UL << rel(index))) != 0;
         }
         
         void set(size_t index, bool bit) {
             check_resize(index);
             if (bit) {
-                bits_[abs(index)] |= (1U << rel(index));
+                bits_[abs(index)] |= (1UL << rel(index));
             } else {
-                bits_[abs(index)] &= ~(1U << rel(index));
+                bits_[abs(index)] &= ~(1UL << rel(index));
             }
         }
         
@@ -266,25 +267,27 @@ namespace array_fsa {
         std::vector<RankTip> rank_tips_;
         std::vector<idType> select_tips_;
         
-        virtual size_t block(size_t index) const {
+        size_t block(size_t index) const {
             return index / kBlockSize;
         }
         
-        virtual size_t abs(size_t index) const {
+        size_t abs(size_t index) const {
             return index / kBitSize;
         }
         
-        virtual size_t rel(size_t index) const {
+        size_t rel(size_t index) const {
             return index % kBitSize;
         }
         
-        virtual size_t pop_count(size_t x) const {
-            x = (x & 0x55555555) + ((x >> 1) & 0x55555555);
-            x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
-            x = (x & 0x0f0f0f0f) + ((x >> 4) & 0x0f0f0f0f);
+        size_t pop_count(size_t x) const {
+            x = (x & 0x5555555555555555) + ((x >> 1) & 0x5555555555555555);
+            x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+            x = (x & 0x0f0f0f0f0f0f0f0f) + ((x >> 4) & 0x0f0f0f0f0f0f0f0f);
             x += (x >> 8);
             x += (x >> 16);
-            return x & 0x3F;
+            if (kBitSize == 0x40)
+                x += (x >> 32);
+            return x & 0xFF; // 0x7f
         }
         
     };
@@ -329,7 +332,7 @@ namespace array_fsa {
     
     inline BitVector::idType BitVector::rank(size_t index) const {
         const auto &tip = rank_tips_[block(index)];
-        return tip.L1 + tip.L2[abs(index) % kBlockInTipSize] + pop_count(bits_[abs(index)] & ((1U << rel(index)) - 1));
+        return tip.L1 + tip.L2[abs(index) % kBlockInTipSize] + pop_count(bits_[abs(index)] & ((1UL << rel(index)) - 1));
     }
     
     inline BitVector::idType BitVector::select(size_t index) const {

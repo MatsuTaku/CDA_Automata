@@ -137,6 +137,7 @@ namespace array_fsa {
             os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
             os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
             nextFlow.showStats(os);
+            checkFlow.showStats(os);
             showSizeMap(os);
         }
         

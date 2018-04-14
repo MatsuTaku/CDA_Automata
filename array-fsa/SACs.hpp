@@ -20,6 +20,9 @@ namespace array_fsa {
     class SACs : ByteData {
     public:
         static constexpr bool useLink = false;
+        
+        static constexpr size_t kUnitSize = 1;
+        
         // MARK: Constructor
         
         SACs() = default;
@@ -37,8 +40,9 @@ namespace array_fsa {
             return "SACs";
         }
         
-        void setUnitSize(uint8_t size) {
-            unit_size_ = size;
+        // virtual function
+        void setUnitSize(size_t size) {
+            // unit size is const 
         }
         
         void expand(size_t size) {
@@ -81,7 +85,7 @@ namespace array_fsa {
         }
         
         size_t sizeInBytes() const override {
-            auto size = sizeof(unit_size_) + sizeof(num_units_);
+            auto size = sizeof(num_units_);
             for (const auto &unit : units_) {
                 size += size_vec(unit);
             }
@@ -90,7 +94,6 @@ namespace array_fsa {
         }
         
         void write(std::ostream &os) const override {
-            write_val(unit_size_, os);
             multi_bits_.write(os);
             write_val(num_units_, os);
             for (const auto &unit : units_) {
@@ -99,7 +102,6 @@ namespace array_fsa {
         }
         
         void read(std::istream &is) override {
-            unit_size_ = read_val<uint8_t>(is);
             multi_bits_.read(is);
             num_units_ = read_val<size_t>(is);
             units_.resize(num_units_);
@@ -109,7 +111,6 @@ namespace array_fsa {
         }
         
     private:
-        uint8_t unit_size_ = 1;
         MultiBitVector multi_bits_;
         size_t num_units_ = 0;
         std::vector<std::vector<uint8_t>> units_;
@@ -124,7 +125,7 @@ namespace array_fsa {
         size_t value = 0;
         auto &unit = units_[size - 1];
         auto offset = multi_bits_.rank(index) * size;
-        for (auto i = 0, max = size * unit_size_; i < max; i++)
+        for (size_t i = 0, max = size * kUnitSize; i < max; i++)
             value |= unit[offset + i] << (i * 8);
         return value;
     }
@@ -134,13 +135,13 @@ namespace array_fsa {
             multi_bits_.set(index, 0);
             return;
         }
-        auto size = Calc::sizeFitInUnits(value, unit_size_ * 8);
+        auto size = Calc::sizeFitInUnits(value, kUnitSize * 8);
         multi_bits_.set(index, size);
         if (size > num_units_)
             expand(size);
         
         auto &unit = units_[size - 1];
-        for (auto i = 0; i < size * unit_size_; i++)
+        for (auto i = 0; i < size * kUnitSize; i++)
             unit.push_back((value >> (i * 8)) & 0xff);
     }
     

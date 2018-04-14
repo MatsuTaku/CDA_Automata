@@ -16,15 +16,15 @@ template <class T>
 void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < 0x100; i++) {
-        std::cout << i << tab << builder.is_final_(i) << tab << builder.get_next_(i) << tab << builder.get_check_(i) << std::endl;
-        std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << std::endl;
         auto bn = builder.get_next_(i);
         auto fn = fsa.next(i);
         if (bn != fn) {
+            std::cout << i << tab << builder.is_final_(i) << tab << bn << tab << builder.get_check_(i) << std::endl;
+            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fsa.check(i) << std::endl;
             Log::showAsBytes(builder.get_next_(i), 4);
             Log::showAsBytes(fsa.next(i), 4);
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
 }
 
