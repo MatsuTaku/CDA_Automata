@@ -4,11 +4,12 @@
 //  Created by 松本拓真 on 2017/10/18.
 //
 
-#include "ArrayFSABuilder.hpp"
+#include "array_fsa/ArrayFSABuilder.hpp"
 
-#include "PlainFSA.hpp"
-#include "FSA.hpp"
-#include "Calc.hpp"
+#include "array_fsa/PlainFSA.hpp"
+#include "array_fsa/FSA.hpp"
+#include "sim_ds/Log.hpp"
+#include "sim_ds/Calc.hpp"
 
 using namespace array_fsa;
 
@@ -21,8 +22,8 @@ void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
         if (bn != fn) {
             std::cout << i << tab << builder.is_final_(i) << tab << bn << tab << builder.get_check_(i) << std::endl;
             std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fsa.check(i) << std::endl;
-            Log::showAsBytes(builder.get_next_(i), 4);
-            Log::showAsBytes(fsa.next(i), 4);
+            sim_ds::Log::showAsBinary(builder.get_next_(i), 4);
+            sim_ds::Log::showAsBinary(fsa.next(i), 4);
             std::cout << std::endl;
         }
     }
@@ -30,7 +31,6 @@ void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
 
 template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, OriginalFSA&);
 template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, DacFSA&);
-template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, SacFSA&);
 
 // MARK: - public
 

@@ -3,8 +3,8 @@
 
 #include "FsaGenerator.hpp"
 
-#include "FSA.hpp"
-#include "StringTransFSA.hpp"
+#include "array_fsa/FSA.hpp"
+#include "array_fsa/StringTransFSA.hpp"
 
 using namespace array_fsa;
 
@@ -14,9 +14,9 @@ int main(int argc, const char *argv[]) {
     auto fsa_name = argv[3];
     auto fsa_type = *argv[4];
     
-//    data_name = "../../data-sets/weiss/wikipedia2.dict";
-//    plain_fsa_name = "../../results/wikipedia2/wikipedia2.plain";
-//    fsa_name = "../../results/wikipedia2/wikipedia2.fsa";
+    data_name = "../../data-sets/weiss/wikipedia2.dict";
+    plain_fsa_name = "../../results/wikipedia2/wikipedia2.plain";
+    fsa_name = "../../results/wikipedia2/wikipedia2.fsa";
 //    data_name = "../../data-sets/kanda/indochina-2004.dict";
 //    plain_fsa_name = "../../results/indochina-2004/indochina-2004.plain";
 //    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; fsa_type = '1';
@@ -26,7 +26,7 @@ int main(int argc, const char *argv[]) {
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa"; fsa_type = '2';
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stfsa"; fsa_type = '3';
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa"; fsa_type = '6';
-//    fsa_type = '3';
+    fsa_type = '1';
     
     switch (fsa_type) {
         case '1':
@@ -35,12 +35,6 @@ int main(int argc, const char *argv[]) {
             return FsaGenerator<DacFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '3':
             return FsaGenerator<STFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
-        case '4':
-            return FsaGenerator<SacFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
-        case '5':
-            return FsaGenerator<STCFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
-        case '6':
-            return FsaGenerator<STCFSAB>::buildFSA(data_name, plain_fsa_name, fsa_name);
         default:
             return 1;
     }

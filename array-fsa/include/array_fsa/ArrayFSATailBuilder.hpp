@@ -9,7 +9,6 @@
 #define ArrayFSA_TailBuilder_hpp
 
 #include "ArrayFSABuilder.hpp"
-#include "BitVector.hpp"
 #include "StringDict.hpp"
 #include "StringDictBuilder.hpp"
 #include "StringTransFSA.hpp"
@@ -30,7 +29,7 @@ namespace array_fsa {
             const auto numElems = builder.num_elems_();
             newFsa.setNumElement(numElems);
             newFsa.strings_ = StringArray<isBinary>(&labelArray(builder.str_dict_));
-            newFsa.setNumStrings(newFsa.strings_.size());
+//            newFsa.setNumStrings(newFsa.strings_.size());
             
             auto numTrans = 0;
             for (auto i = 0; i < numElems; i++) {

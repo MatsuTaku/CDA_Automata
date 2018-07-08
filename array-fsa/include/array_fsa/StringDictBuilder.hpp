@@ -9,10 +9,10 @@
 #define StringDictBuilder_hpp
 
 #include <unordered_map>
+
 #include "basic.hpp"
 #include "StrDictData.hpp"
 #include "StringDict.hpp"
-#include "BitVector.hpp"
 #include "ArrayTri.hpp"
 #include "StringArrayBuilder.hpp"
 #include "StringArray.hpp"
@@ -114,6 +114,7 @@ namespace array_fsa {
                 labelArrange(orig_fsa_.get_target_state(labelTrans));
             }
         }
+        
         void appendStrDict();
         void saveStrDict(size_t index);
         

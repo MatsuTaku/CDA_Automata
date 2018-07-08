@@ -1,5 +1,7 @@
-Debug/
-Release/
+*/Debug/
+*/Release/
+Xcode/
+build/
 
 
 ### https://raw.github.com/github/gitignore/6cd6c885ed226acbc9d76bfeb12aa9cdab0befd5/C++.gitignore

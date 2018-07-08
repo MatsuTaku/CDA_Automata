@@ -5,7 +5,7 @@
 #ifndef ARRAY_FSA_ARRAYFSA_HPP
 #define ARRAY_FSA_ARRAYFSA_HPP
 
-//#include "ArrayFSABuilder.hpp"
+#include "ArrayFSABuilder.hpp"
 
 #include "basic.hpp"
 

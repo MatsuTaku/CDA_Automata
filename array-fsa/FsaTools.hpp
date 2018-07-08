@@ -5,8 +5,8 @@
 #ifndef ARRAY_FSA_FSATOOLS_HPP
 #define ARRAY_FSA_FSATOOLS_HPP
 
-#include "basic.hpp"
-#include "Exception.hpp"
+#include "array_fsa/basic.hpp"
+#include "array_fsa/Exception.hpp"
 
 namespace array_fsa {
     

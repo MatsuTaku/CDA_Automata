@@ -12,16 +12,16 @@
 
 #include "PlainFSA.hpp"
 #include "NextCheck.hpp"
-#include "BitVector.hpp"
+
+#include "sim_ds/BitVector.hpp"
 
 namespace array_fsa {
     
-    template <bool N, class N_CODES = DACs<>>
+    template<bool N>
     class FSA : ByteData {
     public:
         static constexpr bool useCodes = N;
-        using nextCodes = N_CODES;
-        using ncType = NextCheck<N, false, N_CODES>;
+        using ncType = NextCheck<N, false>;
     public:
         static std::string name() {
             std::string name = (!useCodes ? "Original" : "Dac");
@@ -148,15 +148,14 @@ namespace array_fsa {
         
     private:
         ncType nc_;
-        BitVector is_final_bits_;
+        sim_ds::BitVector is_final_bits_;
         size_t num_trans_ = 0;
         
         friend class ArrayFSABuilder;
     };
     
     using OriginalFSA = FSA<false>;
-    using DacFSA = FSA<true, DACs<>>;
-    using SacFSA = FSA<true, SACs>;
+    using DacFSA = FSA<true>;
     
 }
 

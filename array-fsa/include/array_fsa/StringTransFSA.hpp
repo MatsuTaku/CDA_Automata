@@ -11,20 +11,20 @@
 #include "ByteData.hpp"
 
 #include "NextCheck.hpp"
-#include "BitVector.hpp"
 #include "StringArray.hpp"
-#include "Vector.hpp"
+
+#include "sim_ds/Vector.hpp"
+#include "sim_ds/BitVector.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
     
-    template <class C_CODES, class STR_ARR>
+    template <bool LINK, class STR_ARR>
     class StringTransFSA : ByteData {
     public:
-        using checkCodesType = C_CODES;
-        using NCType = NextCheck<false, true, DACs<>, C_CODES>;
-        static constexpr bool useLink = C_CODES::useLink;
+        using NCType = NextCheck<false, true>;
+        static constexpr bool useLink = LINK;
         using SAType = STR_ARR;
     public:
         static std::string name() {
@@ -128,9 +128,9 @@ namespace array_fsa {
             nc_.setNumElement(num, true);
         }
         
-        void setNumStrings(size_t num) {
-            nc_.setNumStrings(num);
-        }
+//        void setNumStrings(size_t num) {
+//            nc_.setNumStrings(num);
+//        }
         
         void setNumTrans(size_t num) {
             num_trans_ = num;
@@ -160,7 +160,7 @@ namespace array_fsa {
             for (auto i = 0; i < nc_.numElements(); i++) {
                 checks[i] = isStringTrans(i) ? nc_.stringId(i) : nc_.check(i);
             }
-            Vector vec(checks);
+            sim_ds::Vector vec(checks);
             vec.write(os);
         }
         
@@ -195,16 +195,14 @@ namespace array_fsa {
     private:
         size_t num_trans_ = 0;
         NCType nc_;
-        BitVector is_final_bits_;
-        BitVector is_string_bits_;
+        sim_ds::BitVector is_final_bits_;
+        sim_ds::BitVector is_string_bits_;
         SAType strings_;
         
         friend class ArrayFSATailBuilder;
     };
     
-    using STFSA = StringTransFSA<DACs<true>, StringArray<false>>;
-    using STCFSA = StringTransFSA<SACs, StringArray<false>>;
-    using STCFSAB = StringTransFSA<SACs, StringArray<true>>;
+    using STFSA = StringTransFSA<true, StringArray<false>>;
     
 }
 

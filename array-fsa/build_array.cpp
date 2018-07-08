@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include "StringTransFSA.hpp"
+#include "array_fsa/StringTransFSA.hpp"
 
 using namespace array_fsa;
 

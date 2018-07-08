@@ -6,9 +6,9 @@
 //
 
 #include <stdio.h>
-#include "PlainFSABuilder.hpp"
+#include "array_fsa/PlainFSABuilder.hpp"
 
-#include "PlainFSA.hpp"
+#include "array_fsa/PlainFSA.hpp"
 
 using namespace array_fsa;
 

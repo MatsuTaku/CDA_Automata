@@ -8,7 +8,7 @@
 #ifndef StringArrayBuilder_hpp
 #define StringArrayBuilder_hpp
 
-#include "BitVector.hpp"
+#include "sim_ds/BitVector.hpp"
 
 namespace array_fsa {
     
@@ -53,7 +53,7 @@ namespace array_fsa {
             return src.bytes_;
         }
         
-        friend BitVector& boundaryFlags(StringArrayBuilder &src) {
+        friend sim_ds::BitVector& boundaryFlags(StringArrayBuilder &src) {
             return src.boundary_flags_;
         }
         
@@ -67,7 +67,7 @@ namespace array_fsa {
         bool binary_mode_;
         
         std::vector<CType> bytes_;
-        BitVector boundary_flags_;
+        sim_ds::BitVector boundary_flags_;
         
     };
     

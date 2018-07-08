@@ -5,7 +5,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "PlainFSABuilder.hpp"
+#include "array_fsa/PlainFSABuilder.hpp"
 
 #include <unistd.h>
 

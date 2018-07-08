@@ -8,13 +8,13 @@
 #ifndef FsaGenerator_hpp
 #define FsaGenerator_hpp
 
-#include "PlainFSABuilder.hpp"
-#include "PlainFSA.hpp"
-#include "ArrayFSABuilder.hpp"
-#include "ArrayFSATailBuilder.hpp"
-#include "FSA.hpp"
+#include "array_fsa/PlainFSABuilder.hpp"
+#include "array_fsa/PlainFSA.hpp"
+#include "array_fsa/ArrayFSABuilder.hpp"
+#include "array_fsa/ArrayFSATailBuilder.hpp"
+#include "array_fsa/FSA.hpp"
 
-#include "Exception.hpp"
+#include "array_fsa/Exception.hpp"
 
 namespace array_fsa {
     

@@ -12,26 +12,17 @@
 
 #include "basic.hpp"
 #include "FitValuesArray.hpp"
-#include "DACs.hpp"
-#include "SACs.hpp"
 
-#include "Calc.hpp"
-#include "basic.hpp"
+#include "sim_ds/DACs.hpp"
+#include "sim_ds/Calc.hpp"
 
 namespace array_fsa {
     
-    template <
-    bool N,
-    bool C,
-    class N_CODES = DACs<>,
-    class C_CODES = SACs
-    >
+    template<bool N, bool C>
     class NextCheck : ByteData {
     public:
         static constexpr bool useNextCodes = N;
         static constexpr bool useCheckCodes = C;
-        using nCodes = N_CODES;
-        using cCodes = C_CODES;
     public:
         NextCheck() = default;
         ~NextCheck() = default;
@@ -88,21 +79,21 @@ namespace array_fsa {
         
         // No.1
         void setNumElement(size_t num, bool bitInto) {
-            auto nextSize = Calc::sizeFitInBytes(bitInto ? num << 1 : num);
+            auto nextSize = sim_ds::Calc::sizeFitInBytes(bitInto ? num << 1 : num);
             std::vector<size_t> sizes = { N ? 1 : nextSize, 1 };
             bytes_.setValueSizes(sizes);
             bytes_.resize(num);
         }
         
-        // No.2 if use dac check
-        void setNumStrings(size_t num) {
-            assert(C);
-            auto maxSize = Calc::sizeFitInBytes(num - 1);
-            auto cCodesName = typeid(cCodes).name();
-            if (cCodesName == typeid(DACs<true>).name() ||
-                cCodesName == typeid(DACs<false>).name())
-                checkFlow.setUnitSize(std::max(maxSize - 1, size_t(1)));
-        }
+//        // No.2 if use dac check
+//        void setNumStrings(size_t num) {
+//            assert(C);
+//            auto maxSize = sim_ds::Calc::sizeFitInBytes(num - 1);
+//            auto cCodesName = typeid(cCodes).name();
+//            if (cCodesName == typeid(DACs<true>).name() ||
+//                cCodesName == typeid(DACs<false>).name())
+//                checkFlow.setUnitSize(std::max(maxSize - 1, size_t(1)));
+//        }
         
         // Finaly. If use dac
         void buildBitArray() {
@@ -131,7 +122,10 @@ namespace array_fsa {
         
         void showStatus(std::ostream& os) const {
             using std::endl;
-            os << "--- Stat of " << "NextCheck " << nCodes::name() << "|" << cCodes::name() << " ---" << endl;
+            auto codesName = [=](bool use) {
+                return use ? "DACs" : "Plain";
+            };
+            os << "--- Stat of " << "NextCheck " << codesName(useNextCodes) << "|" << codesName(useCheckCodes) << " ---" << endl;
             os << "size:   " << sizeInBytes() << endl;
             os << "size bytes:   " << bytes_.sizeInBytes() << endl;
             os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
@@ -154,9 +148,9 @@ namespace array_fsa {
                     os << c << "\t" << endl;
                 os << "/ " << numElem << endl;
             };
-            auto counts = Calc::separateCountsInSizeOf(nexts);
+            auto counts = sim_ds::Calc::separateCountsInSizeOf(nexts);
             showList(counts);
-            auto xorCounts = Calc::separateCountsInXorSizeOf(nexts);
+            auto xorCounts = sim_ds::Calc::separateCountsInXorSizeOf(nexts);
             showList(xorCounts);
         }
         
@@ -170,8 +164,8 @@ namespace array_fsa {
         
     private:
         FitValuesArray bytes_;
-        nCodes nextFlow;
-        cCodes checkFlow;
+        sim_ds::DACs nextFlow;
+        sim_ds::DACs checkFlow;
         
     };
     

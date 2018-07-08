@@ -12,7 +12,7 @@
 
 namespace array_fsa {
     
-    template <bool DAC, class CODES>
+    template <bool DAC>
     class FSA;
     
     class ArrayFSABuilder {

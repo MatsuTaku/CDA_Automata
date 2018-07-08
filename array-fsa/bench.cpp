@@ -1,15 +1,15 @@
 //
 // Created by Kampersanda on 2017/05/29.
 //
-#include "basic.hpp"
+#include "array_fsa/basic.hpp"
 
 #include "FsaTools.hpp"
-#include "Exception.hpp"
+#include "array_fsa/Exception.hpp"
 
-#include "MorfologikFSA5.hpp"
-#include "MorfologikCFSA2.hpp"
-#include "FSA.hpp"
-#include "StringTransFSA.hpp"
+#include "array_fsa/MorfologikFSA5.hpp"
+#include "array_fsa/MorfologikCFSA2.hpp"
+#include "array_fsa/FSA.hpp"
+#include "array_fsa/StringTransFSA.hpp"
 
 using namespace array_fsa;
 
@@ -64,12 +64,6 @@ int main(int argc, const char* argv[]) {
             return bench<DacFSA>(fsa_name, query_name);
         case '5':
             return bench<STFSA>(fsa_name, query_name);
-        case '6':
-            return bench<SacFSA>(fsa_name, query_name);
-        case '7':
-            return bench<STCFSA>(fsa_name, query_name);
-        case '8':
-            return bench<STCFSAB>(fsa_name, query_name);
         default:
             return 1;
     }

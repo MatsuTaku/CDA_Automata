@@ -1,0 +1,3 @@
+[submodule "array-fsa/lib/SimDS"]
+	path = array-fsa/lib/SimDS
+	url = git@github.com:MatsuTaku/SimpleDataStructure.git

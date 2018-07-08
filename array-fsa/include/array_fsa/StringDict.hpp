@@ -10,7 +10,6 @@
 
 #include "basic.hpp"
 #include "StrDictData.hpp"
-#include "BitVector.hpp"
 #include "StringArrayBuilder.hpp"
 
 namespace array_fsa {

@@ -5,13 +5,14 @@
 //  Created by 松本拓真 on 2017/11/07.
 //
 
-#include "StringDictBuilder.hpp"
+#include "array_fsa/StringDictBuilder.hpp"
 
-#include "basic.hpp"
+#include "array_fsa/StringDict.hpp"
+
+#include "sim_ds/Calc.hpp"
+
 #include <string.h>
-#include "StringDict.hpp"
 #include <unordered_map>
-#include "Calc.hpp"
 
 using namespace array_fsa;
 
@@ -86,7 +87,7 @@ void StringDictBuilder::showMappingOfByteSize() {
     for (auto &dict : str_dicts_) {
         if (dict.isIncluded)
             continue;
-        auto size = Calc::sizeFitInBytes(dict.place);
+        auto size = sim_ds::Calc::sizeFitInBytes(dict.place);
         if (size == 0) continue;
         counts[size - 1] += dict.counter + 1;
     }

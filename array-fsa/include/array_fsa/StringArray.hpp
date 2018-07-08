@@ -11,8 +11,8 @@
 #include "ByteData.hpp"
 
 #include "StringArrayBuilder.hpp"
-#include "BitVector.hpp"
-#include "basic.hpp"
+
+#include "sim_ds/BitVector.hpp"
 
 namespace array_fsa {
     
@@ -134,7 +134,7 @@ namespace array_fsa {
         
     private:
         ArrayType bytes_;
-        BitVector boundary_flags_;
+        sim_ds::BitVector boundary_flags_;
         
     };
     
