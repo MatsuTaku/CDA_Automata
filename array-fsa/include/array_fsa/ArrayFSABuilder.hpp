@@ -29,12 +29,12 @@ namespace array_fsa {
         template <class T>
         void showInBox(T &fsa);
         
+        void showMapping(bool show_density);
+        
+        ~ArrayFSABuilder() = default;
+        
         ArrayFSABuilder(const ArrayFSABuilder&) = delete;
         ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
-        
-        // MARK: - Addition Matsumoto
-        
-        void showMapping(bool show_density);
         
     protected:
         static constexpr size_t kBlockSize = 0x100;
@@ -46,7 +46,6 @@ namespace array_fsa {
         size_t unfrozen_head_ = 0;
         
         explicit ArrayFSABuilder(const PlainFSA &orig_fsa) : orig_fsa_(orig_fsa) {}
-        ~ArrayFSABuilder() = default;
         
         // MARK: of array
         size_t index_(size_t offset) const {
@@ -135,6 +134,8 @@ namespace array_fsa {
         void expand_();
         void freezeState_(size_t index);
         void closeBlock_(size_t begin);
+        
+        // Recusive function
         virtual void arrange_(size_t state, size_t index);
         
         // so-called XCHECK
@@ -182,6 +183,52 @@ namespace array_fsa {
                 sim_ds::Log::showAsBinary(fsa.next(i), 4);
                 std::cout << std::endl;
             }
+        }
+    }
+    
+    inline void ArrayFSABuilder::showMapping(bool show_density) {
+        auto tab = "\t";
+        
+        std::vector<size_t> next_map;
+        next_map.resize(4, 0);
+        std::vector<size_t> dens_map;
+        const auto dens_block_size = 0x100;
+        dens_map.resize(numElems_() / dens_block_size, 0);
+        
+        for (size_t i = 0, num_node = 0; i < index_(bytes_.size()); i++) {
+            if (!isFrozen_(i)) {
+                continue;
+            }
+            
+            num_node++;
+            if ((i + 1) % dens_block_size == 0) {
+                dens_map[(i + 1) / dens_block_size - 1] = double(num_node) / dens_block_size * 1000;
+                num_node = 0;
+            }
+            
+            auto next = getNext_(i);
+            auto size = 0;
+            while (next >> (8 * ++size - 1));
+            next_map[size - 1]++;
+        }
+        
+        std::cout << "Next size mapping" << std::endl;
+        std::cout << "num_elems " << numElems_() << std::endl;
+        std::cout << "\t1\t2\t3\t4\tbyte size" << std::endl;
+        for (auto num: next_map) {
+            auto per_num = int(double(num) / numElems_() * 100);
+            std::cout << tab << per_num;
+        }
+        std::cout << tab << "%";
+        std::cout << std::endl;
+        
+        if (show_density) {
+            std::cout << "Mapping density" << std::endl;
+            for (auto i = 0; i < dens_map.size(); i++) {
+                if (i != 0 && i % 8 == 0) { std::cout << std::endl; }
+                std::cout << tab << double(dens_map[i]) / 10 << "%";
+            }
+            std::cout << std::endl;
         }
     }
     

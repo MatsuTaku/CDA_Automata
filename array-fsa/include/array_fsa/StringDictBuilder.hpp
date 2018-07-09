@@ -11,52 +11,26 @@
 #include <unordered_map>
 
 #include "basic.hpp"
-#include "StrDictData.hpp"
-#include "StringDict.hpp"
-#include "ArrayTri.hpp"
 #include "StringArrayBuilder.hpp"
-#include "StringArray.hpp"
+
+#include "StringDict.hpp"
 #include "PlainFSA.hpp"
 
 namespace array_fsa {
     
     class StringDictBuilder {
     public:
-        static StringDict build(const PlainFSA &fsa, bool binaryMode, bool mergeSuffix) {
-            StringDictBuilder builder(fsa, binaryMode);
-            std::cout << "------ StringDict build bench mark ------" << std::endl;
-            Stopwatch sw;
-            
-            builder.makeDict();
-            double lastSW, newSW = sw.get_milli_sec();
-            std::cout << "makeDict: " << newSW << "µs" << std::endl;
-            lastSW = newSW;
-            builder.setSharings(mergeSuffix);
-            newSW = sw.get_milli_sec();
-            std::cout << "setSharings: " << newSW - lastSW << "µs" << std::endl;
-            lastSW = newSW;
-            builder.setUpLabelArray();
-            newSW = sw.get_milli_sec();
-            std::cout << "setUpLabelArray: " << newSW - lastSW << "µs" << std::endl;
-            
-            builder.showMappingOfByteSize();
-            
-            StringDict dict;
-            dict.str_dicts_ = builder.str_dicts_;
-            dict.fsa_target_indexes_ = builder.fsa_target_indexes_;
-            dict.has_label_bits_ = builder.has_label_bits_;
-            dict.label_array_ = std::move(builder.label_array_);
-            return dict;
-        }
+        static StringDict build(const PlainFSA &fsa, bool binaryMode, bool mergeSuffix);
+        
+        ~StringDictBuilder() = default;
         
         StringDictBuilder(const StringDictBuilder &) = delete;
-        StringDictBuilder& operator=(const StringDictBuilder &) = delete;
+        StringDictBuilder& operator=(const StringDictBuilder&) = delete;
         
     private:
         const PlainFSA &orig_fsa_;
         
         explicit StringDictBuilder(const PlainFSA &fsa, bool binaryMode) : orig_fsa_(fsa), label_array_(binaryMode) {}
-        ~StringDictBuilder() = default;
         
         std::vector<StrDictData> str_dicts_;
         size_t cur_str_dict_index_;
@@ -75,9 +49,8 @@ namespace array_fsa {
         void updateIdMap() {
             idMap = {};
             idMap.resize(str_dicts_.size());
-            for (size_t i = 0, size = str_dicts_.size(); i < size; i++) {
+            for (size_t i = 0, size = str_dicts_.size(); i < size; i++)
                 idMap[str_dicts_[i].id] = i;
-            }
         }
         
         StrDictData & getDictFromId(size_t id) {
@@ -88,32 +61,8 @@ namespace array_fsa {
             return str_dicts_[cur_str_dict_index_];
         }
         
-        void labelArrange(size_t state) {
-            const auto first_trans = orig_fsa_.get_first_trans(state);
-            
-            if (first_trans == 0 || // last trans
-                state_map_.find(state) != state_map_.end()) {// already visited state
-                return;
-            }
-            
-            state_map_.insert(std::make_pair(state, 0));
-            
-            for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-                auto labelTrans = trans;
-                if (orig_fsa_.is_straight_state(labelTrans)) {
-                    auto index = labelTrans / PlainFSA::kTransSize;
-                    appendStrDict();
-                    curStrDict().set(orig_fsa_.get_trans_symbol(labelTrans));
-                    do {
-                        labelTrans = orig_fsa_.get_target_state(labelTrans);
-                        curStrDict().set(orig_fsa_.get_trans_symbol(labelTrans));
-                    } while (orig_fsa_.is_straight_state(labelTrans));
-                    saveStrDict(index);
-                }
-                
-                labelArrange(orig_fsa_.get_target_state(labelTrans));
-            }
-        }
+        // Recusive function
+        void labelArrange(size_t state);
         
         void appendStrDict();
         void saveStrDict(size_t index);
@@ -126,19 +75,33 @@ namespace array_fsa {
         
     };
     
-    inline void StringDictBuilder::appendStrDict() {
-        StrDictData dict;
-        dict.id = str_dicts_.size();
-        str_dicts_.push_back(dict);
-        cur_str_dict_index_ = str_dicts_.size() - 1;
-    }
     
-    inline void StringDictBuilder::saveStrDict(size_t index) {
-        auto &dict = curStrDict();
-        has_label_bits_[index] = true;
-        dict.node_id = index;
-        dict.counter = 1;
-    }
+    inline StringDict StringDictBuilder::build(const PlainFSA &fsa, bool binaryMode, bool mergeSuffix) {
+        StringDictBuilder builder(fsa, binaryMode);
+        std::cout << "------ StringDict build bench mark ------" << std::endl;
+        Stopwatch sw;
+        
+        builder.makeDict();
+        double lastSW, newSW = sw.get_milli_sec();
+        std::cout << "makeDict: " << newSW << "µs" << std::endl;
+        lastSW = newSW;
+        builder.setSharings(mergeSuffix);
+        newSW = sw.get_milli_sec();
+        std::cout << "setSharings: " << newSW - lastSW << "µs" << std::endl;
+        lastSW = newSW;
+        builder.setUpLabelArray();
+        newSW = sw.get_milli_sec();
+        std::cout << "setUpLabelArray: " << newSW - lastSW << "µs" << std::endl;
+        
+        builder.showMappingOfByteSize();
+        
+        StringDict dict;
+        dict.str_dicts_ = builder.str_dicts_;
+        dict.fsa_target_indexes_ = builder.fsa_target_indexes_;
+        dict.has_label_bits_ = builder.has_label_bits_;
+        dict.label_array_ = std::move(builder.label_array_);
+        return dict;
+        }
     
 }
 

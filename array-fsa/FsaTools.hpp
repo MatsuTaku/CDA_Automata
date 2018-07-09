@@ -58,7 +58,7 @@ namespace array_fsa {
             std::cout << "OK: " << num - ng << std::endl;
             std::cout << "NG: " << ng << std::endl;
             
-            fsa.show_stat(std::cout);
+            fsa.showStatus(std::cout);
         }
         
     };

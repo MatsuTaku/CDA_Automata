@@ -8,13 +8,53 @@
 #include "array_fsa/StringDictBuilder.hpp"
 
 #include "array_fsa/StringDict.hpp"
-
 #include "sim_ds/Calc.hpp"
 
-#include <string.h>
-#include <unordered_map>
-
 using namespace array_fsa;
+
+
+// Recusive function
+inline void StringDictBuilder::labelArrange(size_t state) {
+    const auto first_trans = orig_fsa_.get_first_trans(state);
+    
+    if (first_trans == 0 || // last trans
+        state_map_.find(state) != state_map_.end()) {// already visited state
+        return;
+    }
+    
+    state_map_.insert(std::make_pair(state, 0));
+    
+    for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
+        auto labelTrans = trans;
+        if (orig_fsa_.is_straight_state(labelTrans)) {
+            auto index = labelTrans / PlainFSA::kTransSize;
+            appendStrDict();
+            curStrDict().set(orig_fsa_.get_trans_symbol(labelTrans));
+            do {
+                labelTrans = orig_fsa_.get_target_state(labelTrans);
+                curStrDict().set(orig_fsa_.get_trans_symbol(labelTrans));
+            } while (orig_fsa_.is_straight_state(labelTrans));
+            saveStrDict(index);
+        }
+        
+        labelArrange(orig_fsa_.get_target_state(labelTrans));
+    }
+    
+}
+
+void StringDictBuilder::appendStrDict() {
+    StrDictData dict;
+    dict.id = str_dicts_.size();
+    str_dicts_.push_back(dict);
+    cur_str_dict_index_ = str_dicts_.size() - 1;
+}
+
+void StringDictBuilder::saveStrDict(size_t index) {
+    auto &dict = curStrDict();
+    has_label_bits_[index] = true;
+    dict.node_id = index;
+    dict.counter = 1;
+}
 
 void StringDictBuilder::makeDict() {
     fsa_target_indexes_.resize(orig_fsa_.get_num_elements());
@@ -26,6 +66,7 @@ void StringDictBuilder::setSharings(bool mergeSuffix) {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
         return std::lexicographical_compare(lhs.label.rbegin(), lhs.label.rend(), rhs.label.rbegin(), rhs.label.rend());
     });
+    
     StrDictData *owner = new StrDictData;
     for (auto i = str_dicts_.size(); i > 0; --i) {
         auto &cur = str_dicts_[i - 1];
@@ -36,7 +77,7 @@ void StringDictBuilder::setSharings(bool mergeSuffix) {
         auto match = 0;
         auto oLen = owner->label.length();
         auto cLen = cur.label.length();
-        while (oLen > match && cLen > match &&
+        while ((oLen > match && cLen > match) &&
                owner->label[oLen - match - 1] == cur.label[cLen - match - 1]) {
             ++match;
         }
@@ -46,7 +87,7 @@ void StringDictBuilder::setSharings(bool mergeSuffix) {
             cur.enabled = false;
             cur.owner = owner->id;
             owner->counter++;
-        } else if (mergeSuffix && match > 0 && match == cLen) {
+        } else if (mergeSuffix && (match > 0 && match == cLen)) {
             // included
             cur.isIncluded = true;
             cur.owner = owner->id;
@@ -55,6 +96,7 @@ void StringDictBuilder::setSharings(bool mergeSuffix) {
             owner = &cur;
         }
     }
+    
 }
 
 void StringDictBuilder::setUpLabelArray() {

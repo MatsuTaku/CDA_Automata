@@ -13,55 +13,6 @@
 using namespace array_fsa;
 
 
-// MARK: - public
-
-void ArrayFSABuilder::showMapping(bool show_density) {
-    auto tab = "\t";
-    
-    std::vector<size_t> next_map;
-    next_map.resize(4, 0);
-    std::vector<size_t> dens_map;
-    const auto dens_block_size = 0x100;
-    dens_map.resize(numElems_() / dens_block_size, 0);
-    
-    for (size_t i = 0, num_node = 0; i < index_(bytes_.size()); i++) {
-        if (!isFrozen_(i)) {
-            continue;
-        }
-        
-        num_node++;
-        if ((i + 1) % dens_block_size == 0) {
-            dens_map[(i + 1) / dens_block_size - 1] = double(num_node) / dens_block_size * 1000;
-            num_node = 0;
-        }
-        
-        auto next = getNext_(i);
-        auto size = 0;
-        while (next >> (8 * ++size - 1));
-        next_map[size - 1]++;
-    }
-    
-    std::cout << "Next size mapping" << std::endl;
-    std::cout << "num_elems " << numElems_() << std::endl;
-    std::cout << "\t1\t2\t3\t4\tbyte size" << std::endl;
-    for (auto num: next_map) {
-        auto per_num = int(double(num) / numElems_() * 100);
-        std::cout << tab << per_num;
-    }
-    std::cout << tab << "%";
-    std::cout << std::endl;
-    
-    if (show_density) {
-        std::cout << "Mapping density" << std::endl;
-        for (auto i = 0; i < dens_map.size(); i++) {
-            if (i != 0 && i % 8 == 0) { std::cout << std::endl; }
-            std::cout << tab << double(dens_map[i]) / 10 << "%";
-        }
-        std::cout << std::endl;
-    }
-}
-
-
 // MARK: - private
 
 void ArrayFSABuilder::build_() {
@@ -175,7 +126,8 @@ bool ArrayFSABuilder::checkNext_(size_t next, size_t trans) const {
     return true;
 }
 
-void ArrayFSABuilder::arrange_(size_t state, size_t index) {
+// Recusive function
+inline void ArrayFSABuilder::arrange_(size_t state, size_t index) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {

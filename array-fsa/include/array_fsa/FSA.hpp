@@ -11,8 +11,9 @@
 #include "ByteData.hpp"
 
 #include "NextCheck.hpp"
-
 #include "sim_ds/BitVector.hpp"
+
+#include "ArrayFSABuilder.hpp"
 
 namespace array_fsa {
     
@@ -24,16 +25,26 @@ namespace array_fsa {
         static constexpr bool useCodes = N;
         using nc_type = NextCheck<N, false>;
         
+        // MARK: - Copy guard
+        
+        FSA() = default;
+        ~FSA() = default;
+        
+        FSA (const FSA&) = delete;
+        FSA& operator=(const FSA&) = delete;
+        
+        FSA(FSA&&) noexcept = default;
+        FSA& operator=(FSA&&) noexcept = default;
+        
     public:
         static std::string name() {
             std::string name = (!useCodes ? "Original" : "Dac");
             return name + "FSA";
         }
         
-        static FSA build(const PlainFSA& fsa);
-
-        FSA() = default;
-        ~FSA() = default;
+        static FSA<N> build(const PlainFSA &fsa) {
+            return ArrayFSABuilder::build<FSA<N>>(fsa);
+        }
         
         // MARK: - getter
         
@@ -132,7 +143,7 @@ namespace array_fsa {
             num_trans_ = read_val<size_t>(is);
         }
         
-        void show_stat(std::ostream& os) const {
+        void showStatus(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << num_trans_ << endl;
@@ -141,14 +152,6 @@ namespace array_fsa {
             os << "size is final:   " << is_final_bits_.sizeInBytes() << endl;
             nc_.showStatus(os);
         }
-        
-        // MARK: - Copy guard
-        
-        FSA (const FSA&) = delete;
-        FSA& operator =(const FSA&) = delete;
-
-        FSA(FSA&& rhs) noexcept = default;
-        FSA& operator =(FSA&& rhs) noexcept = default;
         
     private:
         nc_type nc_;

@@ -11,6 +11,7 @@
 #include "ArrayFSABuilder.hpp"
 
 #include "StringDictBuilder.hpp"
+#include "StringArray.hpp"
 
 namespace array_fsa {
     
@@ -63,8 +64,8 @@ namespace array_fsa {
     template <class T>
     T ArrayFSATailBuilder::build(const PlainFSA &origFsa) {
         const auto isBinary = T::useBinaryLabel;
-        const auto mergeSuffix = T::useLink;
-        ArrayFSATailBuilder builder(origFsa, isBinary, mergeSuffix);
+        const auto shouldMergeSuffix = false;
+        ArrayFSATailBuilder builder(origFsa, isBinary, shouldMergeSuffix);
         
         // Release
         T newFsa;

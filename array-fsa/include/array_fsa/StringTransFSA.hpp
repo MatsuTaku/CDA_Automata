@@ -12,27 +12,28 @@
 
 #include "NextCheck.hpp"
 #include "StringArray.hpp"
-
 #include "sim_ds/BitVector.hpp"
+
+#include "ArrayFSATailBuilder.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
     
-    template <bool USE_LINK, bool IS_BINARY_LABEL>
+    template<bool IS_BINARY_LABEL>
     class StringTransFSA : ByteData {
     public:
         using nc_type = NextCheck<false, true>;
-        static constexpr bool useLink = USE_LINK;
         static constexpr bool useBinaryLabel = IS_BINARY_LABEL;
         using sa_type = StringArray<useBinaryLabel>;
     public:
         static std::string name() {
-            std::string link = (useLink ? "ST" : "STC");
-            return link + "FSA";
+            return "STFSA";
         }
         
-        static StringTransFSA build(const PlainFSA& fsa);
+        static StringTransFSA<IS_BINARY_LABEL> build(const PlainFSA& fsa) {
+            return ArrayFSATailBuilder::build<StringTransFSA<IS_BINARY_LABEL>>(fsa);
+        }
         
         StringTransFSA() = default;
         
@@ -85,10 +86,7 @@ namespace array_fsa {
         }
         
         bool isStringTrans(size_t index) const {
-            if (useLink)
-                return nc_.getBitInFlow(index);
-            else
-                return is_string_bits_[index];
+            return is_string_bits_[index];
         }
         
         // MARK: - build
@@ -103,11 +101,7 @@ namespace array_fsa {
         }
         
         void setIsStringTrans(size_t index, bool isString) {
-            if (useLink) {
-                nc_.setBitInFlow(index, isString);
-            } else {
-                is_string_bits_.set(index, isString);
-            }
+            is_string_bits_.set(index, isString);
         }
         
         void setStringIndex(size_t index, size_t strIndex) {
@@ -141,8 +135,7 @@ namespace array_fsa {
         size_t sizeInBytes() const override {
             auto size = sizeof(num_trans_);
             size += nc_.sizeInBytes();
-            if (!useLink)
-                size += is_string_bits_.sizeInBytes();
+            size += is_string_bits_.sizeInBytes();
             size += strings_.sizeInBytes();
             return size;
         }
@@ -150,8 +143,7 @@ namespace array_fsa {
         void write(std::ostream& os) const override {
             write_val(num_trans_, os);
             nc_.write(os);
-            if (!useLink)
-                is_string_bits_.write(os);
+            is_string_bits_.write(os);
             strings_.write(os);
         }
         
@@ -167,12 +159,11 @@ namespace array_fsa {
         void read(std::istream& is) override {
             num_trans_ = read_val<size_t>(is);
             nc_.read(is);
-            if (!useLink)
-                is_string_bits_.read(is);
+            is_string_bits_.read(is);
             strings_.read(is);
         }
         
-        void show_stat(std::ostream& os) const {
+        void showStatus(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << num_trans_ << endl;
@@ -202,7 +193,7 @@ namespace array_fsa {
         friend class ArrayFSATailBuilder;
     };
     
-    using STFSA = StringTransFSA<true, false>;
+    using STFSA = StringTransFSA<false>;
     
 }
 

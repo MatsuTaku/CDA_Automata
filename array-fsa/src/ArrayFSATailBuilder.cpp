@@ -27,7 +27,8 @@ void ArrayFSATailBuilder::build_(bool binarymode) {
     state_map_ = std::unordered_map<size_t, size_t>();
 }
 
-void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
+// Recusive function
+inline void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {

@@ -95,7 +95,7 @@ namespace array_fsa {
             return 4 + 1 + 2 + 1 + label_mapping_.size() + bytes_.size();
         }
         
-        void show_stat(std::ostream& os) const {
+        void showStatus(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << get_num_trans() << endl;

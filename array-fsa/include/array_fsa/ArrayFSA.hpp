@@ -91,7 +91,7 @@ namespace array_fsa {
             return size_vec(bytes_) + sizeof(next_size_) + sizeof(num_trans_);
         }
         
-        virtual void show_stat(std::ostream& os) const {
+        virtual void showStatus(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << get_num_trans() << endl;

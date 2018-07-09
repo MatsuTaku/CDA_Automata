@@ -12,19 +12,19 @@ int main(int argc, const char *argv[]) {
     auto fsa_name = argv[3];
     auto fsa_type = *argv[4];
     
-    data_name = "../../data-sets/weiss/wikipedia2.dict";
-    plain_fsa_name = "../../results/wikipedia2/wikipedia2.plain";
-    fsa_name = "../../results/wikipedia2/wikipedia2.fsa";
-//    data_name = "../../data-sets/kanda/indochina-2004.dict";
-//    plain_fsa_name = "../../results/indochina-2004/indochina-2004.plain";
-//    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; fsa_type = '1';
+//    data_name = "../../data-sets/weiss/wikipedia2.dict";
+//    plain_fsa_name = "../../results/wikipedia2/wikipedia2.plain";
+//    fsa_name = "../../results/wikipedia2/wikipedia2.fsa";
+    data_name = "../../../data-sets/kanda/indochina-2004.dict";
+    plain_fsa_name = "../../../results/indochina-2004/indochina-2004.plain";
+    fsa_name = "../../../results/indochina-2004/indochina-2004.sac_array_fsa"; fsa_type = '2';
 //    fsa_name = "../../results/indochina-2004/indochina-2004.stcfsa"; fsa_type = '5';
-//    plain_fsa_name = "../../results/jawiki-20150118/jawiki-20150118.plain";
-//    data_name = "../../data-sets/kanda/jawiki-20150118.dict";
-//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa"; fsa_type = '2';
+//    plain_fsa_name = "../../../results/jawiki-20150118/jawiki-20150118.plain";
+//    data_name = "../../../data-sets/kanda/jawiki-20150118.dict";
+//    fsa_name = "../../../results/jawiki-20150118/jawiki-20150118.fsa"; fsa_type = '2';
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stfsa"; fsa_type = '3';
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa"; fsa_type = '6';
-    fsa_type = '1';
+//    fsa_type = '1';
     
     switch (fsa_type) {
         case '1':
