@@ -10,8 +10,6 @@
 
 #include "ByteData.hpp"
 
-#include "basic.hpp"
-
 namespace array_fsa {
     
     class FitValuesArray : ByteData {

@@ -9,50 +9,15 @@
 #define ArrayFSA_TailBuilder_hpp
 
 #include "ArrayFSABuilder.hpp"
-#include "StringDict.hpp"
+
 #include "StringDictBuilder.hpp"
-#include "StringTransFSA.hpp"
 
 namespace array_fsa {
     
     class ArrayFSATailBuilder : public ArrayFSABuilder {
     public:
         template <class T>
-        static T build(const PlainFSA &origFsa) {
-            const auto isBinary = T::SAType::kBinaryMode;
-            const auto mergeSuffix = T::useLink;
-            ArrayFSATailBuilder builder(origFsa, isBinary, mergeSuffix);
-            
-            // Release
-            T newFsa;
-            
-            const auto numElems = builder.num_elems_();
-            newFsa.setNumElement(numElems);
-            newFsa.strings_ = StringArray<isBinary>(&labelArray(builder.str_dict_));
-//            newFsa.setNumStrings(newFsa.strings_.size());
-            
-            auto numTrans = 0;
-            for (auto i = 0; i < numElems; i++) {
-                newFsa.setNextAndIsFinal(i, builder.get_next_(i), builder.is_final_(i));
-                newFsa.setCheck(i, builder.get_check_(i));
-                auto isStrTrans = builder.has_label(i);
-                newFsa.setIsStringTrans(i, isStrTrans);
-                if (isStrTrans) {
-                    newFsa.setStringIndex(i, builder.get_label_number(i));
-                } else {
-                    newFsa.setCheck(i, builder.get_check_(i));
-                }
-                
-                if (builder.is_frozen_(i))
-                    numTrans++;
-            }
-            newFsa.buildBitArray();
-            newFsa.setNumTrans(numTrans);
-            
-            //    showInBox(builder, newFsa);
-            
-            return newFsa;
-        }
+        static T build(const PlainFSA &origFsa);
         
         template <class T>
         void showInBox(T &fsa);
@@ -67,103 +32,85 @@ namespace array_fsa {
         
         virtual ~ArrayFSATailBuilder() = default;
         
-        size_t get_label_number(size_t index) const {
+        size_t getLabelNumber_(size_t index) const {
             size_t labelIndex = 0;
             std::memcpy(&labelIndex, &bytes_[offset_(index) + 1 + kAddrSize], 4);
             return labelIndex;
         }
         
-        bool has_label(size_t index) const {
+        bool hasLabel_(size_t index) const {
             return (bytes_[offset_(index)] & 8) != 0;
         }
         
-        bool is_label_finish(size_t index) const {
+        bool isLabelEnd_(size_t index) const {
             return str_dict_.isEndLabel(index);
         }
         
-        void set_label_index_(size_t index, size_t labelIndex) {
+        void setLabelIndex_(size_t index, size_t labelIndex) {
             std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &labelIndex, 4);
         }
         
-        void set_has_label(size_t index) {
+        void setHasLabel_(size_t index) {
             bytes_[offset_(index)] |= 8;
         }
         
         void build_(bool binaryMode);
-        
-        void arrange_(size_t state, size_t index) override {
-            const auto first_trans = orig_fsa_.get_first_trans(state);
-            
-            if (first_trans == 0) {
-                set_next_(index, index); // to the terminal state
-                return;
-            }
-            
-            { // Set next of offset to state's second if needed.
-                auto it = state_map_.find(state);
-                if (it != state_map_.end()) {
-                    // already visited state
-                    set_next_(index, it->second);
-                    return;
-                }
-            }
-            
-            const auto next = find_next_(first_trans);
-            if (offset_(next) >= bytes_.size()) {
-                expand_();
-            }
-            
-            set_next_(index, next);
-            state_map_.insert(std::make_pair(state, next));
-            set_used_next_(next, true);
-            
-            for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-                const auto symbol = orig_fsa_.get_trans_symbol(trans);
-                const auto child_index = next ^ symbol;
-                
-                freeze_state_(child_index);
-                
-                auto transIndex = trans / PlainFSA::kTransSize;
-                if (str_dict_.isLabelSource(transIndex)) {
-                    set_has_label(child_index);
-                    set_label_index_(child_index, str_dict_.startPos(transIndex));
-                    
-                    auto labelTrans = trans;
-                    str_dict_.traceOnLabel(labelTrans / PlainFSA::kTransSize);
-                    while (!str_dict_.isEndLabel() && orig_fsa_.is_straight_state(labelTrans)) {
-                        labelTrans = orig_fsa_.get_target_state(labelTrans);
-                        str_dict_.posToNext();
-                    }
-                    if (orig_fsa_.is_final_trans(labelTrans)) {
-                        set_final_(child_index, true);
-                    }
-                } else {
-                    set_check_(child_index, symbol);
-                    
-                    if (orig_fsa_.is_final_trans(trans)) {
-                        set_final_(child_index, true);
-                    }
-                }
-            }
-            
-            for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-                const auto symbol = orig_fsa_.get_trans_symbol(trans);
-                
-                auto labelTrans = trans;
-                auto transIndex = labelTrans / PlainFSA::kTransSize;
-                if (str_dict_.isLabelSource(transIndex)) {
-                    str_dict_.traceOnLabel(transIndex);
-                    while (!str_dict_.isEndLabel() && orig_fsa_.is_straight_state(labelTrans)) {
-                        labelTrans = orig_fsa_.get_target_state(labelTrans);
-                        str_dict_.posToNext();
-                    }
-                }
-                
-                arrange_(orig_fsa_.get_target_state(labelTrans), next ^ symbol);
-            }
-        }
+        void arrange_(size_t state, size_t index) override;
         
     };
+    
+    
+    template <class T>
+    T ArrayFSATailBuilder::build(const PlainFSA &origFsa) {
+        const auto isBinary = T::useBinaryLabel;
+        const auto mergeSuffix = T::useLink;
+        ArrayFSATailBuilder builder(origFsa, isBinary, mergeSuffix);
+        
+        // Release
+        T newFsa;
+        
+        const auto numElems = builder.numElems_();
+        newFsa.setNumElement(numElems);
+        newFsa.strings_ = StringArray<isBinary>(&labelArray(builder.str_dict_));
+        //            newFsa.setNumStrings(newFsa.strings_.size());
+        
+        auto numTrans = 0;
+        for (auto i = 0; i < numElems; i++) {
+            newFsa.setNextAndIsFinal(i, builder.getNext_(i), builder.isFinal_(i));
+            newFsa.setCheck(i, builder.getCheck_(i));
+            auto isStrTrans = builder.hasLabel_(i);
+            newFsa.setIsStringTrans(i, isStrTrans);
+            if (isStrTrans) {
+                newFsa.setStringIndex(i, builder.getLabelNumber_(i));
+            } else {
+                newFsa.setCheck(i, builder.getCheck_(i));
+            }
+            
+            if (builder.isFrozen_(i))
+                numTrans++;
+        }
+        newFsa.buildBitArray();
+        newFsa.setNumTrans(numTrans);
+        
+        //    showInBox(builder, newFsa);
+        
+        return newFsa;
+    }
+    
+    template <class T>
+    void ArrayFSATailBuilder::showInBox(T &fsa) {
+        auto tab = "\t";
+        auto start = 0;
+        for (auto i = start; i < start + 0x100; i++) {
+            std::cout << i << tab << isFinal_(i) << tab << getNext_(i) << tab << getCheck_(i) << tab << hasLabel_(i) << std::endl;
+            std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << tab << fsa.isStringTrans(i) << std::endl;
+            if (hasLabel_(i)) {
+                sim_ds::Log::showAsBinary(getLabelNumber_(i), 4);
+                sim_ds::Log::showAsBinary(fsa.stringId(i), 4);
+            }
+            std::cout << std::endl;
+        }
+    }
     
 }
 

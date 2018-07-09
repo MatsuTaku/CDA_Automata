@@ -10,7 +10,6 @@
 
 #include "ByteData.hpp"
 
-#include "basic.hpp"
 #include "FitValuesArray.hpp"
 
 #include "sim_ds/DACs.hpp"
@@ -120,39 +119,8 @@ namespace array_fsa {
             checkFlow.read(is);
         }
         
-        void showStatus(std::ostream& os) const {
-            using std::endl;
-            auto codesName = [=](bool use) {
-                return use ? "DACs" : "Plain";
-            };
-            os << "--- Stat of " << "NextCheck " << codesName(useNextCodes) << "|" << codesName(useCheckCodes) << " ---" << endl;
-            os << "size:   " << sizeInBytes() << endl;
-            os << "size bytes:   " << bytes_.sizeInBytes() << endl;
-            os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
-            os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
-            nextFlow.showStats(os);
-            checkFlow.showStats(os);
-            showSizeMap(os);
-        }
-        
-        void showSizeMap(std::ostream &os) const {
-            auto numElem = numElements();
-            std::vector<size_t> nexts(numElem);
-            for (auto i = 0; i < numElem; i++)
-                nexts[i] = next(i) >> (!N ? 1 : 0);
-            
-            auto showList = [&](const std::vector<size_t> &list) {
-                using std::endl;
-                os << "-- " << "Next Map" << " --" << endl;
-                for (auto c : list)
-                    os << c << "\t" << endl;
-                os << "/ " << numElem << endl;
-            };
-            auto counts = sim_ds::Calc::separateCountsInSizeOf(nexts);
-            showList(counts);
-            auto xorCounts = sim_ds::Calc::separateCountsInXorSizeOf(nexts);
-            showList(xorCounts);
-        }
+        void showStatus(std::ostream &os) const;
+        void showSizeMap(std::ostream &os) const;
         
         // MARK: - Copy guard
         
@@ -169,6 +137,42 @@ namespace array_fsa {
         
     };
     
+    
+    template<bool N, bool C>
+    void NextCheck<N, C>::showStatus(std::ostream &os) const {
+        using std::endl;
+        auto codesName = [=](bool use) {
+            return use ? "DACs" : "Plain";
+        };
+        os << "--- Stat of " << "NextCheck " << codesName(useNextCodes) << "|" << codesName(useCheckCodes) << " ---" << endl;
+        os << "size:   " << sizeInBytes() << endl;
+        os << "size bytes:   " << bytes_.sizeInBytes() << endl;
+        os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
+        os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
+//        nextFlow.showStatus(os);
+//        checkFlow.showStatus(os);
+        showSizeMap(os);
+    }
+    
+    template<bool N, bool C>
+    void NextCheck<N, C>::showSizeMap(std::ostream &os) const {
+        auto numElem = numElements();
+        std::vector<size_t> nexts(numElem);
+        for (auto i = 0; i < numElem; i++)
+            nexts[i] = next(i) >> (!N ? 1 : 0);
+        
+        auto showList = [&](const std::vector<size_t> &list) {
+            using std::endl;
+            os << "-- " << "Next Map" << " --" << endl;
+            for (auto c : list)
+                os << c << "\t" << endl;
+            os << "/ " << numElem << endl;
+        };
+        auto counts = sim_ds::Calc::separateCountsInSizeOf(nexts);
+        showList(counts);
+        auto xorCounts = sim_ds::Calc::separateCountsInXorSizeOf(nexts);
+        showList(xorCounts);
+    }
 }
 
 #endif /* NextCheck_hpp */

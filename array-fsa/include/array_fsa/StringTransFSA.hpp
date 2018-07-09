@@ -13,19 +13,19 @@
 #include "NextCheck.hpp"
 #include "StringArray.hpp"
 
-#include "sim_ds/Vector.hpp"
 #include "sim_ds/BitVector.hpp"
 
 namespace array_fsa {
     
     class PlainFSA;
     
-    template <bool LINK, class STR_ARR>
+    template <bool USE_LINK, bool IS_BINARY_LABEL>
     class StringTransFSA : ByteData {
     public:
-        using NCType = NextCheck<false, true>;
-        static constexpr bool useLink = LINK;
-        using SAType = STR_ARR;
+        using nc_type = NextCheck<false, true>;
+        static constexpr bool useLink = USE_LINK;
+        static constexpr bool useBinaryLabel = IS_BINARY_LABEL;
+        using sa_type = StringArray<useBinaryLabel>;
     public:
         static std::string name() {
             std::string link = (useLink ? "ST" : "STC");
@@ -114,7 +114,7 @@ namespace array_fsa {
             nc_.setStringIndex(index, strIndex);
         }
         
-        void setStringArray(const STR_ARR& sArr) {
+        void setStringArray(const sa_type &sArr) {
             strings_ = sArr;
         }
         
@@ -194,15 +194,15 @@ namespace array_fsa {
         
     private:
         size_t num_trans_ = 0;
-        NCType nc_;
+        nc_type nc_;
         sim_ds::BitVector is_final_bits_;
         sim_ds::BitVector is_string_bits_;
-        SAType strings_;
+        sa_type strings_;
         
         friend class ArrayFSATailBuilder;
     };
     
-    using STFSA = StringTransFSA<true, StringArray<false>>;
+    using STFSA = StringTransFSA<true, false>;
     
 }
 

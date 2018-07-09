@@ -1,15 +1,9 @@
 //
 // Created by Kampersanda on 2017/05/29.
 //
-#include "array_fsa/basic.hpp"
 
+#include "array_fsa.hpp"
 #include "FsaTools.hpp"
-#include "array_fsa/Exception.hpp"
-
-#include "array_fsa/MorfologikFSA5.hpp"
-#include "array_fsa/MorfologikCFSA2.hpp"
-#include "array_fsa/FSA.hpp"
-#include "array_fsa/StringTransFSA.hpp"
 
 using namespace array_fsa;
 

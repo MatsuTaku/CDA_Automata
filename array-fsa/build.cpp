@@ -1,10 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 
+#include "array_fsa.hpp"
 #include "FsaGenerator.hpp"
-
-#include "array_fsa/FSA.hpp"
-#include "array_fsa/StringTransFSA.hpp"
 
 using namespace array_fsa;
 

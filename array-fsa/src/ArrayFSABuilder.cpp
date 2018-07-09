@@ -8,29 +8,10 @@
 
 #include "array_fsa/PlainFSA.hpp"
 #include "array_fsa/FSA.hpp"
-#include "sim_ds/Log.hpp"
 #include "sim_ds/Calc.hpp"
 
 using namespace array_fsa;
 
-template <class T>
-void ArrayFSABuilder::showInBox(ArrayFSABuilder &builder, T &fsa) {
-    auto tab = "\t";
-    for (auto i = 0; i < 0x100; i++) {
-        auto bn = builder.get_next_(i);
-        auto fn = fsa.next(i);
-        if (bn != fn) {
-            std::cout << i << tab << builder.is_final_(i) << tab << bn << tab << builder.get_check_(i) << std::endl;
-            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fsa.check(i) << std::endl;
-            sim_ds::Log::showAsBinary(builder.get_next_(i), 4);
-            sim_ds::Log::showAsBinary(fsa.next(i), 4);
-            std::cout << std::endl;
-        }
-    }
-}
-
-template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, OriginalFSA&);
-template void ArrayFSABuilder::showInBox(ArrayFSABuilder&, DacFSA&);
 
 // MARK: - public
 
@@ -41,10 +22,10 @@ void ArrayFSABuilder::showMapping(bool show_density) {
     next_map.resize(4, 0);
     std::vector<size_t> dens_map;
     const auto dens_block_size = 0x100;
-    dens_map.resize(num_elems_() / dens_block_size, 0);
+    dens_map.resize(numElems_() / dens_block_size, 0);
     
     for (size_t i = 0, num_node = 0; i < index_(bytes_.size()); i++) {
-        if (!is_frozen_(i)) {
+        if (!isFrozen_(i)) {
             continue;
         }
         
@@ -54,17 +35,17 @@ void ArrayFSABuilder::showMapping(bool show_density) {
             num_node = 0;
         }
         
-        auto next = get_next_(i);
+        auto next = getNext_(i);
         auto size = 0;
         while (next >> (8 * ++size - 1));
         next_map[size - 1]++;
     }
     
     std::cout << "Next size mapping" << std::endl;
-    std::cout << "num_elems " << num_elems_() << std::endl;
+    std::cout << "num_elems " << numElems_() << std::endl;
     std::cout << "\t1\t2\t3\t4\tbyte size" << std::endl;
     for (auto num: next_map) {
-        auto per_num = int(double(num) / num_elems_() * 100);
+        auto per_num = int(double(num) / numElems_() * 100);
         std::cout << tab << per_num;
     }
     std::cout << tab << "%";
@@ -87,8 +68,8 @@ void ArrayFSABuilder::build_() {
     bytes_.reserve(static_cast<size_t>(orig_fsa_.get_num_trans() * 1.1 * kElemSize));
     
     expand_();
-    freeze_state_(0);
-    set_true_final_and_used_next_(0);
+    freezeState_(0);
+    setFinalAndUsedNext_(0);
     
     arrange_(orig_fsa_.get_root_state(), 0);
     
@@ -103,39 +84,39 @@ void ArrayFSABuilder::expand_() {
     bytes_.resize(offset_(end), 0);
     
     for (auto i = begin; i < end; i++) {
-        set_succ_(i, i + 1);
-        set_pred_(i, i - 1);
+        setSucc_(i, i + 1);
+        setPred_(i, i - 1);
     }
     
     if (unfrozen_head_ == 0) {
         // initial or full
-        set_pred_(begin, end - 1);
-        set_succ_(end - 1, begin);
+        setPred_(begin, end - 1);
+        setSucc_(end - 1, begin);
         unfrozen_head_ = begin;
     } else {
-        const auto unfrozen_tail = get_pred_(unfrozen_head_);
-        set_pred_(begin, unfrozen_tail);
-        set_succ_(end - 1, unfrozen_head_);
-        set_succ_(unfrozen_tail, begin);
-        set_pred_(unfrozen_head_, end - 1);
+        const auto unfrozen_tail = getPred_(unfrozen_head_);
+        setPred_(begin, unfrozen_tail);
+        setSucc_(end - 1, unfrozen_head_);
+        setSucc_(unfrozen_tail, begin);
+        setPred_(unfrozen_head_, end - 1);
     }
     
     if (kFreeBytes <= offset_(begin)) {
-        close_block_(begin - index_(kFreeBytes));
+        closeBlock_(begin - index_(kFreeBytes));
     }
 }
 
-void ArrayFSABuilder::freeze_state_(size_t index) {
-    assert(!is_frozen_(index));
+void ArrayFSABuilder::freezeState_(size_t index) {
+    assert(!isFrozen_(index));
     
-    set_frozen_(index, true);
+    setFrozen_(index, true);
     
-    const auto succ = get_succ_(index);
-    const auto pred = get_pred_(index);
+    const auto succ = getSucc_(index);
+    const auto pred = getPred_(index);
     
     // unlink
-    set_succ_(pred, succ);
-    set_pred_(succ, pred);
+    setSucc_(pred, succ);
+    setPred_(succ, pred);
     
     // set succ and pred to 0
     std::memset(&bytes_[offset_(index) + 1], 0, kAddrSize * 2);
@@ -145,51 +126,95 @@ void ArrayFSABuilder::freeze_state_(size_t index) {
     }
 }
 
-void ArrayFSABuilder::close_block_(size_t begin) {
+void ArrayFSABuilder::closeBlock_(size_t begin) {
     const auto end = begin + kBlockSize;
     
     if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
         return;
     }
     for (auto i = begin; i < end; i++) {
-        if (is_frozen_(i)) {
+        if (isFrozen_(i)) {
             continue;
         }
-        freeze_state_(i);
-        set_frozen_(i, false);
+        freezeState_(i);
+        setFrozen_(i, false);
     }
 }
 
 // so-called XCHECK
-size_t ArrayFSABuilder::find_next_(size_t first_trans) const {
+size_t ArrayFSABuilder::findNext_(size_t first_trans) const {
     const auto symbol = orig_fsa_.get_trans_symbol(first_trans);
     
     if (unfrozen_head_ != 0) {
         auto unfrozen_index = unfrozen_head_;
         do {
             const auto next = unfrozen_index ^symbol; // TODO: omit index_()
-            if (check_next_(next, first_trans)) {
+            if (checkNext_(next, first_trans)) {
                 return next;
             }
-            unfrozen_index = get_succ_(unfrozen_index);
+            unfrozen_index = getSucc_(unfrozen_index);
         } while (unfrozen_index != unfrozen_head_);
     }
     
     return index_(bytes_.size()) ^ symbol;
 }
 
-bool ArrayFSABuilder::check_next_(size_t next, size_t trans) const {
-    if (is_used_next_(next)) {
+bool ArrayFSABuilder::checkNext_(size_t next, size_t trans) const {
+    if (isUsedNext_(next)) {
         return false;
     }
     
     do {
         const auto index = next ^orig_fsa_.get_trans_symbol(trans);
-        if (is_frozen_(index)) {
+        if (isFrozen_(index)) {
             return false;
         }
         trans = orig_fsa_.get_next_trans(trans);
     } while (trans != 0);
     
     return true;
+}
+
+void ArrayFSABuilder::arrange_(size_t state, size_t index) {
+    const auto first_trans = orig_fsa_.get_first_trans(state);
+    
+    if (first_trans == 0) {
+        setNext_(index, index); // to the terminal state
+        return;
+    }
+    
+    { // Set next of offset to state's second if needed.
+        auto it = state_map_.find(state);
+        if (it != state_map_.end()) {
+            // already visited state
+            setNext_(index, it->second);
+            return;
+        }
+    }
+    
+    const auto next = findNext_(first_trans);
+    if (offset_(next) >= bytes_.size()) {
+        expand_();
+    }
+    
+    setNext_(index, next);
+    state_map_.insert(std::make_pair(state, next));
+    setUsedNext_(next, true);
+    
+    for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
+        const auto symbol = orig_fsa_.get_trans_symbol(trans);
+        const auto child_index = next ^ symbol;
+        
+        freezeState_(child_index);
+        setCheck_(child_index, symbol);
+        
+        if (orig_fsa_.is_final_trans(trans)) {
+            setFinal_(child_index, true);
+        }
+    }
+    
+    for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
+        const auto symbol = orig_fsa_.get_trans_symbol(trans);
+        arrange_(orig_fsa_.get_target_state(trans), next ^ symbol);
+    }
 }

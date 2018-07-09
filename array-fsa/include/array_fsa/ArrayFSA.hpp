@@ -27,10 +27,6 @@ namespace array_fsa {
             return *this;
         }
         
-//        static ArrayFSA build(PlainFSA &origFsa) {
-//            return ArrayFSABuilder::buildArrayFSA(origFsa);
-//        }
-        
         static std::string name() {
             return "ArrayFSA";
         }

@@ -11,7 +11,6 @@
 
 using namespace array_fsa;
 
-
 template<>
 OriginalFSA OriginalFSA::build(const PlainFSA& fsa) {
     return ArrayFSABuilder::build<OriginalFSA>(fsa);
