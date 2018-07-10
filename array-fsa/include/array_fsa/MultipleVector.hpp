@@ -12,7 +12,7 @@
 
 namespace array_fsa {
     
-    class FitValuesArray : ByteData {
+    class MultipleVector : ByteData {
     public:
         using IdType = uint8_t;
         
@@ -31,7 +31,7 @@ namespace array_fsa {
             return index * element_size_;
         }
         
-        size_t get_element_size_() const {
+        size_t elementSize() const {
             return element_size_;
         }
         
@@ -39,11 +39,11 @@ namespace array_fsa {
             return bytes_.size() / element_size_;
         }
         
-        template <typename T>
-        T getValue(size_t index, size_t num) const;
+        template <typename T, int N>
+        T getValue(size_t index) const;
         
-        template <typename T>
-        void setValue(size_t index, size_t num, T value);
+        template <typename T, int N>
+        void setValue(size_t index, T value);
         
         void resize(size_t indexSize) {
             bytes_.resize(offset(indexSize));
@@ -73,26 +73,27 @@ namespace array_fsa {
         
         // MARK: copy guard
         
-        FitValuesArray() = default;
-        ~FitValuesArray() = default;
+        MultipleVector() = default;
+        ~MultipleVector() = default;
         
-        FitValuesArray(const FitValuesArray&) = delete;
-        FitValuesArray& operator=(const FitValuesArray&) = delete;
+        MultipleVector(const MultipleVector&) = delete;
+        MultipleVector& operator=(const MultipleVector&) = delete;
         
-        FitValuesArray(FitValuesArray &&rhs) noexcept = default;
-        FitValuesArray& operator=(FitValuesArray &&rhs) noexcept = default;
+        MultipleVector(MultipleVector &&rhs) noexcept = default;
+        MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
         
     private:
         std::vector<IdType> bytes_ = {};
-        std::vector<uint8_t> value_sizes_ = {};
+        
         uint8_t element_size_ = 0;
+        std::vector<uint8_t> value_sizes_ = {};
         std::vector<size_t> value_positions_ = {};
         
     };
     
     // MARK: - inline function
     
-    inline void FitValuesArray::setValueSize(size_t index, size_t size) {
+    inline void MultipleVector::setValueSize(size_t index, size_t size) {
         element_size_ += size;
         value_sizes_.insert(value_sizes_.begin() + index, size);
         
@@ -105,21 +106,21 @@ namespace array_fsa {
             value_positions_[i] += size;
     }
     
-    template <typename T>
-    inline T FitValuesArray::getValue(size_t index, size_t num) const {
-        assert(sizeof(T) >= value_sizes_[num]);
+    template <typename T, int N>
+    inline T MultipleVector::getValue(size_t index) const {
+        assert(sizeof(T) >= value_sizes_[N]);
         T value = 0;
-        auto pos = offset(index) + value_positions_[num];
-        for (size_t i = 0, size = value_sizes_[num]; i < size; i++)
-            value |= bytes_[pos + i] << (i * 8);
+        auto pos = offset(index) + value_positions_[N];
+        for (size_t i = 0, size = value_sizes_[N]; i < size; i++)
+            value |= T(bytes_[pos + i]) << (i * 8);
         return value;
     }
     
-    template <typename T>
-    inline void FitValuesArray::setValue(size_t index, size_t num, T value) {
-        assert(sizeof(T) >= value_sizes_[num]);
-        auto pos = offset(index) + value_positions_[num];
-        for (auto i = 0; i < value_sizes_[num]; i++)
+    template <typename T, int N>
+    inline void MultipleVector::setValue(size_t index, T value) {
+        assert(sizeof(T) >= value_sizes_[N]);
+        auto pos = offset(index) + value_positions_[N];
+        for (auto i = 0; i < value_sizes_[N]; i++)
             bytes_[pos + i] = static_cast<IdType>(value >> (8 * i));
     }
     

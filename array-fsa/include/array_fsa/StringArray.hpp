@@ -28,7 +28,7 @@ namespace array_fsa {
         // MARK: - Constructor
         
         StringArray() = default;
-        StringArray(StringArrayBuilder* builder) {
+        StringArray(StringArrayBuilder *builder) {
             if (BINARY != builder->isBinary()) {
                 std::cout << "StringArray error type of binary mode!!" << std::endl;
                 abort();

@@ -21,7 +21,7 @@ namespace array_fsa {
         static T build(const PlainFSA &origFsa);
         
         template <class T>
-        void showInBox(T &fsa);
+        void showCompareWith(T &fsa);
         
     protected:
         StringDict str_dict_;
@@ -73,7 +73,6 @@ namespace array_fsa {
         const auto numElems = builder.numElems_();
         newFsa.setNumElement(numElems);
         newFsa.strings_ = StringArray<isBinary>(&labelArray(builder.str_dict_));
-        //            newFsa.setNumStrings(newFsa.strings_.size());
         
         auto numTrans = 0;
         for (auto i = 0; i < numElems; i++) {
@@ -81,11 +80,10 @@ namespace array_fsa {
             newFsa.setCheck(i, builder.getCheck_(i));
             auto isStrTrans = builder.hasLabel_(i);
             newFsa.setIsStringTrans(i, isStrTrans);
-            if (isStrTrans) {
+            if (isStrTrans)
                 newFsa.setStringIndex(i, builder.getLabelNumber_(i));
-            } else {
+            else
                 newFsa.setCheck(i, builder.getCheck_(i));
-            }
             
             if (builder.isFrozen_(i))
                 numTrans++;
@@ -93,24 +91,38 @@ namespace array_fsa {
         newFsa.buildBitArray();
         newFsa.setNumTrans(numTrans);
         
-        //    showInBox(builder, newFsa);
+        builder.showCompareWith(newFsa);
         
         return newFsa;
     }
     
     template <class T>
-    void ArrayFSATailBuilder::showInBox(T &fsa) {
+    void ArrayFSATailBuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
-        auto start = 0;
-        for (auto i = start; i < start + 0x100; i++) {
-            std::cout << i << tab << isFinal_(i) << tab << getNext_(i) << tab << getCheck_(i) << tab << hasLabel_(i) << std::endl;
-            std::cout << i << tab << fsa.isFinal(i) << tab << fsa.next(i) << tab << fsa.check(i) << tab << fsa.isStringTrans(i) << std::endl;
-            if (hasLabel_(i)) {
-                sim_ds::Log::showAsBinary(getLabelNumber_(i), 4);
-                sim_ds::Log::showAsBinary(fsa.stringId(i), 4);
+        for (auto i = 0; i < numElems_(); i++) {
+            auto bn = getNext_(i);
+            auto bi = hasLabel_(i);
+            auto bc = !bi ? getCheck_(i) : getLabelNumber_(i);
+            auto fn = fsa.next(i);
+            auto fi = fsa.isStringTrans(i);
+            auto fc = !fi ? fsa.check(i) : fsa.stringId(i);
+            if (bn == fn && bc == fc && bi == fi)
+                continue;
+            using std::cout, std::endl;
+            cout << i << "] builder" << tab << "fsa" << endl;
+            cout << "next: " << bn << tab << fn << endl;
+            cout << "check: " << bc << tab << fc << endl;
+            cout << "is-str: " << bi << tab << fi << endl;
+            cout << "accept: " << isFinal_(i) << tab << fsa.isFinal(i) << endl;
+//            std::cout << i << tab << isFinal_(i) << tab << bn << tab << bc << tab << bi << std::endl;
+//            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fc << tab << fi << std::endl;
+            if (bi || fi) {
+                sim_ds::Log::showAsBinary(bc, 4);
+                sim_ds::Log::showAsBinary(fc, 4);
             }
             std::cout << std::endl;
         }
+        
     }
     
 }

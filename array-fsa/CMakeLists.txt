@@ -41,3 +41,9 @@ target_link_libraries(makefsa ArrayFSA)
 add_executable(build_array build_array.cpp)
 target_link_libraries(build_array ArrayFSA)
 
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+	message(STATUS "Enable test ArrayFSA")
+	enable_testing()
+	add_subdirectory(test)
+endif()
+

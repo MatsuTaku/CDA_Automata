@@ -10,9 +10,9 @@
 
 #include "ByteData.hpp"
 
-#include "FitValuesArray.hpp"
+#include "MultipleVector.hpp"
 
-#include "sim_ds/DACs.hpp"
+#include "sim_ds/DacVector.hpp"
 #include "sim_ds/Calc.hpp"
 
 namespace array_fsa {
@@ -25,22 +25,32 @@ namespace array_fsa {
         
     private:
         static constexpr size_t kFixedBits = 8;
+        enum ElementNumber {
+            ENNext = 0,
+            ENCheck = 1
+        };
         
     public:
         NextCheck() = default;
         ~NextCheck() = default;
         
+        NextCheck(size_t size) {
+            resize(size);
+        }
+        
         size_t next(size_t index) const {
-            auto next = elements_.getValue<size_t>(index, 0);
+            auto next = elements_.getValue<size_t, ENNext>(index);
             if (!N) return next;
             if (!nextLinkBits_[index])
                 return next;
-            else
-                return next | (nextFlow[nextLinkBits_.rank(index)] << kFixedBits);
+            else {
+                auto rank = nextLinkBits_.rank(index);
+                return next | (nextFlow[rank] << kFixedBits);
+            }
         }
         
         uint8_t check(size_t index) const {
-            return elements_.getValue<uint8_t>(index, 1);
+            return elements_.getValue<uint8_t, ENCheck>(index);
         }
         
         size_t stringId(size_t index) const {
@@ -49,8 +59,10 @@ namespace array_fsa {
             auto id = check(index);
             if (!checkLinkBits_[index])
                 return id;
-            else
-                return id | (checkFlow[checkLinkBits_.rank(index)] << kFixedBits);
+            else {
+                auto rank = checkLinkBits_.rank(index);
+                return id | (checkFlow[rank] << kFixedBits);
+            }
         }
         
         size_t numElements() const {
@@ -60,49 +72,41 @@ namespace array_fsa {
         // MARK: - build
         
         void setNext(size_t index, size_t next) {
-            elements_.setValue(index, 0, next);
+            elements_.setValue<size_t, ENNext>(index, next);
+            
             if (!N) return;
             auto flow = next >> kFixedBits;
-            if (flow > 0) {
-                nextLinkBits_.set(index, true);
+            bool hasFlow = flow > 0;
+            nextLinkBits_.set(index, hasFlow);
+            if (hasFlow)
                 nextFlow.setValue(numNextLinks_++, flow);
-            }
         }
         
         void setCheck(size_t index, uint8_t check) {
-            elements_.setValue(index, 1, check);
+            elements_.setValue<size_t, ENCheck>(index, check);
         }
         
-        void setStringIndex(size_t index, size_t strIndex) {
+        void setStringId(size_t index, size_t strIndex) {
             assert(C);
             
             setCheck(index, strIndex & 0xff);
             auto flow = strIndex >> kFixedBits;
-            if (flow > 0) {
-                checkLinkBits_.set(index, true);
+            bool hasFlow = flow > 0;
+            checkLinkBits_.set(index, hasFlow);
+            if (hasFlow)
                 checkFlow.setValue(numCheckLinks_++, flow);
-            }
         }
         
         // MARK: - Protocol settings
         
-        // No.1
-        void setNumElement(size_t num, bool bitInto) {
+        // First. Set size of elements
+        void resize(size_t num) {
+            auto bitInto = !useNextCodes;
             auto nextSize = sim_ds::Calc::sizeFitInBytes(bitInto ? num << 1 : num);
             std::vector<size_t> sizes = { N ? 1 : nextSize, 1 };
             elements_.setValueSizes(sizes);
             elements_.resize(num);
         }
-        
-//        // No.2 if use dac check
-//        void setNumStrings(size_t num) {
-//            assert(C);
-//            auto maxSize = sim_ds::Calc::sizeFitInBytes(num - 1);
-//            auto cCodesName = typeid(cCodes).name();
-//            if (cCodesName == typeid(DACs<true>).name() ||
-//                cCodesName == typeid(DACs<false>).name())
-//                checkFlow.setUnitSize(std::max(maxSize - 1, size_t(1)));
-//        }
         
         // Finaly. If use dac
         void buildBitArray() {
@@ -130,6 +134,7 @@ namespace array_fsa {
             }
             return size;
         }
+        
         void write(std::ostream& os) const override {
             elements_.write(os);
             if (N) {
@@ -141,6 +146,7 @@ namespace array_fsa {
                 checkFlow.write(os);
             }
         }
+        
         void read(std::istream& is) override {
             elements_.read(is);
             if (N) {
@@ -165,13 +171,15 @@ namespace array_fsa {
         NextCheck& operator =(NextCheck&&) noexcept = default;
         
     private:
-        FitValuesArray elements_;
+        MultipleVector elements_;
+        // Enabled at NextCheck<true, C>
         size_t numNextLinks_ = 0;
-        size_t numCheckLinks_ = 0;
         sim_ds::BitVector nextLinkBits_;
+        sim_ds::DacVector nextFlow;
+        // Enabled at NextCheck<N, true>
+        size_t numCheckLinks_ = 0;
         sim_ds::BitVector checkLinkBits_;
-        sim_ds::DACs nextFlow;
-        sim_ds::DACs checkFlow;
+        sim_ds::DacVector checkFlow;
         
     };
     
@@ -185,10 +193,16 @@ namespace array_fsa {
         os << "--- Stat of " << "NextCheck " << codesName(useNextCodes) << "|" << codesName(useCheckCodes) << " ---" << endl;
         os << "size:   " << sizeInBytes() << endl;
         os << "size bytes:   " << elements_.sizeInBytes() << endl;
-        os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
-        os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
-        nextFlow.showStatus(os);
-        checkFlow.showStatus(os);
+        if (N) {
+            os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
+            nextFlow.showStatus(os);
+            os << "---  ---" << endl;
+        }
+        if (C) {
+            os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
+            checkFlow.showStatus(os);
+            os << "---  ---" << endl;
+        }
         showSizeMap(os);
     }
     
@@ -210,7 +224,9 @@ namespace array_fsa {
         showList(counts);
         auto xorCounts = sim_ds::Calc::separateCountsInXorSizeOf(nexts);
         showList(xorCounts);
+        
     }
+    
 }
 
 #endif /* NextCheck_hpp */

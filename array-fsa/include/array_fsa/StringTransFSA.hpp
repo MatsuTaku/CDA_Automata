@@ -105,7 +105,7 @@ namespace array_fsa {
         }
         
         void setStringIndex(size_t index, size_t strIndex) {
-            nc_.setStringIndex(index, strIndex);
+            nc_.setStringId(index, strIndex);
         }
         
         void setStringArray(const sa_type &sArr) {
@@ -119,12 +119,8 @@ namespace array_fsa {
         // MARK: - Protocol setting
         
         void setNumElement(size_t num) {
-            nc_.setNumElement(num, true);
+            nc_.resize(num);
         }
-        
-//        void setNumStrings(size_t num) {
-//            nc_.setNumStrings(num);
-//        }
         
         void setNumTrans(size_t num) {
             num_trans_ = num;
@@ -191,6 +187,7 @@ namespace array_fsa {
         sa_type strings_;
         
         friend class ArrayFSATailBuilder;
+        
     };
     
     using STFSA = StringTransFSA<false>;

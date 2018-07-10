@@ -1,3 +1,6 @@
 [submodule "array-fsa/lib/SimDS"]
 	path = array-fsa/lib/SimDS
 	url = git@github.com:MatsuTaku/SimpleDataStructure.git
+[submodule "array-fsa/test/googletest"]
+	path = array-fsa/test/googletest
+	url = git@github.com:google/googletest

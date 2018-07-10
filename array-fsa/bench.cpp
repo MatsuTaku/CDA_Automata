@@ -40,8 +40,8 @@ int main(int argc, const char* argv[]) {
 //    fsa_name = "../../results/wikipedia/wikipedia.fsa";
 //    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
 //    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; type = '6';
-//    fsa_name = "../../results/indochina-2004/indochina-2004.stcfsa"; type = '7';
-//    query_name = "../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
+    fsa_name = "../../../results/indochina-2004/indochina-2004.sample"; type = '5';
+    query_name = "../../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa"; type = '6';
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa";type = '7';
 //    query_name = "../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";

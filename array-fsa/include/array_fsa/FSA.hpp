@@ -91,11 +91,7 @@ namespace array_fsa {
                 nc_.setNext(index, next);
                 is_final_bits_.set(index, isFinal);
             } else {
-                size_t value = next << 1 | isFinal;
-                nc_.setNext(index, value);
-                if (nc_.next(index) != value) {
-                    abort();
-                }
+                nc_.setNext(index, (next << 1) | isFinal);
             }
         }
         
@@ -107,11 +103,9 @@ namespace array_fsa {
         // MARK: - Protocol setting
         
         void setNumElement(size_t num) {
+            nc_.resize(num);
             if (useCodes) {
-                nc_.setNumElement(num, false);
                 is_final_bits_.resize(num);
-            } else {
-                nc_.setNumElement(num, true);
             }
         }
         

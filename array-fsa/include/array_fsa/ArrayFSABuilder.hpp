@@ -27,7 +27,7 @@ namespace array_fsa {
         static T build(const PlainFSA &origFsa);
         
         template <class T>
-        void showInBox(T &fsa);
+        void showCompareWith(T &fsa);
         
         void showMapping(bool show_density);
         
@@ -165,24 +165,34 @@ namespace array_fsa {
         newFsa.setNumTrans(numTrans);
         newFsa.buildBitArray();
         
-        builder.showInBox(newFsa);
+        builder.showCompareWith(newFsa);
         
         return newFsa;
     }
     
     template <class T>
-    void ArrayFSABuilder::showInBox(T &fsa) {
+    void ArrayFSABuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
-        for (auto i = 0; i < 0x100; i++) {
+        for (auto i = 0; i < numElems_(); i++) {
             auto bn = getNext_(i);
+            auto bc = getCheck_(i);
+            auto bf = isFinal_(i);
             auto fn = fsa.next(i);
-            if (bn != fn) {
-                std::cout << i << tab << isFinal_(i) << tab << bn << tab << getCheck_(i) << std::endl;
-                std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fsa.check(i) << std::endl;
-                sim_ds::Log::showAsBinary(getNext_(i), 4);
-                sim_ds::Log::showAsBinary(fsa.next(i), 4);
-                std::cout << std::endl;
-            }
+            auto fc = fsa.check(i);
+            auto ff = fsa.isFinal(i);
+            if (bn == fn && bc == fc && bf == ff)
+                continue;
+            
+            using std::cout, std::endl;
+            cout << i << "] builder" << tab << "fsa" << endl;
+            cout << "next: " << bn << tab << fn << endl;
+            cout << "check: " << bc << tab << fc << endl;
+            cout << "is-final: " << bf << tab << ff << endl;
+//            std::cout << i << tab << isFinal_(i) << tab << bn << tab << bc << std::endl;
+//            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fc << std::endl;
+            sim_ds::Log::showAsBinary(bn, 4);
+            sim_ds::Log::showAsBinary(fn, 4);
+            std::cout << std::endl;
         }
     }
     
