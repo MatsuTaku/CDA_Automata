@@ -17,7 +17,7 @@
 
 namespace array_fsa {
     
-    template<bool N, bool C>
+    template<bool N, bool C, bool INCLUDE_VALUE>
     class NextCheck : ByteData {
     public:
         static constexpr bool useNextCodes = N;
@@ -27,20 +27,28 @@ namespace array_fsa {
         static constexpr size_t kFixedBits = 8;
         enum ElementNumber {
             ENNext = 0,
-            ENCheck = 1
+            ENCheck = 1,
+            ENStore = 2,
+            ENAccStore = 3,
         };
         
     public:
         NextCheck() = default;
         ~NextCheck() = default;
         
-        NextCheck(size_t size) {
-            resize(size);
-        }
+        // MARK: - Copy guard
         
+        NextCheck (const NextCheck&) = delete;
+        NextCheck& operator =(const NextCheck&) = delete;
+        
+        NextCheck (NextCheck&&) noexcept = default;
+        NextCheck& operator =(NextCheck&&) noexcept = default;
+        
+    public:
         size_t next(size_t index) const {
-            auto next = elements_.getValue<size_t, ENNext>(index);
-            if (!N) return next;
+            auto next = elements_.get<ENNext, size_t>(index);
+            if constexpr (!N) return next;
+            
             if (!nextLinkBits_[index])
                 return next;
             else {
@@ -50,7 +58,7 @@ namespace array_fsa {
         }
         
         uint8_t check(size_t index) const {
-            return elements_.getValue<uint8_t, ENCheck>(index);
+            return elements_.get<ENCheck, uint8_t>(index);
         }
         
         size_t stringId(size_t index) const {
@@ -66,24 +74,24 @@ namespace array_fsa {
         }
         
         size_t numElements() const {
-            return elements_.numElements();
+            return elements_.size();
         }
         
         // MARK: - build
         
         void setNext(size_t index, size_t next) {
-            elements_.setValue<size_t, ENNext>(index, next);
+            elements_.set<ENNext>(index, next);
             
-            if (!N) return;
+            if constexpr (!N) return;
             auto flow = next >> kFixedBits;
             bool hasFlow = flow > 0;
             nextLinkBits_.set(index, hasFlow);
             if (hasFlow)
-                nextFlow.setValue(numNextLinks_++, flow);
+                nextFlow.set(numNextLinks_++, flow);
         }
         
         void setCheck(size_t index, uint8_t check) {
-            elements_.setValue<size_t, ENCheck>(index, check);
+            elements_.set<ENCheck>(index, check);
         }
         
         void setStringId(size_t index, size_t strIndex) {
@@ -94,29 +102,46 @@ namespace array_fsa {
             bool hasFlow = flow > 0;
             checkLinkBits_.set(index, hasFlow);
             if (hasFlow)
-                checkFlow.setValue(numCheckLinks_++, flow);
+                checkFlow.set(numCheckLinks_++, flow);
+        }
+        
+        void setStore(size_t index, size_t store) {
+            assert(INCLUDE_VALUE);
+            
+            elements_.set<ENStore>(index, store);
+        }
+        
+        void setAccStore(size_t index, size_t as) {
+            assert(INCLUDE_VALUE);
+            
+            elements_.set<ENAccStore>(index, as);
         }
         
         // MARK: - Protocol settings
         
         // First. Set size of elements
-        void resize(size_t num) {
+        void resize(size_t size, size_t words = 0) {
             auto bitInto = !useNextCodes;
-            auto nextSize = sim_ds::Calc::sizeFitInBytes(bitInto ? num << 1 : num);
+            auto nextSize = sim_ds::Calc::sizeFitInBytes(bitInto ? (size << 1) : size);
             std::vector<size_t> sizes = { N ? 1 : nextSize, 1 };
+            if constexpr (INCLUDE_VALUE) {
+                auto storeSize = sim_ds::Calc::sizeFitInBytes(words);
+                sizes.push_back(storeSize); // Store
+                sizes.push_back(storeSize); // AccumulateStore
+            }
             elements_.setValueSizes(sizes);
-            elements_.resize(num);
+            elements_.resize(size);
         }
         
         // Finaly. If use dac
         void buildBitArray() {
-            if (N) {
+            if constexpr (N) {
                 nextLinkBits_.build();
                 nextFlow.build();
             }
-            if (C) {
-                checkFlow.build();
+            if constexpr (C) {
                 checkLinkBits_.build();
+                checkFlow.build();
             }
         }
         
@@ -124,11 +149,11 @@ namespace array_fsa {
         
         size_t sizeInBytes() const override {
             auto size = elements_.sizeInBytes();
-            if (N) {
+            if constexpr (N) {
                 size += nextLinkBits_.sizeInBytes();
                 size += nextFlow.sizeInBytes();
             }
-            if (C) {
+            if constexpr (C) {
                 size += checkLinkBits_.sizeInBytes();
                 size += checkFlow.sizeInBytes();
             }
@@ -137,11 +162,11 @@ namespace array_fsa {
         
         void write(std::ostream& os) const override {
             elements_.write(os);
-            if (N) {
+            if constexpr (N) {
                 nextLinkBits_.write(os);
                 nextFlow.write(os);
             }
-            if (C) {
+            if constexpr (C) {
                 checkLinkBits_.write(os);
                 checkFlow.write(os);
             }
@@ -149,11 +174,11 @@ namespace array_fsa {
         
         void read(std::istream& is) override {
             elements_.read(is);
-            if (N) {
+            if constexpr (N) {
                 nextLinkBits_.read(is);
                 nextFlow.read(is);
             }
-            if (C) {
+            if constexpr (C) {
                 checkLinkBits_.read(is);
                 checkFlow.read(is);
             }
@@ -161,14 +186,6 @@ namespace array_fsa {
         
         void showStatus(std::ostream &os) const;
         void showSizeMap(std::ostream &os) const;
-        
-        // MARK: - Copy guard
-        
-        NextCheck (const NextCheck&) = delete;
-        NextCheck& operator =(const NextCheck&) = delete;
-        
-        NextCheck (NextCheck&&) noexcept = default;
-        NextCheck& operator =(NextCheck&&) noexcept = default;
         
     private:
         MultipleVector elements_;
@@ -184,8 +201,8 @@ namespace array_fsa {
     };
     
     
-    template<bool N, bool C>
-    void NextCheck<N, C>::showStatus(std::ostream &os) const {
+    template<bool N, bool C, bool V>
+    void NextCheck<N, C, V>::showStatus(std::ostream &os) const {
         using std::endl;
         auto codesName = [=](bool use) {
             return use ? "DACs" : "Plain";
@@ -193,12 +210,12 @@ namespace array_fsa {
         os << "--- Stat of " << "NextCheck " << codesName(useNextCodes) << "|" << codesName(useCheckCodes) << " ---" << endl;
         os << "size:   " << sizeInBytes() << endl;
         os << "size bytes:   " << elements_.sizeInBytes() << endl;
-        if (N) {
+        if constexpr (N) {
             os << "size next flow:   " << nextFlow.sizeInBytes() << endl;
             nextFlow.showStatus(os);
             os << "---  ---" << endl;
         }
-        if (C) {
+        if constexpr (C) {
             os << "size check flow:   " << checkFlow.sizeInBytes() << endl;
             checkFlow.showStatus(os);
             os << "---  ---" << endl;
@@ -206,8 +223,8 @@ namespace array_fsa {
         showSizeMap(os);
     }
     
-    template<bool N, bool C>
-    void NextCheck<N, C>::showSizeMap(std::ostream &os) const {
+    template<bool N, bool C, bool V>
+    void NextCheck<N, C, V>::showSizeMap(std::ostream &os) const {
         auto numElem = numElements();
         std::vector<size_t> nexts(numElem);
         for (auto i = 0; i < numElem; i++)

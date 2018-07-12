@@ -19,16 +19,11 @@ namespace array_fsa {
     template<bool BINARY = false>
     class StringArray : ByteData {
     public:
-        static constexpr bool binaryMode = BINARY;
-    public:
-        using ArrayType = std::vector<uint8_t>;
-        static constexpr bool kBinaryMode = BINARY;
-        static constexpr uint8_t kEndLabel = '\0';
-        
         // MARK: - Constructor
         
         StringArray() = default;
-        StringArray(StringArrayBuilder *builder) {
+        
+        explicit StringArray(StringArrayBuilder* builder) {
             if (BINARY != builder->isBinary()) {
                 std::cout << "StringArray error type of binary mode!!" << std::endl;
                 abort();
@@ -45,22 +40,36 @@ namespace array_fsa {
         
         ~StringArray() = default;
         
+        // MARK: - Copy guard
+        
+        StringArray(const StringArray&) = delete;
+        StringArray& operator=(const StringArray&) = delete;
+        
+        StringArray(StringArray&&) noexcept = default;
+        StringArray& operator=(StringArray&&) noexcept = default;
+        static constexpr bool binaryMode = BINARY;
+        
+    public:
+        using ArrayType = std::vector<uint8_t>;
+        static constexpr bool kBinaryMode = BINARY;
+        static constexpr uint8_t kEndLabel = '\0';
+        
+    public:
         // MARK: - Property
         
-        bool isMatch(size_t* pos, const std::string& str, size_t strIndex) const {
-            for (auto size = str.size(); *pos < size;) {
+        uint8_t operator[](size_t index) const {
+            return bytes_[index];
+        }
+        
+        bool isMatch(size_t* pos, const std::string &str, size_t strIndex) const {
+            for (auto size = str.size(); *pos < size; ++strIndex) {
                 if (static_cast<uint8_t>(str[*pos]) != bytes_[strIndex])
                     return false;
                 ++*pos;
                 if (BINARY ? boundary_flags_[strIndex] : bytes_[strIndex + 1] == kEndLabel)
                     return true;
-                ++strIndex;
             }
             return false;
-        }
-        
-        uint8_t operator[](size_t index) const {
-            return bytes_[index];
         }
         
         bool isEnd(size_t index) const {
@@ -123,14 +132,6 @@ namespace array_fsa {
             }
             std::cout << std::endl;
         }
-        
-        // MARK: - Copy guard
-        
-        StringArray(const StringArray&) = delete;
-        StringArray& operator=(const StringArray&) = delete;
-        
-        StringArray(StringArray&&) noexcept = default;
-        StringArray& operator=(StringArray&&) noexcept = default;
         
     private:
         ArrayType bytes_;

@@ -20,31 +20,21 @@ function array_ts_fsa {
   ./array-fsa/build/bench $1 $2 5 >$1.bench.stdout 2>&1
 }
 
-function sac_array_fsa {
-  ./array-fsa/build/bench $1 $2 6 >$1.bench.stdout 2>&1
-}
-
-function array_ts_comp_fsa {
-  ./array-fsa/build/bench $1 $2 7 >$1.bench.stdout 2>&1
-}
-
-function array_ts_comp_fsa_binary {
-  ./array-fsa/build/bench $1 $2 8 >$1.bench.stdout 2>&1
-}
-
 TOOLS="
-sac_array_fsa
+array_ts_fsa
 "
 morfologik_fsa5
 morfologik_cfsa2
 array_fsa
 dac_array_fsa
-array_ts_fsa
-array_ts_comp_fsa
-array_ts_comp_fsa_binary
 
 DATASET_DIR=data-sets
 
+DATASETS="
+$DATASET_DIR/weiss/wikipedia2.1000000.rnd_dict
+$DATASET_DIR/kanda/indochina-2004.1000000.rnd_dict
+$DATASET_DIR/weiss/wikipedia.1000000.rnd_dict
+$DATASET_DIR/kanda/jawiki-20150118.1000000.rnd_dict
 $DATASET_DIR/ciura-deorowicz/abc.1000000.rnd_dict
 $DATASET_DIR/ciura-deorowicz/deutsch.1000000.rnd_dict
 $DATASET_DIR/ciura-deorowicz/dimacs.1000000.rnd_dict
@@ -69,11 +59,6 @@ $DATASET_DIR/ciura-deorowicz/webster.1000000.rnd_dict
 $DATASET_DIR/weiss/pl.1000000.rnd_dict
 $DATASET_DIR/kanda/enwiki-20150205.1000000.rnd_dict
 $DATASET_DIR/kanda/word-over999.1000000.rnd_dict
-DATASETS="
-$DATASET_DIR/weiss/wikipedia2.1000000.rnd_dict
-$DATASET_DIR/kanda/indochina-2004.1000000.rnd_dict
-$DATASET_DIR/weiss/wikipedia.1000000.rnd_dict
-$DATASET_DIR/kanda/jawiki-20150118.1000000.rnd_dict
 "
 
 RESULTS_DIR=results

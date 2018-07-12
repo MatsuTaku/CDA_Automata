@@ -14,6 +14,17 @@ namespace array_fsa {
     
     class MultipleVector : ByteData {
     public:
+        // MARK: copy guard
+        MultipleVector() = default;
+        ~MultipleVector() = default;
+        
+        MultipleVector(const MultipleVector&) = delete;
+        MultipleVector& operator=(const MultipleVector&) = delete;
+        
+        MultipleVector(MultipleVector &&rhs) noexcept = default;
+        MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
+        
+    public:
         using IdType = uint8_t;
         
         void setValueSize(size_t index, size_t size);
@@ -35,15 +46,15 @@ namespace array_fsa {
             return element_size_;
         }
         
-        size_t numElements() const {
+        size_t size() const {
             return bytes_.size() / element_size_;
         }
         
-        template <typename T, int N>
-        T getValue(size_t index) const;
+        template <int N, typename T>
+        T get(size_t index) const;
         
-        template <typename T, int N>
-        void setValue(size_t index, T value);
+        template <int N, typename T>
+        void set(size_t index, T value);
         
         void resize(size_t indexSize) {
             bytes_.resize(offset(indexSize));
@@ -66,21 +77,9 @@ namespace array_fsa {
             bytes_ = read_vec<IdType>(is);
             
             auto sizes = read_vec<uint8_t>(is);
-            for (auto i = 0; i < sizes.size(); i++) {
+            for (auto i = 0; i < sizes.size(); i++)
                 setValueSize(i, sizes[i]);
-            }
         }
-        
-        // MARK: copy guard
-        
-        MultipleVector() = default;
-        ~MultipleVector() = default;
-        
-        MultipleVector(const MultipleVector&) = delete;
-        MultipleVector& operator=(const MultipleVector&) = delete;
-        
-        MultipleVector(MultipleVector &&rhs) noexcept = default;
-        MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
         
     private:
         std::vector<IdType> bytes_ = {};
@@ -106,8 +105,8 @@ namespace array_fsa {
             value_positions_[i] += size;
     }
     
-    template <typename T, int N>
-    inline T MultipleVector::getValue(size_t index) const {
+    template <int N, typename T>
+    inline T MultipleVector::get(size_t index) const {
         assert(sizeof(T) >= value_sizes_[N]);
         T value = 0;
         auto pos = offset(index) + value_positions_[N];
@@ -116,8 +115,8 @@ namespace array_fsa {
         return value;
     }
     
-    template <typename T, int N>
-    inline void MultipleVector::setValue(size_t index, T value) {
+    template <int N, typename T>
+    inline void MultipleVector::set(size_t index, T value) {
         assert(sizeof(T) >= value_sizes_[N]);
         auto pos = offset(index) + value_positions_[N];
         for (auto i = 0; i < value_sizes_[N]; i++)

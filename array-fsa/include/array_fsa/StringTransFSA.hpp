@@ -20,30 +20,73 @@ namespace array_fsa {
     
     class PlainFSA;
     
-    template<bool IS_BINARY_LABEL>
     class StringTransFSA : ByteData {
     public:
-        using nc_type = NextCheck<false, true>;
-        static constexpr bool useBinaryLabel = IS_BINARY_LABEL;
-        using sa_type = StringArray<useBinaryLabel>;
-    public:
-        static std::string name() {
-            return "STFSA";
-        }
-        
-        static StringTransFSA<IS_BINARY_LABEL> build(const PlainFSA& fsa) {
-            return ArrayFSATailBuilder::build<StringTransFSA<IS_BINARY_LABEL>>(fsa);
-        }
-        
         StringTransFSA() = default;
         
-        StringTransFSA(std::istream &is) {
+        explicit StringTransFSA(const PlainFSA &fsa) {
+            build(fsa);
+        }
+        
+        explicit StringTransFSA(std::istream &is) {
             read(is);
         }
         
         ~StringTransFSA() = default;
         
-        bool isMember(const std::string& str) const { // TODO: -
+        // MARK: - Copy guard
+        
+        StringTransFSA (const StringTransFSA&) = delete;
+        StringTransFSA& operator=(const StringTransFSA&) = delete;
+        
+        StringTransFSA(StringTransFSA&& rhs) noexcept = default;
+        StringTransFSA& operator=(StringTransFSA&& rhs) noexcept = default;
+        
+    public:
+        static constexpr bool useBinaryLabel = false;
+        
+        using nc_type = NextCheck<false, true, true>;
+        using sa_type = StringArray<useBinaryLabel>;
+        
+    public:
+        static std::string name() {
+            return "StringTransFSA";
+        }
+        
+        void build(const PlainFSA &fsa) {
+            const auto shouldMergeSuffix = false;
+            ArrayFSATailBuilder builder(fsa);
+            builder.ArrayFSATailBuilder::build(useBinaryLabel, shouldMergeSuffix);
+            
+            const auto numElems = builder.numElems_();
+            resize(numElems, fsa.get_num_words());
+            strings_ = sa_type(builder.getStringArrayBuilder());
+            
+            auto numTrans = 0;
+            for (auto i = 0; i < numElems; i++) {
+                setNextAndIsFinal(i, builder.getNext_(i), builder.isFinal_(i));
+                setCheck(i, builder.getCheck_(i));
+                auto isStrTrans = builder.hasLabel_(i);
+                setIsStringTrans(i, isStrTrans);
+                if (isStrTrans)
+                    setStringIndex(i, builder.getLabelNumber_(i));
+                else
+                    setCheck(i, builder.getCheck_(i));
+                
+                setStore(i, builder.getStore_(i));
+                setAccStore(i, builder.getAccStore_(i));
+                
+                if (builder.isFrozen_(i))
+                    numTrans++;
+            }
+            buildBitArray();
+            setNumTrans(numTrans);
+            
+            builder.showCompareWith(*this);
+            
+        }
+        
+        bool isMember(const std::string &str) const {
             size_t trans = 0;
             for (size_t pos = 0, size = str.size(); pos < size;) {
                 uint8_t c = str[pos];
@@ -55,7 +98,6 @@ namespace array_fsa {
                     pos++;
                 } else {
                     auto sid = stringId(trans);
-//                    strings_.showLabels(sid - 32, sid + 32);
                     if (!strings_.isMatch(&pos, str, sid)) {
                         strings_.showLabels(sid - 32, sid + 32);
                         return false;
@@ -87,43 +129,6 @@ namespace array_fsa {
         
         bool isStringTrans(size_t index) const {
             return is_string_bits_[index];
-        }
-        
-        // MARK: - build
-        
-        void setCheck(size_t index, uint8_t check) {
-            nc_.setCheck(index, check);
-        }
-        
-        void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
-            size_t value = next << 1 | isFinal;
-            nc_.setNext(index, value);
-        }
-        
-        void setIsStringTrans(size_t index, bool isString) {
-            is_string_bits_.set(index, isString);
-        }
-        
-        void setStringIndex(size_t index, size_t strIndex) {
-            nc_.setStringId(index, strIndex);
-        }
-        
-        void setStringArray(const sa_type &sArr) {
-            strings_ = sArr;
-        }
-        
-        void buildBitArray() {
-            nc_.buildBitArray();
-        }
-        
-        // MARK: - Protocol setting
-        
-        void setNumElement(size_t num) {
-            nc_.resize(num);
-        }
-        
-        void setNumTrans(size_t num) {
-            num_trans_ = num;
         }
         
         // MARK: - ByteData method
@@ -171,14 +176,6 @@ namespace array_fsa {
             nc_.showStatus(os);
         }
         
-        // MARK: - Copy guard
-        
-        StringTransFSA (const StringTransFSA&) = delete;
-        StringTransFSA& operator=(const StringTransFSA&) = delete;
-        
-        StringTransFSA(StringTransFSA&& rhs) noexcept = default;
-        StringTransFSA& operator=(StringTransFSA&& rhs) noexcept = default;
-        
     private:
         size_t num_trans_ = 0;
         nc_type nc_;
@@ -186,11 +183,52 @@ namespace array_fsa {
         sim_ds::BitVector is_string_bits_;
         sa_type strings_;
         
-        friend class ArrayFSATailBuilder;
+        // MARK: - Protocol setting
+        
+        void resize(size_t num, size_t words) {
+            nc_.resize(num, words);
+        }
+        
+        void setNumTrans(size_t num) {
+            num_trans_ = num;
+        }
+        
+        // MARK: - build
+        
+        void setCheck(size_t index, uint8_t check) {
+            nc_.setCheck(index, check);
+        }
+        
+        void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
+            size_t value = next << 1 | isFinal;
+            nc_.setNext(index, value);
+        }
+        
+        void setIsStringTrans(size_t index, bool isString) {
+            is_string_bits_.set(index, isString);
+        }
+        
+        void setStringIndex(size_t index, size_t strIndex) {
+            nc_.setStringId(index, strIndex);
+        }
+        
+        void setStringArray(sa_type &&sArr) {
+            strings_ = std::move(sArr);
+        }
+        
+        void setStore(size_t index, size_t store) {
+            nc_.setStore(index, store);
+        }
+        
+        void setAccStore(size_t index, size_t as) {
+            nc_.setAccStore(index, as);
+        }
+        
+        void buildBitArray() {
+            nc_.buildBitArray();
+        }
         
     };
-    
-    using STFSA = StringTransFSA<false>;
     
 }
 

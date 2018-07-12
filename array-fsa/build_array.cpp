@@ -18,7 +18,7 @@ namespace {
         if (!ifs) {
             std::cout << "File not found: " << dataName << std::endl;
         }
-        STFSA fsa;
+        StringTransFSA fsa;
         fsa.read(ifs);
         std::ofstream ofs(arrayName);
         std::cout << "...written: " << arrayName << std::endl;

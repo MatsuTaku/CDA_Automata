@@ -23,7 +23,7 @@ TEST(NextCheckTest, UseDac) {
         checkSrc[i] = 1ULL << rndWidth;
     }
     
-    array_fsa::NextCheck<true, true> nc;
+    array_fsa::NextCheck<true, true, false> nc;
     nc.resize(size);
     
     std::vector<bool> isStrIds(size);

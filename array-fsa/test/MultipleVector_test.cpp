@@ -29,17 +29,17 @@ TEST(MultipleVectorTest, Convert) {
     fva.resize(size);
     
     for (auto i = 0; i < size; i++) {
-        fva.setValue<uint64_t, 0>(i, nextSrc[i]);
-        fva.setValue<uint64_t, 1>(i, checkSrc[i]);
+        fva.set<0, uint64_t>(i, nextSrc[i]);
+        fva.set<1, uint64_t>(i, checkSrc[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto next = fva.getValue<uint64_t, 0>(i);
+        auto next = fva.get<0, uint64_t>(i);
         EXPECT_EQ(next, nextSrc[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto check = fva.getValue<uint64_t, 1>(i);
+        auto check = fva.get<1, uint64_t>(i);
         EXPECT_EQ(check, checkSrc[i]);
     }
     

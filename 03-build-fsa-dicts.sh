@@ -38,32 +38,14 @@ function array_ts_fsa {
   ./array-fsa/build/build $1 $2 $3 3 >$3.stdout 2>&1
 }
 
-function sac_array_fsa {
-  $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./array-fsa/build/build $1 $2 $3 4 >$3.stdout 2>&1
-}
-
-function array_ts_comp_fsa {
-  $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./array-fsa/build/build $1 $2 $3 5 >$3.stdout 2>&1
-}
-
-function array_ts_comp_fsa_binary {
-  $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./array-fsa/build/build $1 $2 $3 6 >$3.stdout 2>&1
-}
-
 
 TOOLS="
 array_ts_fsa
 "
 morfologik_fsa5
 morfologik_cfsa2
-dac_array_fsa
-sac_array_fsa
 array_fsa
-array_ts_comp_fsa
-array_ts_comp_fsa_binary
+dac_array_fsa
 
 DATASET_DIR=data-sets
 
@@ -74,29 +56,29 @@ $DATASET_DIR/kanda/jawiki-20150118.dict
 $DATASET_DIR/kanda/indochina-2004.dict
 $DATASET_DIR/kanda/enwiki-20150205.dict
 $DATASET_DIR/kanda/word-over999.dict
+$DATASET_DIR/ciura-deorowicz/abc.dict
+$DATASET_DIR/ciura-deorowicz/deutsch.dict
+$DATASET_DIR/ciura-deorowicz/dimacs.dict
+$DATASET_DIR/ciura-deorowicz/enable.dict
+$DATASET_DIR/ciura-deorowicz/english.dict
+$DATASET_DIR/ciura-deorowicz/eo.dict
+$DATASET_DIR/ciura-deorowicz/esp.dict
+$DATASET_DIR/ciura-deorowicz/files.dict
+$DATASET_DIR/ciura-deorowicz/fr.dict
+$DATASET_DIR/ciura-deorowicz/full.dict
+$DATASET_DIR/ciura-deorowicz/ifiles.dict
+$DATASET_DIR/ciura-deorowicz/one.dict
+$DATASET_DIR/ciura-deorowicz/polish.dict
+$DATASET_DIR/ciura-deorowicz/random.dict
+$DATASET_DIR/ciura-deorowicz/russian.dict
+$DATASET_DIR/ciura-deorowicz/sample.dict
+$DATASET_DIR/ciura-deorowicz/scrable.dict
+$DATASET_DIR/ciura-deorowicz/test.dict
+$DATASET_DIR/ciura-deorowicz/unix_m.dict
+$DATASET_DIR/ciura-deorowicz/unix.dict
+$DATASET_DIR/ciura-deorowicz/webster.dict
+$DATASET_DIR/weiss/pl.dict
 "
-#$DATASET_DIR/ciura-deorowicz/abc.dict
-#$DATASET_DIR/ciura-deorowicz/deutsch.dict
-#$DATASET_DIR/ciura-deorowicz/dimacs.dict
-#$DATASET_DIR/ciura-deorowicz/enable.dict
-#$DATASET_DIR/ciura-deorowicz/english.dict
-#$DATASET_DIR/ciura-deorowicz/eo.dict
-#$DATASET_DIR/ciura-deorowicz/esp.dict
-#$DATASET_DIR/ciura-deorowicz/files.dict
-#$DATASET_DIR/ciura-deorowicz/fr.dict
-#$DATASET_DIR/ciura-deorowicz/full.dict
-#$DATASET_DIR/ciura-deorowicz/ifiles.dict
-#$DATASET_DIR/ciura-deorowicz/one.dict
-#$DATASET_DIR/ciura-deorowicz/polish.dict
-#$DATASET_DIR/ciura-deorowicz/random.dict
-#$DATASET_DIR/ciura-deorowicz/russian.dict
-#$DATASET_DIR/ciura-deorowicz/sample.dict
-#$DATASET_DIR/ciura-deorowicz/scrable.dict
-#$DATASET_DIR/ciura-deorowicz/test.dict
-#$DATASET_DIR/ciura-deorowicz/unix_m.dict
-#$DATASET_DIR/ciura-deorowicz/unix.dict
-#$DATASET_DIR/ciura-deorowicz/webster.dict
-#$DATASET_DIR/weiss/pl.dict
 
 RESULTS_DIR=results
 

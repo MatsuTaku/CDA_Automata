@@ -22,13 +22,15 @@ namespace array_fsa {
     template<bool N>
     class FSA : ByteData {
     public:
-        static constexpr bool useCodes = N;
-        using nc_type = NextCheck<N, false>;
+        FSA() = default;
+        
+        FSA(const PlainFSA &fsa) {
+            build(fsa);
+        }
+        
+        ~FSA() = default;
         
         // MARK: - Copy guard
-        
-        FSA() = default;
-        ~FSA() = default;
         
         FSA (const FSA&) = delete;
         FSA& operator=(const FSA&) = delete;
@@ -37,18 +39,20 @@ namespace array_fsa {
         FSA& operator=(FSA&&) noexcept = default;
         
     public:
+        static constexpr bool useCodes = N;
+        using nc_type = NextCheck<N, false, false>;
+        
+    public:
         static std::string name() {
             std::string name = (!useCodes ? "Original" : "Dac");
             return name + "FSA";
         }
         
-        static FSA<N> build(const PlainFSA &fsa) {
-            return ArrayFSABuilder::build<FSA<N>>(fsa);
-        }
+        void build(const PlainFSA &fsa);
         
         // MARK: - getter
         
-        bool isMember(const std::string& str) const {
+        bool isMember(const std::string &str) const {
             size_t trans = 0;
             for (uint8_t c : str) {
                 trans = target(trans) ^ c;
@@ -63,7 +67,7 @@ namespace array_fsa {
         }
         
         auto next(size_t index) const {
-            if (useCodes)
+            if constexpr (N)
                 return nc_.next(index);
             else
                 return nc_.next(index) >> 1;
@@ -74,30 +78,10 @@ namespace array_fsa {
         }
         
         auto isFinal(size_t index) const {
-            if (useCodes)
+            if constexpr (N)
                 return is_final_bits_[index];
             else
                 return (nc_.next(index) & 1) != 0;
-        }
-        
-        // MARK: - build
-        
-        void setCheck(size_t index, uint8_t check) {
-            nc_.setCheck(index, check);
-        }
-        
-        void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
-            if (useCodes) {
-                nc_.setNext(index, next);
-                is_final_bits_.set(index, isFinal);
-            } else {
-                nc_.setNext(index, (next << 1) | isFinal);
-            }
-        }
-        
-        void buildBitArray() {
-            if (!useCodes) return;
-            nc_.buildBitArray();
         }
         
         // MARK: - Protocol setting
@@ -117,7 +101,7 @@ namespace array_fsa {
         
         size_t sizeInBytes() const override {
             auto size = nc_.sizeInBytes();
-            if (useCodes)
+            if constexpr (N)
                 size += is_final_bits_.sizeInBytes();
             size += sizeof(num_trans_);
             return size;
@@ -125,14 +109,14 @@ namespace array_fsa {
         
         void write(std::ostream& os) const override {
             nc_.write(os);
-            if (useCodes)
+            if constexpr (N)
                 is_final_bits_.write(os);
             write_val(num_trans_, os);
         }
         
         void read(std::istream& is) override {
             nc_.read(is);
-            if (useCodes)
+            if constexpr (N)
                 is_final_bits_.read(is);
             num_trans_ = read_val<size_t>(is);
         }
@@ -152,14 +136,49 @@ namespace array_fsa {
         sim_ds::BitVector is_final_bits_;
         size_t num_trans_ = 0;
         
-        friend class ArrayFSABuilder;
+        // MARK: - build
+        
+        void setCheck(size_t index, uint8_t check) {
+            nc_.setCheck(index, check);
+        }
+        
+        void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
+            if (N) {
+                nc_.setNext(index, next);
+                is_final_bits_.set(index, isFinal);
+            } else {
+                nc_.setNext(index, (next << 1) | isFinal);
+            }
+        }
+        
+        void buildBitArray() {
+            if constexpr (!N) return;
+            nc_.buildBitArray();
+        }
         
     };
     
     
-    using OriginalFSA = FSA<false>;
-    using DacFSA = FSA<true>;
-    
+    template<bool N>
+    inline void FSA<N>::build(const PlainFSA &fsa) {
+        ArrayFSABuilder builder(fsa);
+        builder.build();
+        
+        const auto numElem = builder.numElems_();
+        setNumElement(numElem);
+        
+        auto numTrans = 0;
+        for (auto i = 0; i < numElem; i++) {
+            setCheck(i, builder.getCheck_(i));
+            setNextAndIsFinal(i, builder.getNext_(i), builder.isFinal_(i));
+            if (builder.isFrozen_(i))
+                numTrans++;
+        }
+        setNumTrans(numTrans);
+        buildBitArray();
+        
+        builder.showCompareWith(*this);
+    }
     
 }
 

@@ -40,11 +40,13 @@ int main(int argc, const char* argv[]) {
 //    fsa_name = "../../results/wikipedia/wikipedia.fsa";
 //    query_name = "../../data-sets/weiss/wikipedia.1000000.rnd_dict";
 //    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; type = '6';
-    fsa_name = "../../../results/indochina-2004/indochina-2004.sample"; type = '5';
-    query_name = "../../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
+//    fsa_name = "../../../results/indochina-2004/indochina-2004.sample"; type = '5';
+//    query_name = "../../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
 //    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa"; type = '6';
-//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.stcfsa";type = '7';
-//    query_name = "../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
+//    fsa_name = "../../../results/jawiki-20150118/jawiki-20150118.sample"; type = '5';
+//    query_name = "../../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
+//    fsa_name = "../../../results/fr/fr.array_ts_fsa"; type = '5';
+//    query_name = "../../../data-sets/ciura-deorowicz/fr.1000000.rnd_dict";
 //    type = '3';
     
     switch (type) {
@@ -57,8 +59,9 @@ int main(int argc, const char* argv[]) {
         case '4':
             return bench<DacFSA>(fsa_name, query_name);
         case '5':
-            return bench<STFSA>(fsa_name, query_name);
+            return bench<StringTransFSA>(fsa_name, query_name);
         default:
+            std::cout << "type is not set!" << std::endl;
             return 1;
     }
 

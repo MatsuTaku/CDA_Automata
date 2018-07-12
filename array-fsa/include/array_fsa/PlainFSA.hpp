@@ -14,7 +14,7 @@ namespace array_fsa {
         
     public:
         static constexpr size_t kAddrSize = 4;
-        static constexpr size_t kTransSize = 2 + kAddrSize;
+        static constexpr size_t kTransSize = 2 + kAddrSize * 2;
         
         PlainFSA() = default;
         ~PlainFSA() = default;
@@ -40,6 +40,12 @@ namespace array_fsa {
         
         bool is_final_trans(size_t trans) const {
             return (bytes_[trans] & 2) != 0;
+        }
+        
+        size_t get_store_trans(size_t trans) const {
+            size_t store = 0;
+            std::memcpy(&store, &bytes_[trans + 2 + kAddrSize], kAddrSize);
+            return store;
         }
         
         size_t get_first_trans(size_t state) const {
@@ -68,6 +74,10 @@ namespace array_fsa {
         
         size_t get_num_elements() const {
             return bytes_.size() / kTransSize;
+        }
+        
+        size_t get_num_words() const {
+            return num_words_;
         }
         
         bool is_multi_child_state(size_t state) const {
@@ -131,6 +141,7 @@ namespace array_fsa {
     protected:
         std::vector<uint8_t> bytes_; // serialized FSA
         size_t num_trans_ = 0;
+        size_t num_words_ = 0;
         
     };
     

@@ -17,13 +17,15 @@ message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 set(IncludeDir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(GLOB HEADER_FILES ${IncludeDir}/array_fsa.hpp ${IncludeDir}/array_fsa/*.hpp)
-file(GLOB SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
-add_library(ArrayFSA STATIC ${SOURCE_FILES} ${HEADER_FILES})
-target_include_directories(ArrayFSA PUBLIC ${IncludeDir})
+# Build Interface Library
+add_library(ArrayFSA INTERFACE)
+target_sources(ArrayFSA INTERFACE ${HEADER_FILES})
 
 add_subdirectory(lib/SimDS)
-target_link_libraries(ArrayFSA PUBLIC sim_ds)
+target_include_directories(ArrayFSA INTERFACE ${IncludeDir})
+target_link_libraries(ArrayFSA INTERFACE sim_ds)
+#get_target_property(SimDS_INCLUDE_DIR sim_ds PROPERTY ${INTERFACE_INCLUDE_DIRECTORIES})
 
 
 add_executable(test_PlainFSA test_PlainFSA.cpp)
@@ -40,6 +42,13 @@ target_link_libraries(makefsa ArrayFSA)
 
 add_executable(build_array build_array.cpp)
 target_link_libraries(build_array ArrayFSA)
+
+
+# Build Static Library for Development on Xcode
+add_library(ArrayFSA_dev STATIC ${IncludeDir}/array_fsa.cpp ${HEADER_FILES})
+include_directories(${IncludeDir})
+target_link_libraries(ArrayFSA_dev PRIVATE sim_ds)
+
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
 	message(STATUS "Enable test ArrayFSA")

@@ -43,21 +43,22 @@ namespace array_fsa {
             return plainFsa;
         }
         
-        static void savePlainFsa(const char* dataName, const char* plainFsaName) {
+        static void generate(const char* dataName, const char* plainFsaName) {
             auto plainFsa = generatePlainFSA(dataName);
             std::ofstream ofs(plainFsaName);
             if (!ofs)
                 throw DataNotFoundException(plainFsaName);
+            std::cout << "Write PlainFSA into " << plainFsaName << std::endl;
             plainFsa.write(ofs);
         }
     };
     
-    template <class T>
+    template <class FSA_TYPE>
     class FsaGenerator {
     public:
         static int buildFSA(const char *dataName, const char *plainFsaName, const char *fsaName) {
             try {
-                FsaGenerator<T> generator;
+                FsaGenerator<FSA_TYPE> generator;
                 std::cout << "Build Array_FSA from " << plainFsaName << std::endl;
                 generator.generate(plainFsaName);
                 
@@ -81,7 +82,7 @@ namespace array_fsa {
         
         void generate(const char* plainFsaName) {
             auto plainFsa = PlainFsaGenerator::readPlainFSA(plainFsaName);
-            fsa_ = T::build(plainFsa);
+            fsa_.build(plainFsa);
         }
         
         /** May throw
@@ -117,7 +118,7 @@ namespace array_fsa {
         }
         
     private:
-        T fsa_;
+        FSA_TYPE fsa_;
         
     };
     
