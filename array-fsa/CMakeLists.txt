@@ -21,18 +21,22 @@ file(GLOB HEADER_FILES ${IncludeDir}/array_fsa.hpp ${IncludeDir}/array_fsa/*.hpp
 # Build Interface Library
 add_library(ArrayFSA INTERFACE)
 target_sources(ArrayFSA INTERFACE ${HEADER_FILES})
+target_include_directories(ArrayFSA INTERFACE ${IncludeDir})
 
 add_subdirectory(lib/SimDS)
-target_include_directories(ArrayFSA INTERFACE ${IncludeDir})
 target_link_libraries(ArrayFSA INTERFACE sim_ds)
 #get_target_property(SimDS_INCLUDE_DIR sim_ds PROPERTY ${INTERFACE_INCLUDE_DIRECTORIES})
 
+link_directories(/usr/local/lib)
+include_directories(/usr/local/include)
 
 add_executable(test_PlainFSA test_PlainFSA.cpp)
 target_link_libraries(test_PlainFSA ArrayFSA)
 
-add_executable(bench bench.cpp FsaTools.hpp)
-target_link_libraries(bench ArrayFSA)
+file(GLOB wrappers XcdatWrapper.hpp)
+
+add_executable(bench bench.cpp FsaTools.hpp ${wrappers})
+target_link_libraries(bench ArrayFSA xcdat marisa)
 
 add_executable(build build.cpp FsaGenerator.hpp)
 target_link_libraries(build ArrayFSA)

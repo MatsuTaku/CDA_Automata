@@ -83,15 +83,15 @@ namespace array_fsa {
         
         builder.makeDict();
         double lastSW, newSW = sw.get_milli_sec();
-        std::cout << "makeDict: " << newSW << "µs" << std::endl;
+        std::cout << "makeDict: " << newSW << "ms" << std::endl;
         lastSW = newSW;
         builder.setSharings(mergeSuffix);
         newSW = sw.get_milli_sec();
-        std::cout << "setSharings: " << newSW - lastSW << "µs" << std::endl;
+        std::cout << "setSharings: " << newSW - lastSW << "ms" << std::endl;
         lastSW = newSW;
         builder.setUpLabelArray();
         newSW = sw.get_milli_sec();
-        std::cout << "setUpLabelArray: " << newSW - lastSW << "µs" << std::endl;
+        std::cout << "setUpLabelArray: " << newSW - lastSW << "ms" << std::endl;
         
         builder.showMappingOfByteSize();
         

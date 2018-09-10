@@ -25,7 +25,7 @@ namespace array_fsa {
         
     public:
         static constexpr size_t kAddrSize = 4;
-        static constexpr size_t kElemSize = 1 + kAddrSize * 4;
+        static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 2;
         
         void build();
         
@@ -160,6 +160,7 @@ namespace array_fsa {
     inline void ArrayFSABuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
         for (auto i = 0; i < numElems_(); i++) {
+            if (!isFrozen_(i)) continue;
             auto bn = getNext_(i);
             auto bc = getCheck_(i);
             auto bf = isFinal_(i);

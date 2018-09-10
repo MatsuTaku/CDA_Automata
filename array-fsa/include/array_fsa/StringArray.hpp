@@ -34,7 +34,7 @@ namespace array_fsa {
             }
         }
         
-        explicit StringArray(std::istream& is) {
+        explicit StringArray(std::istream &is) {
             read(is);
         }
         
@@ -62,12 +62,13 @@ namespace array_fsa {
         }
         
         bool isMatch(size_t* pos, const std::string &str, size_t strIndex) const {
-            for (auto size = str.size(); *pos < size; ++strIndex) {
+            while (*pos < str.size()) {
                 if (static_cast<uint8_t>(str[*pos]) != bytes_[strIndex])
                     return false;
-                ++*pos;
-                if (BINARY ? boundary_flags_[strIndex] : bytes_[strIndex + 1] == kEndLabel)
+                if (BINARY ? boundary_flags_[strIndex] : (bytes_[strIndex + 1] == kEndLabel))
                     return true;
+                ++*pos;
+                ++strIndex;
             }
             return false;
         }
@@ -81,11 +82,11 @@ namespace array_fsa {
         
         std::string string(size_t index) const {
             std::string s;
-            uint8_t c;
-            do {
-                c = bytes_[index++];
+            uint8_t c = bytes_[index];
+            while (c != kEndLabel) {
                 s.push_back(c);
-            } while (c != kEndLabel);
+                c = bytes_[++index];
+            }
             return s;
         }
         

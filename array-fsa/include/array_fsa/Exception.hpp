@@ -24,6 +24,31 @@ namespace array_fsa {
         std::string text;
     };
     
+    using std::cerr, std::endl;
+    
+    class LookupErrorException : std::exception {
+    public:
+        LookupErrorException(const std::string &key, size_t value, size_t incollect) : key(key), value(value), incollect(incollect) {}
+        std::string key;
+        size_t value, incollect;
+        
+        void error()  {
+            cerr << "Lookup error: [ \"" << key << "\": " << value << " ] ^ " << incollect << endl;
+        }
+    };
+    
+    class AccessErrorException : std::exception {
+    public:
+        AccessErrorException(const std::string &key, size_t value, const std::string &incollect) : key(key), value(value), incollect(incollect) {}
+        std::string key;
+        size_t value;
+        const std::string &incollect;
+        
+        void error()  {
+            cerr << "Access error: [\"" << key << "\": " << value << " ] ^ \"" << incollect << '"' << endl;
+        }
+    };
+    
 }
 
 #endif /* Exception_hpp */

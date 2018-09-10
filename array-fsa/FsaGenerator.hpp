@@ -12,7 +12,7 @@
 #include "array_fsa/PlainFSA.hpp"
 #include "array_fsa/ArrayFSABuilder.hpp"
 #include "array_fsa/ArrayFSATailBuilder.hpp"
-#include "array_fsa/FSA.hpp"
+#include "array_fsa/DoubleArrayFSA.hpp"
 
 #include "array_fsa/Exception.hpp"
 
@@ -68,6 +68,12 @@ namespace array_fsa {
                 } catch (DoesntHaveMemberException e) {
                     std::cout << "Doesn't have member: " << e.text << std::endl;
                     return 1;
+                } catch (LookupErrorException e) {
+                    e.error();
+                    return 1;
+                } catch (AccessErrorException e) {
+                    e.error();
+                    return 1;
                 }
                 
                 std::cout << "Write FSA into " << fsaName << std::endl;
@@ -96,13 +102,15 @@ namespace array_fsa {
             checkHasMember(ifs);
         }
         
-        // May throw DoesntHaveMemberException
-        void checkHasMember(std::ifstream& ifs) {
+        // May throw Exceptions
+        void checkHasMember(std::ifstream &ifs) {
+            
             auto length = 0;
             auto count = 0;
             for (std::string line; std::getline(ifs, line);) {
                 count++;
                 length += line.size();
+                
                 if (!fsa_.isMember(line))
                     throw DoesntHaveMemberException(line);
             }
@@ -115,6 +123,7 @@ namespace array_fsa {
             if (!ofs)
                 throw DataNotFoundException(fsaName);
             fsa_.write(ofs);
+            fsa_.showStatus(std::cout);
         }
         
     private:

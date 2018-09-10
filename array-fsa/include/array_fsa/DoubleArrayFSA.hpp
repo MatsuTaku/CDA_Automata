@@ -1,16 +1,16 @@
 //
-//  FSA.hpp
-//  ArrayFSA
+//  DoubleArrayFSA.hpp
+//  DoubleArrayFSA
 //
 //  Created by 松本拓真 on 2018/01/13.
 //
 
-#ifndef FSA_hpp
-#define FSA_hpp
+#ifndef DoubleArrayFSA_hpp
+#define DoubleArrayFSA_hpp
 
 #include "ByteData.hpp"
 
-#include "NextCheck.hpp"
+#include "DAFoundation.hpp"
 #include "sim_ds/BitVector.hpp"
 
 #include "ArrayFSABuilder.hpp"
@@ -20,32 +20,35 @@ namespace array_fsa {
     class PlainFSA;
     
     template<bool N>
-    class FSA : ByteData {
+    class DoubleArrayFSA : ByteData {
     public:
-        FSA() = default;
+        DoubleArrayFSA() = default;
         
-        FSA(const PlainFSA &fsa) {
+        DoubleArrayFSA(const PlainFSA &fsa) {
             build(fsa);
         }
+        DoubleArrayFSA(std::istream &is) {
+            read(is);
+        }
         
-        ~FSA() = default;
+        ~DoubleArrayFSA() = default;
         
         // MARK: - Copy guard
         
-        FSA (const FSA&) = delete;
-        FSA& operator=(const FSA&) = delete;
+        DoubleArrayFSA (const DoubleArrayFSA&) = delete;
+        DoubleArrayFSA& operator=(const DoubleArrayFSA&) = delete;
         
-        FSA(FSA&&) noexcept = default;
-        FSA& operator=(FSA&&) noexcept = default;
+        DoubleArrayFSA(DoubleArrayFSA&&) noexcept = default;
+        DoubleArrayFSA& operator=(DoubleArrayFSA&&) noexcept = default;
         
     public:
         static constexpr bool useCodes = N;
-        using nc_type = NextCheck<N, false, false>;
+        using nc_type = DAFoundation<N, false, false, false, false, false>;
         
     public:
         static std::string name() {
             std::string name = (!useCodes ? "Original" : "Dac");
-            return name + "FSA";
+            return name + "DoubleArrayFSA";
         }
         
         void build(const PlainFSA &fsa);
@@ -60,6 +63,14 @@ namespace array_fsa {
                     return false;
             }
             return isFinal(trans);
+        }
+        
+        size_t lookup(const std::string &str) const {
+            return -1;
+        }
+        
+        std::string access(size_t key) const {
+            return std::string("");
         }
         
         auto target(size_t index) const {
@@ -82,6 +93,14 @@ namespace array_fsa {
                 return is_final_bits_[index];
             else
                 return (nc_.next(index) & 1) != 0;
+        }
+        
+        size_t store(size_t index) const {
+            return -1;
+        }
+        
+        size_t accStore(size_t index) const {
+            return -1;
         }
         
         // MARK: - Protocol setting
@@ -153,14 +172,14 @@ namespace array_fsa {
         
         void buildBitArray() {
             if constexpr (!N) return;
-            nc_.buildBitArray();
+            nc_.build();
         }
         
     };
     
     
     template<bool N>
-    inline void FSA<N>::build(const PlainFSA &fsa) {
+    inline void DoubleArrayFSA<N>::build(const PlainFSA &fsa) {
         ArrayFSABuilder builder(fsa);
         builder.build();
         
@@ -169,10 +188,13 @@ namespace array_fsa {
         
         auto numTrans = 0;
         for (auto i = 0; i < numElem; i++) {
+            if (!builder.isFrozen_(i))
+                continue;
+            
             setCheck(i, builder.getCheck_(i));
             setNextAndIsFinal(i, builder.getNext_(i), builder.isFinal_(i));
-            if (builder.isFrozen_(i))
-                numTrans++;
+            
+            numTrans++;
         }
         setNumTrans(numTrans);
         buildBitArray();
@@ -182,4 +204,4 @@ namespace array_fsa {
     
 }
 
-#endif /* FSA_hpp */
+#endif /* DoubleArrayFSA_hpp */

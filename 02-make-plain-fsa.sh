@@ -5,7 +5,7 @@ TIME_FMT="wall\t%e\t%E\tuser\t%U\tsys\t%S\tmax-mem-kb\t%M\tdta\t%D\tinputs\t%I\t
 
 function plain {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./array-fsa/build/makefsa $1 $2 >$2.stdout 2>&1
+  ./src/build/makefsa $1 $2 >$2.stdout 2>&1
 }
 
 
@@ -49,10 +49,8 @@ $DATASET_DIR/kanda/word-over999.dict
 RESULTS_DIR=results
 
 for dataset in $DATASETS; do
-  for tool in $TOOLS; do
     dataset_fn=`basename $dataset .dict`
-    echo "$tool, $dataset..."
+    echo "plain, $dataset..."
     mkdir -p $RESULTS_DIR/$dataset_fn
-    $tool $dataset $RESULTS_DIR/$dataset_fn/$dataset_fn.$tool
-  done
+    $plain $dataset $RESULTS_DIR/$dataset_fn/$dataset_fn.$plain
 done

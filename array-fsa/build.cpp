@@ -15,9 +15,9 @@ int main(int argc, const char *argv[]) {
 //    data_name = "../../../data-sets/weiss/wikipedia.dict";
 //    plain_fsa_name = "../../../results/wikipedia/wikipedia.plain";
 //    fsa_name = "../../../results/wikipedia/wikipedia.fsa";
-//    data_name = "../../data-sets/weiss/wikipedia2.dict";
-//    plain_fsa_name = "../../results/wikipedia2/wikipedia2.plain";
-//    fsa_name = "../../results/wikipedia2/wikipedia2.fsa";
+//    data_name = "../../../data-sets/weiss/wikipedia2.dict";
+//    plain_fsa_name = "../../../results/wikipedia2/wikipedia2.plain";
+//    fsa_name = "../../../results/wikipedia2/wikipedia2.sample";
 //    data_name = "../../../data-sets/kanda/indochina-2004.dict";
 //    plain_fsa_name = "../../../results/indochina-2004/indochina-2004.plain";
 //    fsa_name = "../../../results/indochina-2004/indochina-2004.sample"; fsa_type = '3';
@@ -26,7 +26,14 @@ int main(int argc, const char *argv[]) {
 //    fsa_name = "../../../results/jawiki-20150118/jawiki-20150118.sample"; fsa_type = '3';
 //    plain_fsa_name = "../../../results/abc/abc.plain";
 //    data_name = "../../../data-sets/ciura-deorowicz/abc.dict";
-//    fsa_name = "../../../results/abc/abc.array_ts_fsa"; fsa_type = '3';
+//    fsa_name = "../../../results/abc/abc.sample"; fsa_type = '3';
+//    fsa_type = '3';
+//    plain_fsa_name = "../../../results/enable/enable.plain";
+//    data_name = "../../../data-sets/ciura-deorowicz/enable.dict";
+//    fsa_name = "../../../results/enable/enable.sample"; fsa_type = '3';
+//    data_name = "../../../data-sets/ciura-deorowicz/full.dict";
+//    plain_fsa_name = "../../../results/full/full.plain";
+//    fsa_name = "../../../results/full/full.fsa";
 //    fsa_type = '3';
     
     switch (fsa_type) {
@@ -35,9 +42,17 @@ int main(int argc, const char *argv[]) {
         case '2':
             return FsaGenerator<DacFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '3':
-            return FsaGenerator<StringTransFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
+            return FsaGenerator<DoubleArrayCFSA<true, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+        case '4':
+            return FsaGenerator<DoubleArrayCFSA<false, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+        case '5':
+            return FsaGenerator<DoubleArrayCFSA<true, false, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+        case '6':
+            return FsaGenerator<DoubleArrayCFSA<true, true, false, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+        case '7':
+            return FsaGenerator<DoubleArrayCFSA<true, true, true, false>>::buildFSA(data_name, plain_fsa_name, fsa_name);
         default:
-            std::cout << "fsa_type is not set!" << std::endl;
+            std::cout << "Error: fsa_type is not set!" << std::endl;
             return 1;
     }
     

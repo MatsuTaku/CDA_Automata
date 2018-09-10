@@ -38,9 +38,7 @@ namespace array_fsa {
         }
         
         size_t getLabelNumber_(size_t index) const {
-            size_t labelIndex = 0;
-            std::memcpy(&labelIndex, &bytes_[offset_(index) + 1 + kAddrSize], 4);
-            return labelIndex;
+            return getAddress_(offset_(index) + 1 + kAddrSize);
         }
         
         bool isLabelEnd_(size_t index) const {
@@ -57,6 +55,18 @@ namespace array_fsa {
         
         size_t getAccStore_(size_t index) const {
             return getAddress_(offset_(index) + 1 + kAddrSize * 3);
+        }
+        
+        bool hasBrother_(size_t index) const {
+            return (bytes_[offset_(index)] & 16) != 0;
+        }
+        
+        uint8_t getBrother_(size_t index) const {
+            return bytes_[offset_(index) + 1 + kAddrSize * 4];
+        }
+        
+        uint8_t getEldest_(size_t index) const {
+            return bytes_[offset_(index) + 2 + kAddrSize * 4];
         }
         
         template <class T>
@@ -83,6 +93,18 @@ namespace array_fsa {
             std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 3], &as, 4);
         }
         
+        void setHasBrother_(size_t index) {
+            bytes_[offset_(index)] |= 16;
+        }
+        
+        void setBrother_(size_t index, uint8_t bro) {
+            bytes_[offset_(index) + 1 + kAddrSize * 4] = bro;
+        }
+        
+        void setEldest_(size_t index, uint8_t eldest) {
+            bytes_[offset_(index) + 2 + kAddrSize * 4] = eldest;
+        }
+        
         void arrange_(size_t state, size_t index) override;
         
     };
@@ -92,6 +114,7 @@ namespace array_fsa {
     inline void ArrayFSATailBuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
         for (auto i = 0; i < numElems_(); i++) {
+            if (!isFrozen_(i)) continue;
             auto bn = getNext_(i);
             auto bi = hasLabel_(i);
             auto bc = !bi ? getCheck_(i) : getLabelNumber_(i);
@@ -184,6 +207,13 @@ namespace array_fsa {
             
             // Prepare to transition next node
             nextTranses.push_back(std::make_pair(symbol, labelTrans));
+        }
+        
+        setEldest_(next, nextTranses.front().first);
+        for (auto i = 0; i < nextTranses.size() - 1; i++) {
+            auto childIndex = next ^ nextTranses[i].first;
+            setHasBrother_(childIndex);
+            setBrother_(childIndex, nextTranses[i + 1].first);
         }
         
         // Transition next node

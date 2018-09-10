@@ -56,6 +56,10 @@ namespace array_fsa {
         template <int N, typename T>
         void set(size_t index, T value);
         
+        size_t valueSize(size_t offset) const {
+            return value_sizes_[offset];
+        }
+        
         void resize(size_t indexSize) {
             bytes_.resize(offset(indexSize));
         }
@@ -107,19 +111,17 @@ namespace array_fsa {
     
     template <int N, typename T>
     inline T MultipleVector::get(size_t index) const {
-        assert(sizeof(T) >= value_sizes_[N]);
         T value = 0;
         auto pos = offset(index) + value_positions_[N];
-        for (size_t i = 0, size = value_sizes_[N]; i < size; i++)
+        for (size_t i = 0, size = std::min(value_sizes_[N], uint8_t(sizeof(T))); i < size; i++)
             value |= T(bytes_[pos + i]) << (i * 8);
         return value;
     }
     
     template <int N, typename T>
     inline void MultipleVector::set(size_t index, T value) {
-        assert(sizeof(T) >= value_sizes_[N]);
         auto pos = offset(index) + value_positions_[N];
-        for (auto i = 0; i < value_sizes_[N]; i++)
+        for (auto i = 0; i < std::min(value_sizes_[N], uint8_t(sizeof(T))); i++)
             bytes_[pos + i] = static_cast<IdType>(value >> (8 * i));
     }
     

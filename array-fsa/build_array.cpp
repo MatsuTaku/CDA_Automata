@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include "array_fsa/StringTransFSA.hpp"
+#include "array_fsa/DoubleArrayCFSA.hpp"
 
 using namespace array_fsa;
 
@@ -18,7 +18,7 @@ namespace {
         if (!ifs) {
             std::cout << "File not found: " << dataName << std::endl;
         }
-        StringTransFSA fsa;
+        DoubleArrayCFSA<true, true, true, true> fsa;
         fsa.read(ifs);
         std::ofstream ofs(arrayName);
         std::cout << "...written: " << arrayName << std::endl;

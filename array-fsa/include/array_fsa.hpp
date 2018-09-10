@@ -8,15 +8,15 @@
 #ifndef array_fsa_hpp
 #define array_fsa_hpp
 
-#include "array_fsa/FSA.hpp"
-#include "array_fsa/StringTransFSA.hpp"
+#include "array_fsa/DoubleArrayFSA.hpp"
+#include "array_fsa/DoubleArrayCFSA.hpp"
 #include "array_fsa/MorfologikCFSA2.hpp"
 #include "array_fsa/MorfologikFSA5.hpp"
 
 namespace array_fsa {
     
-    using OriginalFSA = FSA<false>;
-    using DacFSA = FSA<true>;
+    using OriginalFSA = DoubleArrayFSA<false>;
+    using DacFSA = DoubleArrayFSA<true>;
     
 }
 
