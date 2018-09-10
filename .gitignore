@@ -1,7 +1,8 @@
 # cmake project
+__MACOSX
 /array-fsa/build
 /results
-/data-sets/
+/data-sets/*
 !/data-sets/*.py
 !/data-sets/README.md
 .bench.stdout
