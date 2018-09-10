@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #function morfologik_fsa5 {
-#  ./src/build/bench $1 $2 1 >$1.bench.stdout 2>&1
+#  ./project/build/bench $1 $2 1 >$1.bench.stdout 2>&1
 #}
 #
 #function morfologik_cfsa2 {
-#  ./src/build/bench $1 $2 2 >$1.bench.stdout 2>&1
+#  ./project/build/bench $1 $2 2 >$1.bench.stdout 2>&1
 #}
 
 function xcdat {
-  ./src/build/bench $1 $2 7 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 7 >$1.bench.stdout 2>&1
 }
 
 function centrp {
@@ -17,35 +17,35 @@ function centrp {
 }
 
 function marisa {
-  ./src/build/bench $1 $2 9 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 9 >$1.bench.stdout 2>&1
 }
 
 function array_fsa {
-  ./src/build/bench $1 $2 0 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 0 >$1.bench.stdout 2>&1
 }
 
 function dac_array_fsa {
-  ./src/build/bench $1 $2 1 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 1 >$1.bench.stdout 2>&1
 }
 
 function array_ts_fsa {
-  ./src/build/bench $1 $2 2 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 2 >$1.bench.stdout 2>&1
 }
 
 function array_ts_fsa_noCuWo {
-  ./src/build/bench $1 $2 3 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 3 >$1.bench.stdout 2>&1
 }
 
 function array_ts_fsa_noBro {
-  ./src/build/bench $1 $2 4 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 4 >$1.bench.stdout 2>&1
 }
 
 function array_ts_fsa_noCompID {
-  ./src/build/bench $1 $2 5 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 5 >$1.bench.stdout 2>&1
 }
 
 function array_ts_fsa_noCompWo {
-  ./src/build/bench $1 $2 6 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 6 >$1.bench.stdout 2>&1
 }
 
 TOOLS="

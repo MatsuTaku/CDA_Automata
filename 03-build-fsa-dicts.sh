@@ -40,37 +40,37 @@ function marisa {
 
 function array_fsa {
   $TIME_CMD -f $TIME_FMT -o $3.log \
-  ./src/build/build $1 $2 $3 1 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 1 >$3.stdout 2>&1
 }
 
 function dac_array_fsa {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./src/build/build $1 $2 $3 2 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 2 >$3.stdout 2>&1
 }
 
 function array_ts_fsa {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./src/build/build $1 $2 $3 3 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 3 >$3.stdout 2>&1
 }
 
 function array_ts_fsa_noCuWo {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./src/build/build $1 $2 $3 4 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 4 >$3.stdout 2>&1
 }
 
 function array_ts_fsa_noBro {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./src/build/build $1 $2 $3 5 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 5 >$3.stdout 2>&1
 }
 
 function array_ts_fsa_noCompID {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./src/build/build $1 $2 $3 6 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 6 >$3.stdout 2>&1
 }
 
 function array_ts_fsa_noCompWo {
   $TIME_CMD -f $TIME_FMT -o $2.log \
-  ./src/build/build $1 $2 $3 7 >$3.stdout 2>&1
+  ./project/build/build $1 $2 $3 7 >$3.stdout 2>&1
 }
 
 
@@ -125,18 +125,11 @@ $DATASET_DIR/weiss/pl.dict
 RESULTS_DIR=results
 
 cd $(dirname $0)
-count=0
 for dataset in $DATASETS; do
   for tool in $TOOLS; do
     dataset_fn=`basename $dataset .dict`
     echo "$tool, $dataset..."
     mkdir -p $RESULTS_DIR/$dataset_fn
-    $tool $dataset $RESULTS_DIR/$dataset_fn/$dataset_fn.plain $RESULTS_DIR/$dataset_fn/$dataset_fn.$tool &
-
-	(( count++ ))
-	if [ $count = 4 ]; then
-		wait
-		count=0
-	fi
+    $tool $dataset $RESULTS_DIR/$dataset_fn/$dataset_fn.plain $RESULTS_DIR/$dataset_fn/$dataset_fn.$tool
   done
 done
