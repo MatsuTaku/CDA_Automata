@@ -33,11 +33,11 @@ git submodule update --init --recursive
    - kanda: 神田の収集したデータセット
  - software: 主に比較手法として用いるデータ構造
    - XOR圧縮を用いたダブル配列トライ: [XOR-Compressed Double-Array Trie][xcdat]
-   - Path decomposition によるトライの圧縮表現: [Path-Decomposed trie][pdt]
+   - Path decomposition によるトライの圧縮表現: [Path-Decomposed tries][pdt]
    - Dawid Weissによる圧縮オートマトン表現の実装（Java）: [paper-fsa-compression][pfc]
 
 [pfc]: https://github.com/dweiss/paper-fsa-compression
 [xcdat]: https://github.com/kampersanda/xcdat
-[pdt]:
+[pdt]: https://github.com/ot/path_decomposed_tries
 
 data-setsには「\*.dict」と「\*.1000000.rnd_dict」という二種類のデータセットが含まれており，前者が辞書を構築するときに用いるデータセットで，後者が検索時間を測るときに用いるベンチマーク用データセットです．
