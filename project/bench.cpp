@@ -18,7 +18,7 @@ namespace {
             
             T fsa = FsaTools::getFSAFrom<T>(fsa_name);
             
-            std::cout << "Lookup bench for " << query_name << std::endl;
+            std::cout << "Search benchmark for " << query_name << std::endl;
             
             FsaTools::measureBenchmark(fsa, query_name);
             
@@ -39,8 +39,9 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = *argv[3];
     
-//    fsa_name = "../../../results/wikipedia/wikipedia.fsa";
-//    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='5';
+//    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
+//    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='9';
+//        query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
 //    fsa_name = "../../../results/wikipedia2/wikipedia2.array_ts_fsa";
 //    query_name = "../../../data-sets/weiss/wikipedia2.1000000.rnd_dict"; type='5';
 //    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; type = '6';
@@ -78,6 +79,8 @@ int main(int argc, const char* argv[]) {
             return bench<XcdatWrapper<false>>(fsa_name, query_name);
         case '8':
             return bench<MarisaWrapper>(fsa_name, query_name);
+        case '9':
+            return bench<MorfologikFSA5Dictionary>(fsa_name, query_name);
         default:
             std::cout << "type is not set!" << std::endl;
             return 1;

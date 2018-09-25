@@ -164,6 +164,9 @@ namespace array_fsa {
             std::memcpy(&ret, &bytes_[trans + 1], gtl_);
             return ret >> 3;
         }
+        
+        friend class MorfologikFSA5Dictionary;
+        
     };
     
 }

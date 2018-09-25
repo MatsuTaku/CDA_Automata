@@ -41,6 +41,9 @@ target_link_libraries(bench ArrayFSA xcdat marisa)
 add_executable(build build.cpp FsaGenerator.hpp)
 target_link_libraries(build ArrayFSA)
 
+add_executable(convert convert.cpp)
+target_link_libraries(convert ArrayFSA)
+
 add_executable(makefsa makefsa.cpp FsaGenerator.hpp)
 target_link_libraries(makefsa ArrayFSA)
 

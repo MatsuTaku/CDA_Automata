@@ -11,6 +11,7 @@ function morfologik_fsa5 {
        --progress \
        --sorted -i $1 \
        -o $3 >$3.stdout 2>&1
+  ./project/build/convert $3 $3 0 >> $3.stdout 2>&1
 }
 
 function morfologik_cfsa2 {
@@ -21,6 +22,7 @@ function morfologik_cfsa2 {
        --progress \
        --sorted -i $1 \
        -o $3 >$3.stdout 2>&1
+  ./project/build/convert $3 $3 1 >> $3.stdout 2>&1
 }
 
 function xcdat {
@@ -75,28 +77,26 @@ function array_ts_fsa_noCompWo {
 
 
 TOOLS="
-array_ts_fsa
-array_ts_fsa_noCuWo
-array_ts_fsa_noBro
-array_ts_fsa_noCompID
-array_ts_fsa_noCompWo
-xcdat
-centrp
-marisa
-"
 morfologik_fsa5
-morfologik_cfsa2
-array_fsa
-dac_array_fsa
+"
+#array_ts_fsa
+#xcdat
+#marisa
+#centrp
+#morfologik_cfsa2
+#array_ts_fsa_noCuWo
+#array_ts_fsa_noBro
+#array_ts_fsa_noCompID
+#array_ts_fsa_noCompWo
+#array_fsa
+#dac_array_fsa
 
 DATASET_DIR=data-sets
 
 DATASETS="
-$DATASET_DIR/weiss/wikipedia.dict
-$DATASET_DIR/weiss/wikipedia2.dict
+$DATASET_DIR/kanda/enwiki-20150205.dict
 $DATASET_DIR/kanda/jawiki-20150118.dict
 $DATASET_DIR/kanda/indochina-2004.dict
-$DATASET_DIR/kanda/enwiki-20150205.dict
 $DATASET_DIR/kanda/word-over999.dict
 $DATASET_DIR/ciura-deorowicz/abc.dict
 $DATASET_DIR/ciura-deorowicz/deutsch.dict
@@ -120,6 +120,8 @@ $DATASET_DIR/ciura-deorowicz/unix_m.dict
 $DATASET_DIR/ciura-deorowicz/unix.dict
 $DATASET_DIR/ciura-deorowicz/webster.dict
 $DATASET_DIR/weiss/pl.dict
+$DATASET_DIR/weiss/wikipedia.dict
+$DATASET_DIR/weiss/wikipedia2.dict
 "
 
 RESULTS_DIR=results

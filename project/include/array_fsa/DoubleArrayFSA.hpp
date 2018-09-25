@@ -150,6 +150,10 @@ namespace array_fsa {
             nc_.showStatus(os);
         }
         
+        void printForDebug(std::ostream &os) const {
+            
+        }
+        
     private:
         nc_type nc_;
         sim_ds::BitVector is_final_bits_;

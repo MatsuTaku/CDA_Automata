@@ -43,6 +43,10 @@ namespace array_fsa {
             os << "size:   " << trie_.size_in_bytes() << endl;
         }
         
+        void printForDebug(std::ostream &os) const {
+            
+        }
+        
     private:
         xcdat_trie trie_;
     };

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#function morfologik_fsa5 {
-#  ./project/build/bench $1 $2 1 >$1.bench.stdout 2>&1
-#}
+function morfologik_fsa5 {
+  ./project/build/bench $1 $2 9 >$1.bench.stdout 2>&1
+}
 #
 #function morfologik_cfsa2 {
 #  ./project/build/bench $1 $2 2 >$1.bench.stdout 2>&1
@@ -17,7 +17,7 @@ function centrp {
 }
 
 function marisa {
-  ./project/build/bench $1 $2 9 >$1.bench.stdout 2>&1
+  ./project/build/bench $1 $2 8 >$1.bench.stdout 2>&1
 }
 
 function array_fsa {
@@ -54,11 +54,11 @@ array_ts_fsa_noCuWo
 array_ts_fsa_noBro
 array_ts_fsa_noCompID
 array_ts_fsa_noCompWo
+morfologik_fsa5
 xcdat
 centrp
 marisa
 "
-#morfologik_fsa5
 #morfologik_cfsa2
 #array_fsa
 #dac_array_fsa

@@ -132,21 +132,19 @@ namespace array_fsa {
         const auto lcp = get_lcp_(str);
         expand_active_path_(str.length());
         
-        if (active_len_ > 0) {
+        if (active_len_ > 0) { // After first addition
             // minimize
             for (size_t i = active_len_ - 1; i > lcp; --i) {
                 const auto state = freeze_state_(active_path_[i]);
                 set_target_(active_path_[i - 1].end - PlainFSA::kTransSize, state);
                 active_path_[i].close_to_end();
             }
-        } else {
-            // first addition
         }
         
         for (auto i = lcp; i < str.length(); ++i) {
             const auto trans = active_path_[i].end;
             clear_trans_(trans);
-            const auto is_final = i + 1 == str.length();
+            const bool is_final = i + 1 == str.length();
             set_final_flag_(trans, is_final);
             set_symbol_(trans, str[i]);
             set_target_(trans, !is_final ? active_path_[i + 1].begin : 0);

@@ -52,13 +52,11 @@ namespace array_fsa {
     public:
         FsaTools() = delete;
         
-        static constexpr auto RUNS = 10;
-        
         template <class T>
         static T getFSAFrom(const char *fsaName);
         
         template <class T>
-        static void measureBenchmark(const T &fsa, const char *queryName);
+        static void measureBenchmark(const T &fsa, const char *queryName, int runs = 1);
         
     };
     
@@ -77,15 +75,19 @@ namespace array_fsa {
     }
     
     template <class T>
-    void FsaTools::measureBenchmark(const T &fsa, const char *queryName) {
+    void FsaTools::measureBenchmark(const T &fsa, const char *queryName, int runs) {
         const auto strs = KeySet::getKeySets(queryName);
         auto num = strs.size();
         auto ng = 0;
         Stopwatch sw;
         for (const std::string &str : strs) {
-            if (!fsa.isMember(str))
+            if (!fsa.isMember(str)) {
                 ++ng;
+                break;
+            }
         }
+        if (ng > 0)
+            fsa.printForDebug(std::cout);
         auto mSec = sw.get_micro_sec();
         
         std::cout << "Search time: " << mSec / num << " µs/query" << std::endl;
@@ -98,7 +100,7 @@ namespace array_fsa {
         }
         
         sw = Stopwatch();
-        for (auto r = 0; r < RUNS; r++) {
+        for (auto r = 0; r < runs; r++) {
             ng = 0;
             for (auto i = 0; i < strs.size(); i++) {
                 if (fsa.lookup(strs[i]) != values[i])
@@ -107,21 +109,25 @@ namespace array_fsa {
         }
         mSec = sw.get_micro_sec();
         std::cout << "------" << std::endl;
-        std::cout << "Lookup time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
+        std::cout << "Lookup time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
         sw = Stopwatch();
-        for (auto r = 0; r < RUNS; r++) {
+        for (auto r = 0; r < runs; r++) {
             ng = 0;
             for (auto i = 0; i < strs.size(); i++) {
-                if (fsa.access(values[i]) != strs[i])
+                auto &needs = strs[i];
+                const auto &getStr = fsa.access(values[i]);
+                if (getStr != needs)
                     ng++;
             }
         }
+        if (ng > 0)
+            fsa.printForDebug(std::cout);
         mSec = sw.get_micro_sec();
         std::cout << "------" << std::endl;
-        std::cout << "Access time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
+        std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
@@ -129,7 +135,7 @@ namespace array_fsa {
     }
     
     template <>
-    void FsaTools::measureBenchmark(const MarisaWrapper &fsa, const char *queryName) {
+    void FsaTools::measureBenchmark(const MarisaWrapper &fsa, const char *queryName, int runs) {
         marisa::Keyset keyset;
         KeySet::setMarisaKeyset(queryName, &keyset);
         auto num = keyset.size();
@@ -144,7 +150,7 @@ namespace array_fsa {
         }
         
         Stopwatch sw;
-        for (auto r = 0; r < RUNS; r++) {
+        for (auto r = 0; r < runs; r++) {
             ng = 0;
             for (auto i = 0; i < keyset.size(); i++) {
                 agent.set_query(keyset[i].ptr(), keyset[i].length());
@@ -154,12 +160,12 @@ namespace array_fsa {
         }
         auto mSec = sw.get_micro_sec();
         std::cout << "------" << std::endl;
-        std::cout << "Lookup time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
+        std::cout << "Lookup time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
         sw = Stopwatch();
-        for (auto r = 0; r < RUNS; r++) {
+        for (auto r = 0; r < runs; r++) {
             ng = 0;
             for (auto i = 0; i < keyset.size(); i++) {
                 agent.set_query(values[i]);
@@ -171,7 +177,7 @@ namespace array_fsa {
         }
         mSec = sw.get_micro_sec();
         std::cout << "------" << std::endl;
-        std::cout << "Access time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
+        std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         

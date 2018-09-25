@@ -191,6 +191,10 @@ namespace array_fsa {
             //            sim_ds::Calc::vectorMapOfSizeBits(&map, nexts, true);
         }
         
+        void printForDebug(std::ostream &os) const {
+            
+        }
+        
     private:
         size_t num_trans_ = 0;
         fd_type fd_;

@@ -11,7 +11,7 @@
 #include "array_fsa/DoubleArrayFSA.hpp"
 #include "array_fsa/DoubleArrayCFSA.hpp"
 #include "array_fsa/MorfologikCFSA2.hpp"
-#include "array_fsa/MorfologikFSA5.hpp"
+#include "array_fsa/MorfologikFSA5Dictionary.hpp"
 
 namespace array_fsa {
     

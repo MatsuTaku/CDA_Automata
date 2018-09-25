@@ -121,7 +121,6 @@ namespace array_fsa {
                 
                 if (!is_next_set_(i)) {
                     os << read_vint_(i + ((bytes_[i] & 0x1F) != 0 ? 1 : 2));
-                } else {
                 }
                 
                 i = skip_trans_(i);
