@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) {
     
 //    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
 //    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='9';
-//        query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
+//    query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
 //    fsa_name = "../../../results/wikipedia2/wikipedia2.array_ts_fsa";
 //    query_name = "../../../data-sets/weiss/wikipedia2.1000000.rnd_dict"; type='5';
 //    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; type = '6';

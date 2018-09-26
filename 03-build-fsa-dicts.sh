@@ -94,6 +94,7 @@ morfologik_fsa5
 DATASET_DIR=data-sets
 
 DATASETS="
+$DATASET_DIR/weiss/wikipedia.dict
 $DATASET_DIR/kanda/enwiki-20150205.dict
 $DATASET_DIR/kanda/jawiki-20150118.dict
 $DATASET_DIR/kanda/indochina-2004.dict
@@ -120,7 +121,6 @@ $DATASET_DIR/ciura-deorowicz/unix_m.dict
 $DATASET_DIR/ciura-deorowicz/unix.dict
 $DATASET_DIR/ciura-deorowicz/webster.dict
 $DATASET_DIR/weiss/pl.dict
-$DATASET_DIR/weiss/wikipedia.dict
 $DATASET_DIR/weiss/wikipedia2.dict
 "
 

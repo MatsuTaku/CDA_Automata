@@ -50,16 +50,16 @@ function array_ts_fsa_noCompWo {
 
 TOOLS="
 array_ts_fsa
-array_ts_fsa_noCuWo
-array_ts_fsa_noBro
-array_ts_fsa_noCompID
-array_ts_fsa_noCompWo
 morfologik_fsa5
 xcdat
 centrp
 marisa
 "
 #morfologik_cfsa2
+#array_ts_fsa_noCuWo
+#array_ts_fsa_noBro
+#array_ts_fsa_noCompID
+#array_ts_fsa_noCompWo
 #array_fsa
 #dac_array_fsa
 

@@ -76,7 +76,7 @@ namespace array_fsa {
     
     template <class T>
     void FsaTools::measureBenchmark(const T &fsa, const char *queryName, int runs) {
-        const auto strs = KeySet::getKeySets(queryName);
+        const auto &strs = KeySet::getKeySets(queryName);
         auto num = strs.size();
         auto ng = 0;
         Stopwatch sw;

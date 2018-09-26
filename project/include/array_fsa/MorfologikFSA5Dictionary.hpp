@@ -54,8 +54,8 @@ namespace array_fsa {
         size_t sizeInBytes() const {
             auto size = 0;
             size += sizeof(node_data_length_);
-            size += sizeof(element_words_size_);
-            size += sizeof(element_params_size_);
+            size += sizeof(element_words_lower_size_);
+            size += sizeof(element_address_size_);
             size += size_vec(bytes_);
             return size;
         }
@@ -69,14 +69,10 @@ namespace array_fsa {
         
         void printForDebug(std::ostream& os) const {
             using std::endl;
-            os << "\tLB\tF\tL\tN\tWO\tAD" << endl;
+            os << "\tLB\tF\tL\tN\tLW\tWO\tAD" << endl;
             
             size_t i = 0;
             while (i < bytes_.size()) {
-                if (i < 105755192) {
-                    i = skipTrans_(i);
-                    continue;
-                }
                 char c = getTransSymbol_(i);
                 if (c == '\r') {
                     c = '?';
@@ -86,6 +82,7 @@ namespace array_fsa {
                 << bool_str(isFinalTrans_(i)) << "\t"
                 << bool_str(isLastTrans_(i)) << "\t"
                 << bool_str(isNextSet_(i)) << "\t"
+                << bool_str(isWordsLarge_(i)) << "\t"
                 << getTransWords_(i) << "\t";
                 if (!isNextSet_(i)) {
                     os << getGoto_(i);
@@ -99,64 +96,100 @@ namespace array_fsa {
         
         void read(std::istream &is) {
             node_data_length_ = read_val<size_t>(is);
-            element_words_size_ = read_val<size_t>(is);
-            element_params_size_ = read_val<size_t>(is);
+            element_words_lower_size_ = read_val<size_t>(is);
+            element_address_size_ = read_val<size_t>(is);
             bytes_ = read_vec<uint8_t>(is);
         }
         
         void write(std::ostream &os) const {
             write_val(node_data_length_, os);
-            write_val(element_words_size_, os);
-            write_val(element_params_size_, os);
+            write_val(element_words_lower_size_, os);
+            write_val(element_address_size_, os);
             write_vec(bytes_, os);
         }
         
     private:
         size_t node_data_length_ = 0;
-        const size_t kNumParams_ = 3;
+        
+        const size_t kNumParams_ = 4;
         const size_t kElementSymbolSize_ = 1;
-        size_t element_words_size_ = 4;
-        size_t element_params_size_ = 4;
+        const size_t kElementWordsUpperBitsSize_ = 4;
+        size_t element_words_lower_size_ = 4;
+        size_t element_address_size_ = 4;
+        
         std::vector<uint8_t> bytes_;
+        
+        // MARK: Offsets
+        
+        size_t offsetSymbol_(size_t trans) const {
+            assert(trans < bytes_.size());
+            return trans;
+        }
+        
+        size_t offsetParams_(size_t trans) const {
+            assert(trans < bytes_.size());
+            return offsetSymbol_(trans) + kElementSymbolSize_;
+        }
+        
+        size_t offsetUpperWords_(size_t trans) const {
+            assert(trans < bytes_.size());
+            return offsetParams_(trans);
+        }
+        
+        size_t offsetLowerWords(size_t trans) const {
+            assert(trans < bytes_.size());
+            return offsetUpperWords_(trans) + 1;
+        }
+        
+        size_t offsetAddress_(size_t trans) const {
+            assert(trans < bytes_.size());
+            return offsetLowerWords(trans) + (isWordsLarge_(trans) ? element_words_lower_size_ : 0);
+        }
         
         // MARK: Transition parameters
         
         uint8_t getTransSymbol_(size_t trans) const {
-            return bytes_[trans];
+            return bytes_[offsetSymbol_(trans)];
         }
         
         size_t getTransWords_(size_t trans) const {
             size_t words = 0;
-            std::memcpy(&words, &bytes_[trans + kElementSymbolSize_], element_words_size_);
-            return words;
+            auto size = isWordsLarge_(trans) ? 1 + element_words_lower_size_ : 1;
+            std::memcpy(&words, &bytes_[offsetUpperWords_(trans)], size);
+            return words >> kNumParams_;
+        }
+        
+        size_t getGoto_(size_t trans) const {
+            assert(!isNextSet_(trans));
+            size_t ret = 0;
+            std::memcpy(&ret, &bytes_[offsetAddress_(trans)], element_address_size_);
+            return ret;
         }
         
         bool isFinalTrans_(size_t trans) const {
-            return (bytes_[trans + kElementSymbolSize_ + element_words_size_] & 1) != 0;
+            return (bytes_[offsetParams_(trans)] & 1U) != 0;
         }
         
         bool isLastTrans_(size_t trans) const {
-            return (bytes_[trans + kElementSymbolSize_ + element_words_size_] & 2) != 0;
+            return (bytes_[offsetParams_(trans)] & 2U) != 0;
         }
         
         bool isNextSet_(size_t trans) const {
-            return (bytes_[trans + kElementSymbolSize_ + element_words_size_] & 4) != 0;
+            return (bytes_[offsetParams_(trans)] & 4U) != 0;
+        }
+        
+        bool isWordsLarge_(size_t trans) const {
+            return (bytes_[offsetParams_(trans)] & 8U) != 0;
         }
         
         // MARK: Functionals
-        
-        size_t getGoto_(size_t trans) const {
-            size_t ret = 0;
-            std::memcpy(&ret, &bytes_[trans + kElementSymbolSize_ + element_words_size_], element_params_size_);
-            return ret >> kNumParams_;
-        }
         
         size_t getFirstTrans_(size_t state) const {
             return node_data_length_ + state;
         }
         
         size_t skipTrans_(size_t trans) const {
-            return trans + kElementSymbolSize_ + element_words_size_ + (isNextSet_(trans) ? 1 : element_params_size_);
+            return offsetAddress_(trans) + (isNextSet_(trans) ? 0 : element_address_size_);
         }
         
         size_t getNextTrans_(size_t trans) const {
@@ -207,25 +240,33 @@ namespace array_fsa {
         };
         
         auto allWords = dfs(set.get_root_state());
-        element_words_size_ = sim_ds::Calc::sizeFitInBytes(allWords);
+        element_words_lower_size_ = sim_ds::Calc::sizeFitInBytes(allWords >> kElementWordsUpperBitsSize_);
         
-        auto newSize = set.bytes_.size() + set.get_num_trans() * element_words_size_;
-        element_params_size_ = sim_ds::Calc::sizeFitInBytes(newSize << 3);
+        auto upperNewSize = set.bytes_.size() + set.get_num_trans() * element_words_lower_size_;
+        element_address_size_ = sim_ds::Calc::sizeFitInBytes(upperNewSize);
         
-        bytes_.resize(newSize);
         std::map<size_t, size_t> mappings;
         for (size_t s = 0, t = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
-            // Copy symbol
-            std::memcpy(&bytes_[t], &set.bytes_[s], kElementSymbolSize_);
-            // Set words
-            std::memcpy(&bytes_[t + kElementSymbolSize_], &words[s], element_words_size_);
-            // Copy params
-            std::memcpy(&bytes_[t + kElementSymbolSize_ + element_words_size_], &set.bytes_[s + 1], 1);
+            size_t paramsAndWords = set.bytes_[s + 1] & 0x07;
+            size_t word = words[s];
+            paramsAndWords |= (word << kNumParams_);
+            auto sizePW = 1;
+            bool isLargeWords = word >= (1ULL << kElementWordsUpperBitsSize_);
+            if (isLargeWords) {
+                paramsAndWords |= 8U;
+                sizePW += element_words_lower_size_;
+            }
+            auto elementSize = kElementSymbolSize_ + sizePW + (set.is_next_set_(s) ? 0 : element_address_size_);
+            
+            // Copy symbol, params and words
+            bytes_.resize(bytes_.size() + elementSize);
+            auto symbol = set.get_trans_symbol(s);
+            std::memcpy(&bytes_[offsetSymbol_(t)], &symbol, kElementSymbolSize_);
+            std::memcpy(&bytes_[offsetParams_(t)], &paramsAndWords, sizePW);
             
             mappings[s] = t;
             
-            auto paramLen = set.is_next_set_(s) ? 1 : element_params_size_;
-            t += kElementSymbolSize_ + element_words_size_ + paramLen;
+            t += elementSize;
         }
         
         std::map<size_t, std::vector<size_t>> parents;
@@ -237,11 +278,8 @@ namespace array_fsa {
             for (auto parent : parents[state]) {
                 if (set.is_next_set_(parent))
                     continue;
-                auto paramsOff = mappings[parent] + kElementSymbolSize_ + element_words_size_;
-                size_t params = bytes_[paramsOff];
-                params = (params & 0x07) | (mappings[state] << 3);
                 // Copy target
-                std::memcpy(&bytes_[paramsOff], &params, element_params_size_);
+                std::memcpy(&bytes_[offsetAddress_(mappings[parent])], &mappings[state], element_address_size_);
             }
             
             while (!set.is_last_trans(state))
@@ -275,7 +313,7 @@ namespace array_fsa {
                 words += getTransWords_(arc);
             }
             if (arc == 0) {
-                std::cerr << "Error not membered: " << str << std::endl;
+//                std::cerr << "Error not membered: " << str << std::endl;
                 return -1;
             }
             
