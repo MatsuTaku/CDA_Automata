@@ -165,7 +165,7 @@ namespace array_fsa {
             return ret >> 3;
         }
         
-        friend class MorfologikFSA5Dictionary;
+        friend class MorfologikFSA5DictionaryFoundation;
         
     };
     

@@ -39,9 +39,9 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = *argv[3];
     
-//    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
+    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
+    query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
 //    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='9';
-//    query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
 //    fsa_name = "../../../results/wikipedia2/wikipedia2.array_ts_fsa";
 //    query_name = "../../../data-sets/weiss/wikipedia2.1000000.rnd_dict"; type='5';
 //    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; type = '6';
@@ -57,10 +57,6 @@ int main(int argc, const char* argv[]) {
 //    type = '3';
     
     switch (type) {
-//        case '1':
-//            return bench<MorfologikFSA5>(fsa_name, query_name);
-//        case '2':
-//            return bench<MorfologikCFSA2>(fsa_name, query_name);
         case '0':
             return bench<OriginalFSA>(fsa_name, query_name);
         case '1':
@@ -80,7 +76,7 @@ int main(int argc, const char* argv[]) {
         case '8':
             return bench<MarisaWrapper>(fsa_name, query_name);
         case '9':
-            return bench<MorfologikFSA5Dictionary>(fsa_name, query_name);
+            return bench<MorfologikFSA>(fsa_name, query_name);
         default:
             std::cout << "type is not set!" << std::endl;
             return 1;

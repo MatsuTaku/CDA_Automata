@@ -5,7 +5,7 @@
 //  Created by 松本拓真 on 2018/09/24.
 //
 
-#include "array_fsa/MorfologikFSA5Dictionary.hpp"
+#include "array_fsa/MorfologikFSADictionary.hpp"
 #include "array_fsa/MorfologikCFSA2.hpp"
 
 using namespace array_fsa;
@@ -21,7 +21,7 @@ namespace {
         MorfologikFSA5 mf5;
         mf5.read(ifs);
         
-        MorfologikFSA5Dictionary mf5d(mf5);
+        MorfologikFSADictionary mf5d(mf5);
         std::ofstream ofs(dictName);
         mf5d.write(ofs);
     }
