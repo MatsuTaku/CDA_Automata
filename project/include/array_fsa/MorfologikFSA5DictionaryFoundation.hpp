@@ -228,8 +228,8 @@ namespace array_fsa {
             return wordsCount;
         };
         
-        auto allWords = dfs(set.get_root_state());
-        element_words_lower_size_ = sim_ds::Calc::sizeFitInBytes(allWords >> kElementWordsUpperBitsSize_);
+        auto totalWords = dfs(set.get_root_state());
+        element_words_lower_size_ = sim_ds::Calc::sizeFitInBytes(totalWords >> kElementWordsUpperBitsSize_);
         
         auto upperNewSize = set.bytes_.size() + set.get_num_trans() * element_words_lower_size_;
         element_address_size_ = sim_ds::Calc::sizeFitInBytes(upperNewSize);
@@ -257,7 +257,6 @@ namespace array_fsa {
             t += elementSize;
         }
         
-//        std::map<size_t, std::vector<size_t>> parents;
         for (size_t t = 0; t < set.bytes_.size(); t = set.skip_trans_(t)) {
             nodes[set.get_target_state(t)].parents.emplace_back(t);
         }

@@ -37,7 +37,7 @@ namespace array_fsa {
         }
         
         /**
-         Check a string is stored.
+         Check is a string stored.
 
          @param str String to check
          @return Boolean that a string is stored or not
@@ -84,18 +84,18 @@ namespace array_fsa {
     template<class Foundation>
     template<typename S>
     inline bool MorfologikFSADictionary<Foundation>::isMember(const S &str) const {
-        size_t state = fd_.getRootState(), arc = 0;
+        size_t state = fd_.getRootState(), trans = 0;
         for (uint8_t c : str) {
-            arc = fd_.getTrans(state, c);
-            if (arc == 0) {
+            trans = fd_.getTrans(state, c);
+            if (trans == 0) {
                 std::cerr << "Error not membered: " << str << std::endl;
                 return false;
             }
             
-            state = fd_.getTargetState(arc);
+            state = fd_.getTargetState(trans);
         }
         
-        return fd_.isFinalTrans(arc);
+        return fd_.isFinalTrans(trans);
     }
     
     template<class Foundation>
@@ -103,23 +103,23 @@ namespace array_fsa {
     inline size_t MorfologikFSADictionary<Foundation>::lookup(const S &str) const {
         size_t words = 0;
         
-        size_t state = fd_.getRootState(), arc = 0;
+        size_t state = fd_.getRootState(), trans = 0;
         for (uint8_t c : str) {
-            for (arc = fd_.getFirstTrans(state); arc != 0 && fd_.getTransSymbol(arc) != c; arc = fd_.getNextTrans(arc)) {
-                words += fd_.getTransWords(arc);
+            for (trans = fd_.getFirstTrans(state); trans != 0 && fd_.getTransSymbol(trans) != c; trans = fd_.getNextTrans(trans)) {
+                words += fd_.getTransWords(trans);
             }
-            if (arc == 0) {
+            if (trans == 0) {
                 std::cerr << "Error not membered: " << str << std::endl;
                 return 0;
             }
             
-            if (fd_.isFinalTrans(arc))
+            if (fd_.isFinalTrans(trans))
                 words++;
             
-            state = fd_.getTargetState(arc);
+            state = fd_.getTargetState(trans);
         }
         
-        return fd_.isFinalTrans(arc) ? words : -1;
+        return fd_.isFinalTrans(trans) ? words : -1;
     }
     
     template<class Foundation>
@@ -127,19 +127,19 @@ namespace array_fsa {
         std::string str = "";
         
         size_t counter = id;
-        for (size_t state = fd_.getRootState(), arc = 0; counter > 0; state = fd_.getTargetState(arc)) {
-            for (arc = fd_.getFirstTrans(state); arc != 0 && counter > 0; arc = fd_.getNextTrans(arc)) {
-                auto words = fd_.getTransWords(arc);
+        for (size_t state = fd_.getRootState(), trans = 0; counter > 0; state = fd_.getTargetState(trans)) {
+            for (trans = fd_.getFirstTrans(state); trans != 0 && counter > 0; trans = fd_.getNextTrans(trans)) {
+                auto words = fd_.getTransWords(trans);
                 if (words < counter) {
                     counter -= words;
                 } else {
-                    if (fd_.isFinalTrans(arc))
+                    if (fd_.isFinalTrans(trans))
                         counter--;
-                    str += fd_.getTransSymbol(arc);
+                    str += fd_.getTransSymbol(trans);
                     break;
                 }
             }
-            if (arc == 0) {
+            if (trans == 0) {
                 std::cerr << "Error not stored id: " << id << std::endl;
                 return "";
             }

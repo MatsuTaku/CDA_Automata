@@ -121,7 +121,7 @@ namespace array_fsa {
     template <int N, typename T>
     inline void MultipleVector::set(size_t index, T value) {
         auto pos = offset(index) + value_positions_[N];
-        for (auto i = 0; i < std::min(value_sizes_[N], uint8_t(sizeof(T))); i++)
+        for (size_t i = 0, size = std::min(value_sizes_[N], uint8_t(sizeof(T))); i < size; i++)
             bytes_[pos + i] = static_cast<IdType>(value >> (8 * i));
     }
     
