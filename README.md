@@ -1,36 +1,50 @@
-# array-fsa
+# CDA_Automata
 
-このライブラリは神田が実験用に作ったもので，オートマトンの配列表現の実装に加えて，「Smaller representation of finite state automata」における*fsa5*と*cfsa2*との比較もおこなえる結構気の利いたライブラリです．
+圧縮文字列辞書をオートマトンで実現し、ダブル配列をベースとしたデータ構造で表現した実験用ライブラリ．
+開発中のため，ご利用は自己責任でお願い致します．
+本ライブラリは「松本,神田,森田,泓田, ダブル配列オートマトンによる圧縮文字列辞書の実装, 情報処理学会IFAT研究会, 2018」の実装になります．
+実装に用いたデータ構造については「松本,神田,森田,泓田, ダブル配列オートマトンの圧縮手法, DEIM, 2018」を参照して下さい．
+
+## 文字列辞書概要
+
+文字列集合と，文字列に対応するIDを保存し双方向の検索を実現するデータ構造．
+プログラム言語のデータ構造でいうと，C++のstd::map, PythonのDictionaryのような機能を実現するものです．
+大規模なデータセットに対しても，実用的なメモリサイズと検索速度で辞書を実現できるようになります．
+本ライブラリは静的な文字列辞書になっており，データセットの入力に対して静的辞書を構築し提供します．
+
+## 導入
+このライブラリはサブモジュールを用いているため，以下のコマンドでクローンして下さい．
+```
+git clone --recursive https://github.com/MatsuTaku/CDA_Automata.git
+```
+または，クローン後に以下のコマンドを実行して下さい．
+```
+git submodule update --init --recursive
+```
 
 ## 開発環境
+ 環境はmacOSを想定しているため，プロジェクト内のスクリプトはMAC上でのコマンドで記述されています．
+ このライブラリを動作させるには以下の環境が必要になります．
+ - CMake: コンパイルに必要
+ - Python3: 「data-sets/create-test-datasets.py」のために必要
+ - gtime：「02-build-fsa-dicts.sh」で必要（参考：https://apple.stackexchange.com/questions/193986/to-install-gnu-time-in-osx）
 
-本ライブラリは環境としてmacOSを想定しています．なので同梱されているシェルスクリプトはMac上でのコマンドを用いて記述しています．ソースコード自体はUnixであれば動くはずです（たぶん）．Windowsは知りません．ちなみに自分はこのライブラリをmacOS Sierra上で作成しました．
-
-このライブラリを動作させるためには，以下の環境が必要になります．
-
-- CMake：神田による実装をコンパイルするのに必要
-- JDK：Dawid Weissによる実装を動作させるために必要（参考：https://eng-entrance.com/java-install-jdk-mac）
-- Python3：「data-sets/create-test-datasets.py」のために必要
-- gtime：「02-build-fsa-dicts.sh」で必要（参考：https://apple.stackexchange.com/questions/193986/to-install-gnu-time-in-osx）
-
+ Optional
+ - JDK: Dawid Weissによる実装を動作させるために必要（参考：https://eng-entrance.com/java-install-jdk-mac）
 
 ## 構成
+ - *.sh：このライブラリで各辞書のベンチマークがとれるまでの処理を一通り記述したスクリプト．順番通り呼び出せばとりあえず結果が得られる．
+ - array-fsa: 神田によるオートマトンの配列表現の実装（C++）
+ - data-sets: ベンチマークに用いるデータセット群．ダウンロードはディレクトリ内のREADMEを参照
+   - ciura-deorowicz/weiss:  「[paper-fsa-compression][pfc]」からの拝借物
+   - kanda: 神田の収集したデータセット
+ - software: 主に比較手法として用いるデータ構造
+   - XOR圧縮を用いたダブル配列トライ: [XOR-Compressed Double-Array Trie][xcdat]
+   - Path decomposition によるトライの圧縮表現: [Path-Decomposed tries][pdt]
+   - Dawid Weissによる圧縮オートマトン表現の実装（Java）: [paper-fsa-compression][pfc]
 
-- *.sh：このライブラリで各オートマトンのベンチマークがとれるまでの処理を一通り記述したスクリプト．順番通り呼び出せばとりあえず結果が得られる．
-- array-fsa：神田によるオートマトンの配列表現の実装（C++）
-- data-sets：ベンチマークに用いるデータセット群
-- software：Dawid Weissによる圧縮オートマトン表現の実装（Java）
+[pfc]: https://github.com/dweiss/paper-fsa-compression
+[xcdat]: https://github.com/kampersanda/xcdat
+[pdt]: https://github.com/ot/path_decomposed_tries
 
-data-setsとsoftwareは，ライブラリ「paper-fsa-compression」（https://github.com/dweiss/paper-fsa-compression）からの拝借物です．data-setsには「\*.dict」と「\*.1000000.rnd_dict」という二種類のデータセットが含まれており，前者が辞書を構築するときに用いるデータセットで，後者が検索時間を測るときに用いるベンチマーク用データセットです．
-
-## おわりに
-
-もっといろいろ説明すべきことはありますが，体力切れなのでREADMEはこれくらいです．シェルスクリプトの内容と神田のソースコードを追えば，このライブラリの具体的な構成はわかるはずです．わからないことがあれば随時聞いて頂ければと思います．
-
-このライブラリを理解するためには，少なくとも以下の論文は読んでおく必要があるでしょう．
-
-- Jan Daciuk, "Experiments with Automata Compression," *CIAA*, 2001.
-- Jan Daciuk and Dawid Weiss, "Smaller representation of finite state automata," *Theoretical Computer Science*, 2012.
-- 前田敦司 and 水島宏太, "オートマトンの圧縮配列表現と言語処理系への応用," *プログラミングシンポジウム*, 2008.
-
-その他に，オートマトンやダブル配列，C++に関する基礎知識が無論必要になりますが，その辺りは並行して習得していけばよいでしょう．
+data-setsには「\*.dict」と「\*.1000000.rnd_dict」という二種類のデータセットが含まれており，前者が辞書を構築するときに用いるデータセットで，後者が検索時間を測るときに用いるベンチマーク用データセットです．
