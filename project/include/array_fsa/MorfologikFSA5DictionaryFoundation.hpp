@@ -15,7 +15,9 @@ namespace array_fsa {
     
     class MorfologikFSA5DictionaryFoundation {
     public:
-        MorfologikFSA5DictionaryFoundation(const MorfologikFSA5 &set);
+        using FSAType = MorfologikFSA5;
+        
+        MorfologikFSA5DictionaryFoundation(const FSAType &set);
         
         MorfologikFSA5DictionaryFoundation(std::istream &is) {
             read(is);
@@ -200,20 +202,26 @@ namespace array_fsa {
     MorfologikFSA5DictionaryFoundation::MorfologikFSA5DictionaryFoundation(const MorfologikFSA5 &set) {
         node_data_length_ = set.node_data_length_;
         
-        std::map<size_t, size_t> words;
+        struct Node {
+            size_t words = 0;
+            size_t destination = 0;
+            std::vector<size_t> parents;
+        };
         
-        const std::function<size_t(size_t)> dfs = [&set, &dfs, &words](size_t state) {
+        std::map<size_t, Node> nodes;
+        
+        const std::function<size_t(size_t)> dfs = [&set, &dfs, &nodes](size_t state) {
             size_t wordsCount = 0;
             for (auto t = set.get_first_trans(state); t != 0; t = set.get_next_trans(t)) {
-                auto it = words.find(t);
-                if (it != words.end()) {
-                    wordsCount += it->second;
+                auto it = nodes.find(t);
+                if (it != nodes.end()) {
+                    wordsCount += it->second.words;
                 } else {
-                    size_t word = dfs(set.get_target_state(t));
+                    size_t words = dfs(set.get_target_state(t));
                     if (set.is_final_trans(t))
-                        word++;
-                    words[t] = word;
-                    wordsCount += word;
+                        words++;
+                    nodes[t].words = words;
+                    wordsCount += words;
                 }
             }
             
@@ -226,13 +234,12 @@ namespace array_fsa {
         auto upperNewSize = set.bytes_.size() + set.get_num_trans() * element_words_lower_size_;
         element_address_size_ = sim_ds::Calc::sizeFitInBytes(upperNewSize);
         
-        std::map<size_t, size_t> mappings;
         for (size_t s = 0, t = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
             size_t paramsAndWords = set.bytes_[s + 1] & 0x07;
-            size_t word = words[s];
-            paramsAndWords |= (word << kNumParams_);
+            size_t words = nodes[s].words;
+            paramsAndWords |= (words << kNumParams_);
             auto sizePW = 1;
-            bool isLargeWords = word >= (1ULL << kElementWordsUpperBitsSize_);
+            bool isLargeWords = words >= (1ULL << kElementWordsUpperBitsSize_);
             if (isLargeWords) {
                 paramsAndWords |= 8U;
                 sizePW += element_words_lower_size_;
@@ -245,22 +252,22 @@ namespace array_fsa {
             std::memcpy(&bytes_[offsetSymbol_(t)], &symbol, kElementSymbolSize_);
             std::memcpy(&bytes_[offsetParams_(t)], &paramsAndWords, sizePW);
             
-            mappings[s] = t;
+            nodes[s].destination = t;
             
             t += elementSize;
         }
         
-        std::map<size_t, std::vector<size_t>> parents;
+//        std::map<size_t, std::vector<size_t>> parents;
         for (size_t t = 0; t < set.bytes_.size(); t = set.skip_trans_(t)) {
-            parents[set.get_target_state(t)].push_back(t);
+            nodes[set.get_target_state(t)].parents.emplace_back(t);
         }
         
         for (size_t state = 0; state < set.bytes_.size(); state = set.skip_trans_(state)) {
-            for (auto parent : parents[state]) {
+            for (auto parent : nodes[state].parents) {
                 if (set.is_next_set_(parent))
                     continue;
                 // Copy target
-                std::memcpy(&bytes_[offsetAddress_(mappings[parent])], &mappings[state], element_address_size_);
+                std::memcpy(&bytes_[offsetAddress_(nodes[parent].destination)], &nodes[state].destination, element_address_size_);
             }
             
             while (!set.is_last_trans(state))

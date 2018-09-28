@@ -37,10 +37,12 @@ namespace {
 int main(int argc, const char* argv[]) {
     auto fsa_name = argv[1];
     auto query_name = argv[2];
-    auto type = *argv[3];
+    auto type = atoi(argv[3]);
     
-    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
-    query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
+//    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
+//    query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
+//    fsa_name = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
+//    query_name = "../../../data-sets/kanda/enwiki-20150205.dict"; type = 10;
 //    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='9';
 //    fsa_name = "../../../results/wikipedia2/wikipedia2.array_ts_fsa";
 //    query_name = "../../../data-sets/weiss/wikipedia2.1000000.rnd_dict"; type='5';
@@ -57,26 +59,28 @@ int main(int argc, const char* argv[]) {
 //    type = '3';
     
     switch (type) {
-        case '0':
+        case 0:
             return bench<OriginalFSA>(fsa_name, query_name);
-        case '1':
+        case 1:
             return bench<DacFSA>(fsa_name, query_name);
-        case '2':
+        case 2:
             return bench<DoubleArrayCFSA<true, true, true, true>>(fsa_name, query_name);
-        case '3':
+        case 3:
             return bench<DoubleArrayCFSA<false, true, true, true>>(fsa_name, query_name);
-        case '4':
+        case 4:
             return bench<DoubleArrayCFSA<true, false, true, true>>(fsa_name, query_name);
-        case '5':
+        case 5:
             return bench<DoubleArrayCFSA<true, true, false, true>>(fsa_name, query_name);
-        case '6':
+        case 6:
             return bench<DoubleArrayCFSA<true, true, true, false>>(fsa_name, query_name);
-        case '7':
+        case 7:
             return bench<XcdatWrapper<false>>(fsa_name, query_name);
-        case '8':
+        case 8:
             return bench<MarisaWrapper>(fsa_name, query_name);
-        case '9':
-            return bench<MorfologikFSA>(fsa_name, query_name);
+        case 9:
+            return bench<MorfologikFSA5Dictionary>(fsa_name, query_name);
+        case 10:
+            return bench<MorfologikCFSA2Dictionary>(fsa_name, query_name);
         default:
             std::cout << "type is not set!" << std::endl;
             return 1;

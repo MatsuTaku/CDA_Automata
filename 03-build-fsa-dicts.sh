@@ -77,13 +77,13 @@ function array_ts_fsa_noCompWo {
 
 
 TOOLS="
-morfologik_fsa5
+morfologik_cfsa2
 "
 #array_ts_fsa
 #xcdat
 #marisa
 #centrp
-#morfologik_cfsa2
+#morfologik_fsa5
 #array_ts_fsa_noCuWo
 #array_ts_fsa_noBro
 #array_ts_fsa_noCompID
@@ -94,11 +94,13 @@ morfologik_fsa5
 DATASET_DIR=data-sets
 
 DATASETS="
-$DATASET_DIR/weiss/wikipedia.dict
 $DATASET_DIR/kanda/enwiki-20150205.dict
 $DATASET_DIR/kanda/jawiki-20150118.dict
 $DATASET_DIR/kanda/indochina-2004.dict
 $DATASET_DIR/kanda/word-over999.dict
+$DATASET_DIR/weiss/pl.dict
+$DATASET_DIR/weiss/wikipedia.dict
+$DATASET_DIR/weiss/wikipedia2.dict
 $DATASET_DIR/ciura-deorowicz/abc.dict
 $DATASET_DIR/ciura-deorowicz/deutsch.dict
 $DATASET_DIR/ciura-deorowicz/dimacs.dict
@@ -120,8 +122,6 @@ $DATASET_DIR/ciura-deorowicz/test.dict
 $DATASET_DIR/ciura-deorowicz/unix_m.dict
 $DATASET_DIR/ciura-deorowicz/unix.dict
 $DATASET_DIR/ciura-deorowicz/webster.dict
-$DATASET_DIR/weiss/pl.dict
-$DATASET_DIR/weiss/wikipedia2.dict
 "
 
 RESULTS_DIR=results

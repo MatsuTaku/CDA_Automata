@@ -3,10 +3,10 @@
 function morfologik_fsa5 {
   ./project/build/bench $1 $2 9 >$1.bench.stdout 2>&1
 }
-#
-#function morfologik_cfsa2 {
-#  ./project/build/bench $1 $2 2 >$1.bench.stdout 2>&1
-#}
+
+function morfologik_cfsa2 {
+  ./project/build/bench $1 $2 10 >$1.bench.stdout 2>&1
+}
 
 function xcdat {
   ./project/build/bench $1 $2 7 >$1.bench.stdout 2>&1
@@ -49,13 +49,13 @@ function array_ts_fsa_noCompWo {
 }
 
 TOOLS="
-array_ts_fsa
-morfologik_fsa5
-xcdat
-centrp
-marisa
+morfologik_cfsa2
 "
-#morfologik_cfsa2
+#array_ts_fsa
+#morfologik_fsa5
+#xcdat
+#centrp
+#marisa
 #array_ts_fsa_noCuWo
 #array_ts_fsa_noBro
 #array_ts_fsa_noCompID
@@ -66,6 +66,7 @@ marisa
 DATASET_DIR=data-sets
 
 DATASETS="
+$DATASET_DIR/kanda/enwiki-20150205.1000000.rnd_dict
 $DATASET_DIR/kanda/jawiki-20150118.1000000.rnd_dict
 $DATASET_DIR/kanda/indochina-2004.1000000.rnd_dict
 $DATASET_DIR/kanda/word-over999.1000000.rnd_dict
@@ -93,7 +94,6 @@ $DATASET_DIR/ciura-deorowicz/test.1000000.rnd_dict
 $DATASET_DIR/ciura-deorowicz/unix_m.1000000.rnd_dict
 $DATASET_DIR/ciura-deorowicz/unix.1000000.rnd_dict
 $DATASET_DIR/ciura-deorowicz/webster.1000000.rnd_dict
-$DATASET_DIR/kanda/enwiki-20150205.1000000.rnd_dict
 "
 
 RESULTS_DIR=results

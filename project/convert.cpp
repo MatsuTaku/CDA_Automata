@@ -6,22 +6,21 @@
 //
 
 #include "array_fsa/MorfologikFSADictionary.hpp"
-#include "array_fsa/MorfologikCFSA2.hpp"
 
 using namespace array_fsa;
 
 namespace {
     
-    void buildMorfologikFSA5Dictionary(const char *setName, const char *dictName) {
+    template<class DictType>
+    void buildMorfologikFSADictionary(const char *setName, const char *dictName) {
         std::ifstream ifs(setName);
         if (!ifs) {
             std::cerr << "Error! File not found: " << setName << std::endl;
         }
-        
-        MorfologikFSA5 mf5;
-        mf5.read(ifs);
-        
-        MorfologikFSADictionary mf5d(mf5);
+        typename DictType::FoundationType::FSAType fsa;
+        fsa.read(ifs);
+        typename DictType::FoundationType foundation(fsa);
+        DictType mf5d(std::move(foundation));
         std::ofstream ofs(dictName);
         mf5d.write(ofs);
     }
@@ -31,17 +30,18 @@ namespace {
 int main(int argc, const char* argv[]) {
     auto setName = argv[1];
     auto dictName = argv[2];
-    auto setType = atoi(argv[3]);
+    int setType = atoi(argv[3]);
     
-//    setName = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
-//    dictName = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
-//    setType = 0;
+//    setName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
+//    dictName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
+//    setType = 1;
     
     switch (setType) {
         case 0:
-            buildMorfologikFSA5Dictionary(setName, dictName);
+            buildMorfologikFSADictionary<MorfologikFSA5Dictionary>(setName, dictName);
             break;
         case 1:
+            buildMorfologikFSADictionary<MorfologikCFSA2Dictionary>(setName, dictName);
             break;
         default:
             std::cerr << "Error setType: " << setType << std::endl;

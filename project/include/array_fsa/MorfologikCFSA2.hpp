@@ -183,6 +183,9 @@ namespace array_fsa {
                 return read_vint_(trans + ((bytes_[trans] & 0x1F) != 0 ? 1 : 2));
             }
         }
+        
+        friend class MorfologikCFSA2DictionaryFoundation;
+        
     };
     
 }

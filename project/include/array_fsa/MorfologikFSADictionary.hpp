@@ -9,13 +9,16 @@
 #define MorfologikFSADictionary_hpp
 
 #include "MorfologikFSA5DictionaryFoundation.hpp"
+#include "MorfologikCFSA2DictionaryFoundation.hpp"
 
 namespace array_fsa {
     
     template<class Foundation>
     class MorfologikFSADictionary {
     public:
-        MorfologikFSADictionary(Foundation &fd) : fd_(fd) {}
+        using FoundationType = Foundation;
+        
+        MorfologikFSADictionary(Foundation &&fd) : fd_(std::move(fd)) {}
         
         MorfologikFSADictionary(std::istream &is) : fd_(Foundation(is)) {}
         
@@ -33,6 +36,12 @@ namespace array_fsa {
             return "MorfologikFSA5Dictionary";
         }
         
+        /**
+         Check a string is stored.
+
+         @param str String to check
+         @return Boolean that a string is stored or not
+         */
         template<typename S>
         bool isMember(const S &str) const;
         
@@ -138,6 +147,11 @@ namespace array_fsa {
         
         return str;
     }
+    
+    
+    
+    using MorfologikFSA5Dictionary = MorfologikFSADictionary<MorfologikFSA5DictionaryFoundation>;
+    using MorfologikCFSA2Dictionary = MorfologikFSADictionary<MorfologikCFSA2DictionaryFoundation>;
     
 }
 
