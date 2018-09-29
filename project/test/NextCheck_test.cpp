@@ -6,7 +6,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "array_fsa/DAFoundation.hpp"
+#include "csd_automata/DAFoundation.hpp"
 
 TEST(NextCheckTest, UseDac) {
     const auto size = 0x1000000;
@@ -23,7 +23,7 @@ TEST(NextCheckTest, UseDac) {
         checkSrc[i] = 1ULL << rndWidth;
     }
     
-    array_fsa::DAFoundation<true, true, true, false, false, false> nc;
+    csd_automata::DAFoundation<true, true, true, false, false, false, false> nc;
     nc.resize(size);
     
     std::vector<bool> isStrIds(size);

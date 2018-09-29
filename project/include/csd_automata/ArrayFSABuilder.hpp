@@ -12,7 +12,7 @@
 
 #include "sim_ds/Log.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class ArrayFSABuilder {
     public:

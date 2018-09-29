@@ -10,7 +10,7 @@
 
 #include "basic.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class ByteData {
         virtual size_t sizeInBytes() const = 0;

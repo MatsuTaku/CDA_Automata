@@ -12,7 +12,7 @@
 #include "StrDictData.hpp"
 #include "StringArrayBuilder.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class StringDict {
         friend class StringDictBuilder;

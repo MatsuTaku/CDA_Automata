@@ -16,16 +16,17 @@
 
 #include "ArrayFSATailBuilder.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class PlainFSA;
     
-    template<bool WORDS_CUMU, bool EDGE_LINK, bool ID_COMP, bool WORDS_COMP>
+    template<bool WORDS_CUMU, bool EDGE_LINK, bool ID_COMP, bool WORDS_COMP, bool NEEDS_ACCESS>
     class DoubleArrayCFSA : ByteData {
     public:
         static constexpr bool useCumulativeWords = WORDS_CUMU;
         static constexpr bool shouldCompressID= ID_COMP;
         static constexpr bool shouldCompressWords = WORDS_COMP;
+        static constexpr bool isPossibleAccess = NEEDS_ACCESS;
     public:
         DoubleArrayCFSA() = default;
         
@@ -51,7 +52,7 @@ namespace array_fsa {
         static constexpr bool useBinaryLabel = false;
         static constexpr size_t searchError = -1;
         
-        using fd_type = DAFoundation<false, true, shouldCompressID, true, shouldCompressWords, useCumulativeWords>;
+        using fd_type = DAFoundation<false, true, shouldCompressID, true, shouldCompressWords, useCumulativeWords, isPossibleAccess>;
         using sa_type = StringArray<useBinaryLabel>;
         
     public:
@@ -243,11 +244,11 @@ namespace array_fsa {
             strings_ = std::move(sArr);
         }
         
-        void setStore(size_t index, size_t store) {
+        void setWords(size_t index, size_t store) {
             fd_.setWords(index, store);
         }
         
-        void setAccStore(size_t index, size_t as) {
+        void setCumWords(size_t index, size_t as) {
             fd_.setCumWords(index, as);
         }
         
@@ -278,8 +279,8 @@ namespace array_fsa {
     };
     
     
-    template<bool C, bool E, bool I, bool W>
-    void DoubleArrayCFSA<C, E, I, W>::build(const PlainFSA &fsa) {
+    template<bool C, bool E, bool I, bool W, bool NA>
+    void DoubleArrayCFSA<C, E, I, W, NA>::build(const PlainFSA &fsa) {
         const auto shouldMergeSuffix = false;
         ArrayFSATailBuilder builder(fsa);
         builder.ArrayFSATailBuilder::build(useBinaryLabel, shouldMergeSuffix);
@@ -303,9 +304,10 @@ namespace array_fsa {
                 else
                     setCheck(i, builder.getCheck_(i));
                 
-                setStore(i, builder.getStore_(i));
+                if constexpr (NA)
+                    setWords(i, builder.getStore_(i));
                 if constexpr (C)
-                    setAccStore(i, builder.getAccStore_(i));
+                    setCumWords(i, builder.getAccStore_(i));
                 
                 if constexpr (E) {
                     bool hasBro = builder.hasBrother_(i);
@@ -329,8 +331,8 @@ namespace array_fsa {
         
     }
     
-    template<bool C, bool E, bool I, bool W>
-    bool DoubleArrayCFSA<C, E, I, W>::isMember(const std::string &str) const {
+    template<bool C, bool E, bool I, bool W, bool NA>
+    bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string &str) const {
         size_t trans = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {
             uint8_t c = str[pos];
@@ -350,8 +352,8 @@ namespace array_fsa {
         return isFinal(trans);
     }
     
-    template<bool C, bool E, bool I, bool W>
-    size_t DoubleArrayCFSA<C, E, I, W>::lookup(const std::string &str) const {
+    template<bool C, bool E, bool I, bool W, bool NA>
+    size_t DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string &str) const {
         size_t trans = 0;
         size_t counter = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {
@@ -416,8 +418,8 @@ namespace array_fsa {
         return isFinal(trans) ? ++counter : searchError;
     }
     
-    template<bool C, bool E, bool I, bool W>
-    std::string DoubleArrayCFSA<C, E, I, W>::access(size_t key) const {
+    template<bool C, bool E, bool I, bool W, bool NA>
+    std::string DoubleArrayCFSA<C, E, I, W, NA>::access(size_t key) const {
         size_t trans = 0;
         size_t counter = key;
         std::string str = "";

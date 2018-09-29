@@ -7,7 +7,7 @@
 
 #include "basic.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class MorfologikFSA5 {
     public:

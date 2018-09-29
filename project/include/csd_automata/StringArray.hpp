@@ -14,12 +14,12 @@
 
 #include "sim_ds/BitVector.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     template<bool BINARY = false>
     class StringArray : ByteData {
     public:
-        // MARK: - Constructor
+        // MARK: Constructor
         
         StringArray() = default;
         
@@ -40,7 +40,7 @@ namespace array_fsa {
         
         ~StringArray() = default;
         
-        // MARK: - Copy guard
+        // MARK: Copy guard
         
         StringArray(const StringArray&) = delete;
         StringArray& operator=(const StringArray&) = delete;
@@ -55,7 +55,7 @@ namespace array_fsa {
         static constexpr uint8_t kEndLabel = '\0';
         
     public:
-        // MARK: - Property
+        // MARK: Property
         
         uint8_t operator[](size_t index) const {
             return bytes_[index];
@@ -94,7 +94,7 @@ namespace array_fsa {
             return bytes_.size();
         }
         
-        // MARK: - ByteData method
+        // MARK: IO
         
         size_t sizeInBytes() const override {
             auto size = size_vec(bytes_);
@@ -115,7 +115,7 @@ namespace array_fsa {
                 boundary_flags_.read(is);
         }
         
-        // MARK: - Show status
+        // MARK: Show status
         
         void showLabels(int from, int to) const {
             for (auto i = from; i <= to; i++) {

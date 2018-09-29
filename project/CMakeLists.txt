@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(array_fsa)
+project(csd_automata)
 
 set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_FLAGS "-Wall -std=c++1z")
@@ -16,49 +16,51 @@ message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
 set(IncludeDir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-file(GLOB HEADER_FILES ${IncludeDir}/array_fsa.hpp ${IncludeDir}/array_fsa/*.hpp)
+file(GLOB HEADER_FILES ${IncludeDir}/array_fsa.hpp ${IncludeDir}/csd_automata/*.hpp)
 
 # Build Interface Library
-add_library(ArrayFSA INTERFACE)
-target_sources(ArrayFSA INTERFACE ${HEADER_FILES})
-target_include_directories(ArrayFSA INTERFACE ${IncludeDir})
+add_library(CSDAutomata STATIC ${IncludeDir}/array_fsa.cpp)
+target_sources(CSDAutomata PRIVATE ${HEADER_FILES})
+target_include_directories(CSDAutomata PUBLIC ${IncludeDir})
 
 add_subdirectory(lib/SimDS)
-target_link_libraries(ArrayFSA INTERFACE sim_ds)
+target_link_libraries(CSDAutomata PUBLIC sim_ds)
 #get_target_property(SimDS_INCLUDE_DIR sim_ds PROPERTY ${INTERFACE_INCLUDE_DIRECTORIES})
+#target_include_directories(CSDAutomata PRIVATE ${SimDS_INCLUDE_DIR})
 
 link_directories(/usr/local/lib)
-include_directories(/usr/local/include)
+#include_directories(/usr/local/include)
+
 
 add_executable(test_PlainFSA test_PlainFSA.cpp)
-target_link_libraries(test_PlainFSA ArrayFSA)
+target_link_libraries(test_PlainFSA CSDAutomata)
 
 file(GLOB wrappers XcdatWrapper.hpp)
 
 add_executable(bench bench.cpp FsaTools.hpp ${wrappers})
-target_link_libraries(bench ArrayFSA xcdat marisa)
+target_link_libraries(bench CSDAutomata xcdat marisa)
 
 add_executable(build build.cpp FsaGenerator.hpp)
-target_link_libraries(build ArrayFSA)
+target_link_libraries(build CSDAutomata)
 
 add_executable(convert convert.cpp)
-target_link_libraries(convert ArrayFSA)
+target_link_libraries(convert CSDAutomata)
 
 add_executable(makefsa makefsa.cpp FsaGenerator.hpp)
-target_link_libraries(makefsa ArrayFSA)
+target_link_libraries(makefsa CSDAutomata)
 
 add_executable(build_array build_array.cpp)
-target_link_libraries(build_array ArrayFSA)
+target_link_libraries(build_array CSDAutomata)
 
 
 # Build Static Library for Development on Xcode
-add_library(ArrayFSA_dev STATIC ${IncludeDir}/array_fsa.cpp ${HEADER_FILES})
-include_directories(${IncludeDir})
-target_link_libraries(ArrayFSA_dev PRIVATE sim_ds)
+#add_library(CSDAutomata_dev STATIC ${IncludeDir}/array_fsa.cpp ${HEADER_FILES})
+#include_directories(${IncludeDir})
+#target_link_libraries(CSDAutomata_dev PRIVATE sim_ds)
 
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
-	message(STATUS "Enable test ArrayFSA")
+	message(STATUS "Enable test CSDAutomata")
 	enable_testing()
 	add_subdirectory(test)
 endif()

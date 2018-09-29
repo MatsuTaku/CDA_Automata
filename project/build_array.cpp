@@ -6,9 +6,9 @@
 //
 
 #include <stdio.h>
-#include "array_fsa/DoubleArrayCFSA.hpp"
+#include "csd_automata/DoubleArrayCFSA.hpp"
 
-using namespace array_fsa;
+using namespace csd_automata;
 
 namespace {
     
@@ -18,7 +18,7 @@ namespace {
         if (!ifs) {
             std::cout << "File not found: " << dataName << std::endl;
         }
-        DoubleArrayCFSA<true, true, true, true> fsa;
+        DoubleArrayCFSA<true, true, true, true, true> fsa;
         fsa.read(ifs);
         std::ofstream ofs(arrayName);
         std::cout << "...written: " << arrayName << std::endl;

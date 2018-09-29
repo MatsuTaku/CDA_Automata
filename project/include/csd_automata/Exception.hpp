@@ -10,7 +10,7 @@
 
 #include "basic.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class DataNotFoundException : std::exception {
     public:

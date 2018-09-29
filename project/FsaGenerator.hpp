@@ -8,15 +8,15 @@
 #ifndef FsaGenerator_hpp
 #define FsaGenerator_hpp
 
-#include "array_fsa/PlainFSABuilder.hpp"
-#include "array_fsa/PlainFSA.hpp"
-#include "array_fsa/ArrayFSABuilder.hpp"
-#include "array_fsa/ArrayFSATailBuilder.hpp"
-#include "array_fsa/DoubleArrayFSA.hpp"
+#include "csd_automata/PlainFSABuilder.hpp"
+#include "csd_automata/PlainFSA.hpp"
+#include "csd_automata/ArrayFSABuilder.hpp"
+#include "csd_automata/ArrayFSATailBuilder.hpp"
+#include "csd_automata/DoubleArrayFSA.hpp"
 
-#include "array_fsa/Exception.hpp"
+#include "csd_automata/Exception.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class PlainFsaGenerator {
     public:

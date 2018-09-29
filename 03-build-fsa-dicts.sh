@@ -55,6 +55,11 @@ function array_ts_fsa {
   ./project/build/build $1 $2 $3 3 >$3.stdout 2>&1
 }
 
+function array_ts_fsa_lookup {
+  $TIME_CMD -f $TIME_FMT -o $2.log \
+  ./project/build/build $1 $2 $3 8 >$3.stdout 2>&1
+}
+
 function array_ts_fsa_noCuWo {
   $TIME_CMD -f $TIME_FMT -o $2.log \
   ./project/build/build $1 $2 $3 4 >$3.stdout 2>&1
@@ -77,13 +82,14 @@ function array_ts_fsa_noCompWo {
 
 
 TOOLS="
-morfologik_cfsa2
+array_ts_fsa_lookup
 "
 #array_ts_fsa
 #xcdat
 #marisa
 #centrp
 #morfologik_fsa5
+#morfologik_cfsa2
 #array_ts_fsa_noCuWo
 #array_ts_fsa_noBro
 #array_ts_fsa_noCompID

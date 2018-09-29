@@ -15,9 +15,9 @@
 #include "sim_ds/DacVector.hpp"
 #include "sim_ds/Calc.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
-    template<bool COMP_NEXT, bool COMP_CHECK, bool COMP_ID, bool FOR_DICT, bool COMP_WORDS, bool USE_CUMU_WORDS>
+    template<bool COMP_NEXT, bool COMP_CHECK, bool COMP_ID, bool FOR_DICT, bool COMP_WORDS, bool USE_CUMU_WORDS, bool NEEDS_ACCESS>
     class DAFoundation : ByteData {
     public:
         static constexpr bool useNextCodes = COMP_NEXT;
@@ -25,7 +25,7 @@ namespace array_fsa {
         
     private:
         static constexpr size_t kFixedBits = 8;
-        static constexpr size_t kFixedBitsStores = 4;
+        static constexpr size_t kFixedBitsWords = NEEDS_ACCESS ? 4 : 0;
         enum ElementNumber {
             ENNext = 0,
             ENCheck = 1,
@@ -91,13 +91,14 @@ namespace array_fsa {
         
         size_t words(size_t index) const {
             assert(FOR_DICT);
+            assert(NEEDS_ACCESS);
             if constexpr (COMP_WORDS) {
-                auto words = elements_.get<ENWords, uint8_t>(index) & 0x0f;
+                size_t words = elements_.get<ENWords, uint8_t>(index) & 0x0f;
                 if (!wordsLinkBits_[index])
                     return words;
                 else {
                     auto rank = wordsLinkBits_.rank(index);
-                    return words | (wordsFlow_[rank] << kFixedBitsStores);
+                    return words | (wordsFlow_[rank] << kFixedBitsWords);
                 }
             } else {
                 return elements_.get<ENWords, size_t>(index);
@@ -107,17 +108,29 @@ namespace array_fsa {
         size_t cumWords(size_t index) const {
             assert(FOR_DICT);
             assert(USE_CUMU_WORDS);
+            
             if constexpr (COMP_WORDS) {
-                auto cw = elements_.get<ENWords, uint8_t>(index) >> kFixedBitsStores;
-                if (!cumWordsLinkBits_[index])
-                    return cw;
-                else {
-                    auto rank = cumWordsLinkBits_.rank(index);
-                    return cw | (cumWordsFlow_[rank] << kFixedBitsStores);
+                if constexpr (NEEDS_ACCESS) {
+                    size_t cw = elements_.get<ENCWords, uint8_t>(index) >> kFixedBitsWords;
+                    if (!cumWordsLinkBits_[index])
+                        return cw;
+                    else {
+                        auto rank = cumWordsLinkBits_.rank(index);
+                        return cw | (cumWordsFlow_[rank] << kFixedBitsWords);
+                    }
+                } else {
+                    size_t cw = elements_.get<ENCWords, uint8_t>(index);
+                    if (!cumWordsLinkBits_[index])
+                        return cw;
+                    else {
+                        auto rank = cumWordsLinkBits_.rank(index);
+                        return cw | (cumWordsFlow_[rank] << kFixedBits);
+                    }
                 }
             } else {
                 return elements_.get<ENCWords, size_t>(index);
             }
+            
         }
         
         size_t numElements() const {
@@ -126,17 +139,11 @@ namespace array_fsa {
         
         // MARK: - build
         
-        void setNext(size_t index, size_t next) {
-            if constexpr (!COMP_NEXT)
-                next <<= (COMP_ID ? 2 : 1);
-            elements_.set<ENNext>(index, next);
-            
-            if constexpr (!COMP_NEXT) return;
-            auto flow = next >> kFixedBits;
-            bool hasFlow = flow > 0;
-            nextLinkBits_.set(index, hasFlow);
-            if (hasFlow)
-                nextFlowSrc_.push_back(flow);
+        void setIsFinal(size_t index, bool isFinal) {
+            assert(!useNextCodes);
+            auto value = elements_.get<ENNext, uint8_t>(index);
+            value = (value & ~(1)) | isFinal;
+            elements_.set<ENNext>(index, value);
         }
         
         void setIsString(size_t index, bool isStr) {
@@ -150,11 +157,17 @@ namespace array_fsa {
             }
         }
         
-        void setIsFinal(size_t index, bool isFinal) {
-            assert(!useNextCodes);
-            auto value = elements_.get<ENNext, uint8_t>(index);
-            value = (value & ~(1)) | isFinal;
-            elements_.set<ENNext>(index, value);
+        void setNext(size_t index, size_t next) {
+            if constexpr (!COMP_NEXT)
+                next <<= (COMP_ID ? 2 : 1);
+            elements_.set<ENNext>(index, next);
+            
+            if constexpr (!COMP_NEXT) return;
+            auto flow = next >> kFixedBits;
+            bool hasFlow = flow > 0;
+            nextLinkBits_.set(index, hasFlow);
+            if (hasFlow)
+                nextFlowSrc_.emplace_back(flow);
         }
         
         void setCheck(size_t index, uint8_t check) {
@@ -170,20 +183,21 @@ namespace array_fsa {
             if constexpr (COMP_ID)
                 checkLinkBits_.set(index, hasFlow);
             if (!COMP_ID || hasFlow)
-                checkFlowSrc_.push_back(flow);
+                checkFlowSrc_.emplace_back(flow);
         }
         
         void setWords(size_t index, size_t words) {
             assert(FOR_DICT);
+            assert(NEEDS_ACCESS);
             
             if constexpr (COMP_WORDS) {
                 auto base = elements_.get<ENWords, uint8_t>(index) & 0xf0;
                 elements_.set<ENWords>(index, base | (words & 0x0f));
-                auto flow = words >> kFixedBitsStores;
+                auto flow = words >> kFixedBitsWords;
                 bool hasFlow = flow > 0;
                 wordsLinkBits_.set(index, hasFlow);
                 if (hasFlow)
-                    storeFlowSrc_.push_back(flow);
+                    wordsFlowSrc_.emplace_back(flow);
             } else {
                 elements_.set<ENWords>(index, words);
             }
@@ -194,13 +208,22 @@ namespace array_fsa {
             assert(USE_CUMU_WORDS);
             
             if constexpr (COMP_WORDS) {
-                auto base = elements_.get<ENWords, uint8_t>(index) & 0x0f;
-                elements_.set<ENWords>(index, base | ((cw & 0x0f) << kFixedBitsStores));
-                auto flow = cw >> kFixedBitsStores;
-                bool hasFlow = flow > 0;
-                cumWordsLinkBits_.set(index, hasFlow);
-                if (hasFlow)
-                    accStoreFlowSrc_.push_back(flow);
+                if constexpr (NEEDS_ACCESS) {
+                    auto base = elements_.get<ENCWords, uint8_t>(index) & 0x0f;
+                    elements_.set<ENCWords>(index, base | ((cw & 0x0f) << kFixedBitsWords));
+                    auto flow = cw >> kFixedBitsWords;
+                    bool hasFlow = flow > 0;
+                    cumWordsLinkBits_.set(index, hasFlow);
+                    if (hasFlow)
+                        cumWordsFlowSrc_.emplace_back(flow);
+                } else {
+                    elements_.set<ENCWords>(index, cw & 0xFF);
+                    auto flow = cw >> kFixedBits;
+                    bool hasFlow = flow > 0;
+                    cumWordsLinkBits_.set(index, hasFlow);
+                    if (hasFlow)
+                        cumWordsFlowSrc_.emplace_back(flow);
+                }
             } else {
                 elements_.set<ENCWords>(index, cw);
             }
@@ -215,10 +238,11 @@ namespace array_fsa {
             std::vector<size_t> sizes = { COMP_NEXT ? 1 : nextSize, 1 };
             if constexpr (FOR_DICT) {
                 if constexpr (COMP_WORDS) {
+                    sizes.push_back(NEEDS_ACCESS ? 1 : 0);
                     sizes.push_back(1);
                 } else {
                     auto wordsSize = sim_ds::Calc::sizeFitInBytes(words);
-                    sizes.push_back(wordsSize);
+                    sizes.push_back(NEEDS_ACCESS ? wordsSize : 0);
                     sizes.push_back(wordsSize);
                 }
             }
@@ -227,7 +251,8 @@ namespace array_fsa {
             if (COMP_NEXT) nextLinkBits_.resize(size);
             if (COMP_CHECK) checkLinkBits_.resize(size);
             if (FOR_DICT && COMP_WORDS) {
-                wordsLinkBits_.resize(size);
+                if (NEEDS_ACCESS)
+                    wordsLinkBits_.resize(size);
                 cumWordsLinkBits_.resize(size);
             }
         }
@@ -242,13 +267,14 @@ namespace array_fsa {
             if constexpr (COMP_CHECK) {
                 checkLinkBits_.build();
                 checkFlow_ = sim_ds::Vector(checkFlowSrc_);
-                //                checkFlow_.build();
             }
             if constexpr (FOR_DICT) {
-                wordsLinkBits_.build();
-                wordsFlow_ = sim_ds::Vector(storeFlowSrc_);
+                if constexpr (NEEDS_ACCESS) {
+                    wordsLinkBits_.build();
+                    wordsFlow_ = sim_ds::Vector(wordsFlowSrc_);
+                }
                 cumWordsLinkBits_.build();
-                cumWordsFlow_ = sim_ds::Vector(accStoreFlowSrc_);
+                cumWordsFlow_ = sim_ds::Vector(cumWordsFlowSrc_);
             }
         }
         
@@ -265,8 +291,10 @@ namespace array_fsa {
                 size += checkFlow_.sizeInBytes();
             }
             if constexpr (FOR_DICT && COMP_WORDS) {
-                size += wordsLinkBits_.sizeInBytes();
-                size += wordsFlow_.sizeInBytes();
+                if constexpr (NEEDS_ACCESS) {
+                    size += wordsLinkBits_.sizeInBytes();
+                    size += wordsFlow_.sizeInBytes();
+                }
                 if constexpr (USE_CUMU_WORDS) {
                     size += cumWordsLinkBits_.sizeInBytes();
                     size += cumWordsFlow_.sizeInBytes();
@@ -275,7 +303,7 @@ namespace array_fsa {
             return size;
         }
         
-        void write(std::ostream& os) const override {
+        void write(std::ostream &os) const override {
             elements_.write(os);
             if constexpr (COMP_NEXT) {
                 nextLinkBits_.write(os);
@@ -286,8 +314,10 @@ namespace array_fsa {
                 checkFlow_.write(os);
             }
             if constexpr (FOR_DICT && COMP_WORDS) {
-                wordsLinkBits_.write(os);
-                wordsFlow_.write(os);
+                if constexpr (NEEDS_ACCESS) {
+                    wordsLinkBits_.write(os);
+                    wordsFlow_.write(os);
+                }
                 if constexpr (USE_CUMU_WORDS) {
                     cumWordsLinkBits_.write(os);
                     cumWordsFlow_.write(os);
@@ -295,7 +325,7 @@ namespace array_fsa {
             }
         }
         
-        void read(std::istream& is) override {
+        void read(std::istream &is) override {
             elements_.read(is);
             if constexpr (COMP_NEXT) {
                 nextLinkBits_.read(is);
@@ -306,8 +336,10 @@ namespace array_fsa {
                 checkFlow_ = sim_ds::Vector(is);
             }
             if constexpr (FOR_DICT && COMP_WORDS) {
-                wordsLinkBits_.read(is);
-                wordsFlow_ = sim_ds::Vector(is);
+                if constexpr (NEEDS_ACCESS) {
+                    wordsLinkBits_.read(is);
+                    wordsFlow_ = sim_ds::Vector(is);
+                }
                 if constexpr (USE_CUMU_WORDS) {
                     cumWordsLinkBits_.read(is);
                     cumWordsFlow_ = sim_ds::Vector(is);
@@ -335,14 +367,14 @@ namespace array_fsa {
         // For build
         std::vector<size_t> nextFlowSrc_;
         std::vector<size_t> checkFlowSrc_;
-        std::vector<size_t> storeFlowSrc_;
-        std::vector<size_t> accStoreFlowSrc_;
+        std::vector<size_t> wordsFlowSrc_;
+        std::vector<size_t> cumWordsFlowSrc_;
         
     };
     
     
-    template<bool N, bool C, bool CI, bool D, bool W, bool CW>
-    void DAFoundation<N, C, CI, D, W, CW>::showStatus(std::ostream &os) const {
+    template<bool N, bool C, bool CI, bool D, bool W, bool CW, bool NA>
+    void DAFoundation<N, C, CI, D, W, CW, NA>::showStatus(std::ostream &os) const {
         using std::endl;
         auto codesName = [=](bool use) {
             return use ? "DACs" : "Plain";
@@ -353,15 +385,25 @@ namespace array_fsa {
         os << "size next:   " << numElements() * elements_.valueSize(ENNext) + nextLinkBits_.sizeInBytes() +  nextFlow_.sizeInBytes() << endl;
         os << "size check:   " << numElements() + checkLinkBits_.sizeInBytes() + checkFlow_.sizeInBytes() << endl;
         if constexpr (D) {
-            os << "size store:   " << numElements() / 2 + wordsLinkBits_.sizeInBytes() + wordsFlow_.sizeInBytes() << endl;
-            os << "size accStore flow:   " << numElements() / 2 + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes() << endl;
+            if constexpr (NA) {
+                size_t wordsSize;
+                if constexpr (CW) {
+                    wordsSize = numElements() / 2 + wordsLinkBits_.sizeInBytes() + wordsFlow_.sizeInBytes();
+                } else {
+                    wordsSize = numElements() * elements_.valueSize(ENWords);
+                }
+                os << "size words:   " << wordsSize << endl;
+            }
+            size_t cWordsSize = CW ? (numElements() + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes()) : (numElements() * elements_.valueSize(ENCWords));
+            os << "size cumWords:   " << cWordsSize << endl;
+            
             os << "---  ---" << endl;
         }
         //        showSizeMap(os);
     }
     
-    template<bool N, bool C, bool CI, bool D, bool W, bool CW>
-    void DAFoundation<N, C, CI, D, W, CW>::showSizeMap(std::ostream &os) const {
+    template<bool N, bool C, bool CI, bool D, bool W, bool CW, bool NA>
+    void DAFoundation<N, C, CI, D, W, CW, NA>::showSizeMap(std::ostream &os) const {
         auto numElem = numElements();
         std::vector<size_t> nexts(numElem);
         for (auto i = 0; i < numElem; i++)

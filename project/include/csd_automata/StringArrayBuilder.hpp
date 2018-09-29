@@ -10,7 +10,7 @@
 
 #include "sim_ds/BitVector.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class StringArrayBuilder {
     public:

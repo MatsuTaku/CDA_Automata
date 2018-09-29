@@ -5,11 +5,11 @@
 #include <cassert>
 #include <iostream>
 
-#include "array_fsa/PlainFSABuilder.hpp"
+#include "csd_automata/PlainFSABuilder.hpp"
 
 #include <unistd.h>
 
-using namespace array_fsa;
+using namespace csd_automata;
 using namespace std;
 
 namespace {

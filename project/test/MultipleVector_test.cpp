@@ -6,7 +6,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "array_fsa/MultipleVector.hpp"
+#include "csd_automata/MultipleVector.hpp"
 
 TEST(MultipleVectorTest, Convert) {
     const auto size = 0x10000;
@@ -23,7 +23,7 @@ TEST(MultipleVectorTest, Convert) {
         checkSrc[i] = 1ULL << rndWidth;
     }
     
-    array_fsa::MultipleVector fva;
+    csd_automata::MultipleVector fva;
     fva.setValueSize(0, 8);
     fva.setValueSize(1, 8);
     fva.resize(size);

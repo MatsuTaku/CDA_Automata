@@ -1,13 +1,13 @@
-//
+// ArrayFSA
 //  convert.cpp
 //  ArrayFSA_dev
 //
 //  Created by 松本拓真 on 2018/09/24.
 //
 
-#include "array_fsa/MorfologikFSADictionary.hpp"
+#include "csd_automata/MorfologikFSADictionary.hpp"
 
-using namespace array_fsa;
+using namespace csd_automata;
 
 namespace {
     

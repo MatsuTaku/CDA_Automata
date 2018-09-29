@@ -8,11 +8,11 @@
 #ifndef array_fsa_hpp
 #define array_fsa_hpp
 
-#include "array_fsa/DoubleArrayFSA.hpp"
-#include "array_fsa/DoubleArrayCFSA.hpp"
-#include "array_fsa/MorfologikFSADictionary.hpp"
+#include "csd_automata/DoubleArrayFSA.hpp"
+#include "csd_automata/DoubleArrayCFSA.hpp"
+#include "csd_automata/MorfologikFSADictionary.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     using OriginalFSA = DoubleArrayFSA<false>;
     using DacFSA = DoubleArrayFSA<true>;

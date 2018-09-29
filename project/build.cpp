@@ -4,7 +4,7 @@
 #include "array_fsa.hpp"
 #include "FsaGenerator.hpp"
 
-using namespace array_fsa;
+using namespace csd_automata;
 
 int main(int argc, const char *argv[]) {
     auto data_name = argv[1];
@@ -15,6 +15,7 @@ int main(int argc, const char *argv[]) {
 //    data_name = "../../../data-sets/weiss/wikipedia.dict";
 //    plain_fsa_name = "../../../results/wikipedia/wikipedia.plain";
 //    fsa_name = "../../../results/wikipedia/wikipedia.fsa";
+//    fsa_type = '8';
 //    data_name = "../../../data-sets/weiss/wikipedia2.dict";
 //    plain_fsa_name = "../../../results/wikipedia2/wikipedia2.plain";
 //    fsa_name = "../../../results/wikipedia2/wikipedia2.sample";
@@ -42,15 +43,17 @@ int main(int argc, const char *argv[]) {
         case '2':
             return FsaGenerator<DacFSA>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '3':
-            return FsaGenerator<DoubleArrayCFSA<true, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+            return FsaGenerator<DoubleArrayCFSA<true, true, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '4':
-            return FsaGenerator<DoubleArrayCFSA<false, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+            return FsaGenerator<DoubleArrayCFSA<false, true, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '5':
-            return FsaGenerator<DoubleArrayCFSA<true, false, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+            return FsaGenerator<DoubleArrayCFSA<true, false, true, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '6':
-            return FsaGenerator<DoubleArrayCFSA<true, true, false, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+            return FsaGenerator<DoubleArrayCFSA<true, true, false, true, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
         case '7':
-            return FsaGenerator<DoubleArrayCFSA<true, true, true, false>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+            return FsaGenerator<DoubleArrayCFSA<true, true, true, false, true>>::buildFSA(data_name, plain_fsa_name, fsa_name);
+        case '8':
+            return FsaGenerator<DoubleArrayCFSA<true, false, true, true, false>>::buildFSA(data_name, plain_fsa_name, fsa_name);
         default:
             std::cout << "Error: fsa_type is not set!" << std::endl;
             return 1;

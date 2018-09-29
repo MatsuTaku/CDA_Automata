@@ -16,7 +16,7 @@
 #include "StringDict.hpp"
 #include "PlainFSA.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class StringDictBuilder {
     public:

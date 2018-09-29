@@ -22,7 +22,7 @@
 #include <limits>
 #include <chrono>
 
-namespace array_fsa {
+namespace csd_automata {
     
     class Stopwatch {
     public:

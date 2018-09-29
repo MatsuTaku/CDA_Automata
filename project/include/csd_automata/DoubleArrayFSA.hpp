@@ -15,7 +15,7 @@
 
 #include "ArrayFSABuilder.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class PlainFSA;
     
@@ -43,7 +43,7 @@ namespace array_fsa {
         
     public:
         static constexpr bool useCodes = N;
-        using nc_type = DAFoundation<N, false, false, false, false, false>;
+        using nc_type = DAFoundation<N, false, false, false, false, false, false>;
         
     public:
         static std::string name() {

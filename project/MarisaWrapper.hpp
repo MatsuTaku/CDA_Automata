@@ -10,7 +10,7 @@
 
 #include "marisa/trie.h"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class MarisaWrapper {
     public:

@@ -32,6 +32,10 @@ function array_ts_fsa {
   ./project/build/bench $1 $2 2 >$1.bench.stdout 2>&1
 }
 
+function array_ts_fsa_lookup {
+  ./project/build/bench $1 $2 11 >$1.bench.stdout 2>&1
+}
+
 function array_ts_fsa_noCuWo {
   ./project/build/bench $1 $2 3 >$1.bench.stdout 2>&1
 }
@@ -49,10 +53,11 @@ function array_ts_fsa_noCompWo {
 }
 
 TOOLS="
-morfologik_cfsa2
+array_ts_fsa_lookup
 "
 #array_ts_fsa
 #morfologik_fsa5
+#morfologik_cfsa2
 #xcdat
 #centrp
 #marisa

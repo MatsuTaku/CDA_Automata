@@ -6,10 +6,10 @@
 #define ARRAY_FSA_FSATOOLS_HPP
 
 #include "array_fsa.hpp"
-#include "array_fsa/Exception.hpp"
+#include "csd_automata/Exception.hpp"
 #include "MarisaWrapper.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class KeySet {
     public:
@@ -48,20 +48,18 @@ namespace array_fsa {
         
     };
     
-    class FsaTools {
-    public:
-        FsaTools() = delete;
+    namespace bench {
         
         template <class T>
         static T getFSAFrom(const char *fsaName);
         
         template <class T>
-        static void measureBenchmark(const T &fsa, const char *queryName, int runs = 1);
+        static void measureBenchmark(const T &fsa, const char *queryName, int runs, bool needsAccess);
         
     };
     
     template <class T>
-    T FsaTools::getFSAFrom(const char *fsaName) {
+    T bench::getFSAFrom(const char *fsaName) {
         std::ifstream ifs(fsaName);
         if (!ifs)
             throw DataNotFoundException(fsaName);
@@ -70,12 +68,12 @@ namespace array_fsa {
     }
     
     template <>
-    MarisaWrapper FsaTools::getFSAFrom(const char *fsaName) {
+    MarisaWrapper bench::getFSAFrom(const char *fsaName) {
         return MarisaWrapper(fsaName);
     }
     
     template <class T>
-    void FsaTools::measureBenchmark(const T &fsa, const char *queryName, int runs) {
+    void bench::measureBenchmark(const T &fsa, const char *queryName, int runs, bool needsAccess) {
         const auto &strs = KeySet::getKeySets(queryName);
         auto num = strs.size();
         auto ng = 0;
@@ -113,29 +111,31 @@ namespace array_fsa {
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
-        sw = Stopwatch();
-        for (auto r = 0; r < runs; r++) {
-            ng = 0;
-            for (auto i = 0; i < strs.size(); i++) {
-                auto &needs = strs[i];
-                const auto &getStr = fsa.access(values[i]);
-                if (getStr != needs)
-                    ng++;
+        if (needsAccess) {
+            sw = Stopwatch();
+            for (auto r = 0; r < runs; r++) {
+                ng = 0;
+                for (auto i = 0; i < strs.size(); i++) {
+                    auto &needs = strs[i];
+                    const auto &getStr = fsa.access(values[i]);
+                    if (getStr != needs)
+                        ng++;
+                }
             }
+            if (ng > 0)
+                fsa.printForDebug(std::cout);
+            mSec = sw.get_micro_sec();
+            std::cout << "------" << std::endl;
+            std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
+            std::cout << "OK: " << num - ng << std::endl;
+            std::cout << "NG: " << ng << std::endl;
         }
-        if (ng > 0)
-            fsa.printForDebug(std::cout);
-        mSec = sw.get_micro_sec();
-        std::cout << "------" << std::endl;
-        std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
-        std::cout << "OK: " << num - ng << std::endl;
-        std::cout << "NG: " << ng << std::endl;
         
         fsa.showStatus(std::cout);
     }
     
     template <>
-    void FsaTools::measureBenchmark(const MarisaWrapper &fsa, const char *queryName, int runs) {
+    void bench::measureBenchmark(const MarisaWrapper &fsa, const char *queryName, int runs, bool needsAccess) {
         marisa::Keyset keyset;
         KeySet::setMarisaKeyset(queryName, &keyset);
         auto num = keyset.size();
@@ -164,22 +164,24 @@ namespace array_fsa {
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
-        sw = Stopwatch();
-        for (auto r = 0; r < runs; r++) {
-            ng = 0;
-            for (auto i = 0; i < keyset.size(); i++) {
-                agent.set_query(values[i]);
-                fsa.access(agent);
-                if (agent.key().length() != keyset[i].length() ||
-                    std::memcmp(agent.key().ptr(), keyset[i].ptr(), agent.key().length()) != 0)
-                    ng++;
+        if (needsAccess) {
+            sw = Stopwatch();
+            for (auto r = 0; r < runs; r++) {
+                ng = 0;
+                for (auto i = 0; i < keyset.size(); i++) {
+                    agent.set_query(values[i]);
+                    fsa.access(agent);
+                    if (agent.key().length() != keyset[i].length() ||
+                        std::memcmp(agent.key().ptr(), keyset[i].ptr(), agent.key().length()) != 0)
+                        ng++;
+                }
             }
+            mSec = sw.get_micro_sec();
+            std::cout << "------" << std::endl;
+            std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
+            std::cout << "OK: " << num - ng << std::endl;
+            std::cout << "NG: " << ng << std::endl;
         }
-        mSec = sw.get_micro_sec();
-        std::cout << "------" << std::endl;
-        std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
-        std::cout << "OK: " << num - ng << std::endl;
-        std::cout << "NG: " << ng << std::endl;
         
         fsa.showStatus(std::cout);
     }

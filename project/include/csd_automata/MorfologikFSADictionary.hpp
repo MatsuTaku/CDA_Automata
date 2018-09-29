@@ -11,7 +11,7 @@
 #include "MorfologikFSA5DictionaryFoundation.hpp"
 #include "MorfologikCFSA2DictionaryFoundation.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     template<class Foundation>
     class MorfologikFSADictionary {

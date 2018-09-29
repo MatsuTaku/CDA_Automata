@@ -11,7 +11,7 @@
 #include "MorfologikCFSA2.hpp"
 #include "sim_ds/Calc.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class MorfologikCFSA2DictionaryFoundation {
     public:

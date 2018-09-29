@@ -7,20 +7,20 @@
 #include "XcdatWrapper.hpp"
 #include "MarisaWrapper.hpp"
 
-using namespace array_fsa;
+using namespace csd_automata;
 
 namespace {
     
     template <typename T>
-    int bench(const char* fsa_name, const char* query_name) {
+    int bench(const char* fsa_name, const char* query_name, bool needsAccess = true) {
         try {
             std::cout << "Bench " << T::name() << " from " << fsa_name << std::endl;
             
-            T fsa = FsaTools::getFSAFrom<T>(fsa_name);
+            T fsa = bench::getFSAFrom<T>(fsa_name);
             
             std::cout << "Search benchmark for " << query_name << std::endl;
             
-            FsaTools::measureBenchmark(fsa, query_name);
+            bench::measureBenchmark(fsa, query_name, 10, needsAccess);
             
         } catch (DataNotFoundException e) {
             std::cerr << "Error open " << e.data_name_ << std::endl;
@@ -39,8 +39,8 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = atoi(argv[3]);
     
-//    fsa_name = "../../../results/wikipedia/wikipedia.morfologik_fsa5";
-//    query_name = "../../../data-sets/weiss/wikipedia.dict"; type='9';
+//    fsa_name = "../../../results/wikipedia/wikipedia.fsa";
+//    query_name = "../../../data-sets/weiss/wikipedia.dict"; type = 11;
 //    fsa_name = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
 //    query_name = "../../../data-sets/kanda/enwiki-20150205.dict"; type = 10;
 //    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='9';
@@ -64,15 +64,17 @@ int main(int argc, const char* argv[]) {
         case 1:
             return bench<DacFSA>(fsa_name, query_name);
         case 2:
-            return bench<DoubleArrayCFSA<true, true, true, true>>(fsa_name, query_name);
+            return bench<DoubleArrayCFSA<true, true, true, true, true>>(fsa_name, query_name);
         case 3:
-            return bench<DoubleArrayCFSA<false, true, true, true>>(fsa_name, query_name);
+            return bench<DoubleArrayCFSA<false, true, true, true, true>>(fsa_name, query_name);
         case 4:
-            return bench<DoubleArrayCFSA<true, false, true, true>>(fsa_name, query_name);
+            return bench<DoubleArrayCFSA<true, false, true, true, true>>(fsa_name, query_name);
         case 5:
-            return bench<DoubleArrayCFSA<true, true, false, true>>(fsa_name, query_name);
+            return bench<DoubleArrayCFSA<true, true, false, true, true>>(fsa_name, query_name);
         case 6:
-            return bench<DoubleArrayCFSA<true, true, true, false>>(fsa_name, query_name);
+            return bench<DoubleArrayCFSA<true, true, true, false, true>>(fsa_name, query_name);
+        case 11:
+            return bench<DoubleArrayCFSA<true, false, true, true, false>>(fsa_name, query_name, false);
         case 7:
             return bench<XcdatWrapper<false>>(fsa_name, query_name);
         case 8:

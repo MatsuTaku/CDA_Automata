@@ -10,7 +10,7 @@
 
 #include "ByteData.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     class MultipleVector : ByteData {
     public:
@@ -30,12 +30,17 @@ namespace array_fsa {
         void setValueSize(size_t index, size_t size);
         
         template <typename T>
-        void setValueSizes(std::vector<T>& sizes) {
+        void setValueSizes(std::vector<T> &sizes) {
             value_sizes_ = {};
-            value_positions_ = {};
-            element_size_ = 0;
             for (auto i = 0; i < sizes.size(); i++)
-                setValueSize(i, sizes[i]);
+                value_sizes_.push_back(sizes[i]);
+            
+            value_positions_ = {};
+            for (auto i = 0, pos = 0; i < sizes.size(); i++) {
+                value_positions_.push_back(pos);
+                pos += sizes[i];
+            }
+            element_size_ = value_positions_.back() + value_sizes_.back();
         }
         
         size_t offset(size_t index) const {

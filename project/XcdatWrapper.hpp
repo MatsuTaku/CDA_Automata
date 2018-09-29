@@ -10,7 +10,7 @@
 
 #include "xcdat/Trie.hpp"
 
-namespace array_fsa {
+namespace csd_automata {
     
     template<bool FAST>
     class XcdatWrapper {
