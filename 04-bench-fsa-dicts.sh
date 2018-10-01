@@ -20,6 +20,10 @@ function marisa {
   ./project/build/bench $1 $2 8 >$1.bench.stdout 2>&1
 }
 
+function darts {
+  ./project/build/bench $1 $2 12 >$1.bench.stdout 2>&1
+}
+
 function array_fsa {
   ./project/build/bench $1 $2 0 >$1.bench.stdout 2>&1
 }
@@ -53,9 +57,10 @@ function array_ts_fsa_noCompWo {
 }
 
 TOOLS="
-array_ts_fsa_lookup
+darts
 "
 #array_ts_fsa
+#array_ts_fsa_lookup
 #morfologik_fsa5
 #morfologik_cfsa2
 #xcdat

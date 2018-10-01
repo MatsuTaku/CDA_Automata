@@ -10,7 +10,7 @@
 
 #include "xcdat/Trie.hpp"
 
-namespace csd_automata {
+namespace wrapper {
     
     template<bool FAST>
     class XcdatWrapper {

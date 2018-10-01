@@ -12,42 +12,46 @@
 
 namespace csd_automata {
     
-    class DataNotFoundException : std::exception {
-    public:
-        DataNotFoundException(const std::string &data_name) : data_name_(data_name) {}
-        std::string data_name_;
-    };
-    
-    class DoesntHaveMemberException : std::exception {
-    public:
-        DoesntHaveMemberException(const std::string &text) : text(text) {}
-        std::string text;
-    };
-    
-    using std::cerr, std::endl;
-    
-    class LookupErrorException : std::exception {
-    public:
-        LookupErrorException(const std::string &key, size_t value, size_t incollect) : key(key), value(value), incollect(incollect) {}
-        std::string key;
-        size_t value, incollect;
+    namespace exception {
         
-        void error()  {
-            cerr << "Lookup error: [ \"" << key << "\": " << value << " ] ^ " << incollect << endl;
-        }
-    };
-    
-    class AccessErrorException : std::exception {
-    public:
-        AccessErrorException(const std::string &key, size_t value, const std::string &incollect) : key(key), value(value), incollect(incollect) {}
-        std::string key;
-        size_t value;
-        const std::string &incollect;
+        class DataNotFound : std::exception {
+        public:
+            DataNotFound(const std::string &data_name) : data_name_(data_name) {}
+            std::string data_name_;
+        };
         
-        void error()  {
-            cerr << "Access error: [\"" << key << "\": " << value << " ] ^ \"" << incollect << '"' << endl;
-        }
-    };
+        class DoesntHaveMember : std::exception {
+        public:
+            DoesntHaveMember(const std::string &text) : text(text) {}
+            std::string text;
+        };
+        
+        using std::cerr, std::endl;
+        
+        class LookupError : std::exception {
+        public:
+            LookupError(const std::string &key, size_t value, size_t incollect) : key(key), value(value), incollect(incollect) {}
+            std::string key;
+            size_t value, incollect;
+            
+            void error()  {
+                cerr << "Lookup error: [ \"" << key << "\": " << value << " ] ^ " << incollect << endl;
+            }
+        };
+        
+        class AccessError : std::exception {
+        public:
+            AccessError(const std::string &key, size_t value, const std::string &incollect) : key(key), value(value), incollect(incollect) {}
+            std::string key;
+            size_t value;
+            const std::string &incollect;
+            
+            void error()  {
+                cerr << "Access error: [\"" << key << "\": " << value << " ] ^ \"" << incollect << '"' << endl;
+            }
+        };
+        
+    }
     
 }
 

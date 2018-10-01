@@ -40,6 +40,11 @@ function marisa {
   marisa-build -o $3 $1 >$3.stdout 2>&1
 }
 
+function darts {
+  $TIME_CMD -f $TIME_FMT -o $1.log \
+  ./project/build/build $1 $2 $3 9 >$3.stdout 2>&1
+}
+
 function array_fsa {
   $TIME_CMD -f $TIME_FMT -o $3.log \
   ./project/build/build $1 $2 $3 1 >$3.stdout 2>&1
@@ -82,9 +87,10 @@ function array_ts_fsa_noCompWo {
 
 
 TOOLS="
-array_ts_fsa_lookup
+darts
 "
 #array_ts_fsa
+#array_ts_fsa_lookup
 #xcdat
 #marisa
 #centrp

@@ -8,9 +8,31 @@
 #ifndef MarisaWrapper_hpp
 #define MarisaWrapper_hpp
 
+#include "csd_automata/basic.hpp"
 #include "marisa/trie.h"
 
-namespace csd_automata {
+#include "csd_automata/Exception.hpp"
+
+namespace wrapper {
+    
+    void setMarisaKeyset(const char *queryName, marisa::Keyset* keyset) {
+        std::ifstream ifs(queryName);
+        if (!ifs)
+            throw csd_automata::exception::DataNotFound(queryName);
+        
+        for (std::string line; std::getline(ifs, line);) {
+            std::string::size_type delim_pos = line.find_last_of('\t');
+            float weight = 1.0F;
+            if (delim_pos != line.npos) {
+                char *end_of_value;
+                weight = (float)std::strtod(&line[delim_pos + 1], &end_of_value);
+                if (*end_of_value == '\0') {
+                    line.resize(delim_pos);
+                }
+            }
+            keyset->push_back(line.c_str(), line.length());
+        }
+    }
     
     class MarisaWrapper {
     public:
@@ -48,6 +70,8 @@ namespace csd_automata {
     private:
         marisa::Trie trie_;
     };
+    
 }
+
 
 #endif /* MarisaWrapper_hpp */

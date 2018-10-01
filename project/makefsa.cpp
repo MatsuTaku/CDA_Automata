@@ -7,7 +7,7 @@
 
 #include "csd_automata/basic.hpp"
 #include "csd_automata/PlainFSABuilder.hpp"
-#include "FsaGenerator.hpp"
+#include "DABuilder.hpp"
 
 using namespace csd_automata;
 
