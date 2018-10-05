@@ -16,21 +16,22 @@
 #include "StringDict.hpp"
 #include "PlainFSA.hpp"
 
+#include "Director.hpp"
+
 namespace csd_automata {
     
     class StringDictBuilder {
     public:
-        static StringDict build(const PlainFSA &fsa, bool binaryMode, bool mergeSuffix);
-        
+        static void build(StringDict&, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix);
         ~StringDictBuilder() = default;
         
-        StringDictBuilder(const StringDictBuilder &) = delete;
+        StringDictBuilder(const StringDictBuilder&) = delete;
         StringDictBuilder& operator=(const StringDictBuilder&) = delete;
         
     private:
-        const PlainFSA &orig_fsa_;
+        const PlainFSA& orig_fsa_;
         
-        explicit StringDictBuilder(const PlainFSA &fsa, bool binaryMode) : orig_fsa_(fsa), label_array_(binaryMode) {}
+        explicit StringDictBuilder(const PlainFSA& fsa, bool binaryMode) : orig_fsa_(fsa), label_array_(binaryMode) {}
         
         std::vector<StrDictData> str_dicts_;
         size_t cur_str_dict_index_;
@@ -76,32 +77,37 @@ namespace csd_automata {
     };
     
     
-    inline StringDict StringDictBuilder::build(const PlainFSA &fsa, bool binaryMode, bool mergeSuffix) {
+    // MARK: - Static build function
+    
+    inline void StringDictBuilder::build(StringDict& dict, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix) {
         StringDictBuilder builder(fsa, binaryMode);
         std::cout << "------ StringDict build bench mark ------" << std::endl;
-        Stopwatch sw;
         
-        builder.makeDict();
-        double lastSW, newSW = sw.get_milli_sec();
-        std::cout << "makeDict: " << newSW << "ms" << std::endl;
-        lastSW = newSW;
-        builder.setSharings(mergeSuffix);
-        newSW = sw.get_milli_sec();
-        std::cout << "setSharings: " << newSW - lastSW << "ms" << std::endl;
-        lastSW = newSW;
-        builder.setUpLabelArray();
-        newSW = sw.get_milli_sec();
-        std::cout << "setUpLabelArray: " << newSW - lastSW << "ms" << std::endl;
+        auto inTime = director::measureProcessing([&]() {
+            builder.makeDict();
+        });
+        std::cout << "makeDict: " << inTime << "ms" << std::endl;
         
-        builder.showMappingOfByteSize();
+        inTime = director::measureProcessing([&]() {
+            builder.setSharings(mergeSuffix);
+        });
+        std::cout << "setSharings: " << inTime << "ms" << std::endl;
         
-        StringDict dict;
+        inTime = director::measureProcessing([&]() {
+            builder.setUpLabelArray();
+        });
+        std::cout << "setUpLabelArray: " << inTime << "ms" << std::endl;
+        
+//        builder.showMappingOfByteSize();
+        
         dict.str_dicts_ = builder.str_dicts_;
         dict.fsa_target_indexes_ = builder.fsa_target_indexes_;
         dict.has_label_bits_ = builder.has_label_bits_;
         dict.label_array_ = std::move(builder.label_array_);
-        return dict;
     }
+    
+    
+    // MARK: - Member functions
     
     // Recusive function
     inline void StringDictBuilder::labelArrange(size_t state) {

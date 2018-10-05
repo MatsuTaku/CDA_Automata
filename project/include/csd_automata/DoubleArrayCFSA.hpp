@@ -14,7 +14,7 @@
 #include "StringArray.hpp"
 #include "sim_ds/BitVector.hpp"
 
-#include "ArrayFSATailBuilder.hpp"
+#include "DoubleArrayCFSABuilder.hpp"
 
 namespace csd_automata {
     
@@ -22,16 +22,31 @@ namespace csd_automata {
     
     template<bool WORDS_CUMU, bool EDGE_LINK, bool ID_COMP, bool WORDS_COMP, bool NEEDS_ACCESS>
     class DoubleArrayCFSA : ByteData {
+        friend class DoubleArrayCFSABuilder;
     public:
         static constexpr bool useCumulativeWords = WORDS_CUMU;
+        static constexpr bool useEdgeLink = EDGE_LINK;
         static constexpr bool shouldCompressID= ID_COMP;
         static constexpr bool shouldCompressWords = WORDS_COMP;
         static constexpr bool isPossibleAccess = NEEDS_ACCESS;
-    public:
+        
+        static constexpr bool useBinaryLabel = false;
+        static constexpr size_t searchError = -1;
+        
+        using foundation_type = DAFoundation<false, true, shouldCompressID, true, shouldCompressWords, useCumulativeWords, isPossibleAccess>;
+        using strs_type = StringArray<useBinaryLabel>;
+
         DoubleArrayCFSA() = default;
         
+        explicit DoubleArrayCFSA(const DoubleArrayCFSABuilder &builder) {
+            builder.release(*this);
+        }
+        
         explicit DoubleArrayCFSA(const PlainFSA &fsa) {
-            build(fsa);
+            const auto shouldMergeSuffix = true;
+            DoubleArrayCFSABuilder builder(fsa);
+            builder.DoubleArrayCFSABuilder::build(useBinaryLabel, shouldMergeSuffix);
+            builder.release(*this);
         }
         
         explicit DoubleArrayCFSA(std::istream &is) {
@@ -49,22 +64,15 @@ namespace csd_automata {
         DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
         
     public:
-        static constexpr bool useBinaryLabel = false;
-        static constexpr size_t searchError = -1;
-        
-        using fd_type = DAFoundation<false, true, shouldCompressID, true, shouldCompressWords, useCumulativeWords, isPossibleAccess>;
-        using sa_type = StringArray<useBinaryLabel>;
-        
-    public:
         static std::string name() {
             return "DoubleArrayCFSA";
         }
         
-        void build(const PlainFSA &fsa);
+        void build(const DoubleArrayCFSABuilder &builder);
         
         bool isMember(const std::string &str) const;
         
-        size_t lookup(const std::string &str) const;
+        unsigned long long lookup(const std::string &str) const;
         
         std::string access(size_t key) const;
         
@@ -184,22 +192,26 @@ namespace csd_automata {
                 os << "size brother:    " << has_brother_bits_.sizeInBytes() + size_vec(brother_) << endl;
                 os << "size eldest:    " << is_node_bits_.sizeInBytes() + size_vec(eldest_) << endl;
             }
-            
-            //            std::vector<size_t> nexts(nc_.numElements());
-            //            for (auto i = 0; i < nc_.numElements(); i++)
-            //                nexts[i] = next(i);
-            //            std::vector<size_t> map;
-            //            sim_ds::Calc::vectorMapOfSizeBits(&map, nexts, true);
         }
         
-        void printForDebug(std::ostream &os) const {
-            
+        void printForDebug(std::ostream& os) const {
+            using std::cout, std::endl;
+            cout << "id\tT\tN\tC/S\tCW" << endl;
+            for (auto i = 0; i < num_trans_; i++) {
+                cout << i << '\t' << fd_.isFinal(i) << '\t' << fd_.next(i) << '\t';
+                if (!fd_.isString(i)) {
+                    cout << fd_.check(i);
+                } else {
+                    cout << strings_.string_view(fd_.stringId(i));
+                }
+                cout << '\t' << fd_.words(i) << endl;
+            }
         }
         
     private:
         size_t num_trans_ = 0;
-        fd_type fd_;
-        sa_type strings_;
+        foundation_type fd_;
+        strs_type strings_;
         // If use EDGE_LINK
         sim_ds::BitVector has_brother_bits_;
         std::vector<uint8_t> brother_;
@@ -240,7 +252,7 @@ namespace csd_automata {
             fd_.setStringId(index, strIndex);
         }
         
-        void setStringArray(sa_type &&sArr) {
+        void setStringArray(strs_type &&sArr) {
             strings_ = std::move(sArr);
         }
         
@@ -257,7 +269,7 @@ namespace csd_automata {
         }
         
         void setBrother(size_t index, uint8_t bro) {
-            brother_.push_back(bro);
+            brother_.emplace_back(bro);
         }
         
         void setIsNode(size_t index, bool isNode) {
@@ -265,7 +277,7 @@ namespace csd_automata {
         }
         
         void setEldest(size_t index, uint8_t eldest) {
-            eldest_.push_back(eldest);
+            eldest_.emplace_back(eldest);
         }
         
         void buildBitVector() {
@@ -279,57 +291,54 @@ namespace csd_automata {
     };
     
     
-    template<bool C, bool E, bool I, bool W, bool NA>
-    void DoubleArrayCFSA<C, E, I, W, NA>::build(const PlainFSA &fsa) {
-        const auto shouldMergeSuffix = false;
-        ArrayFSATailBuilder builder(fsa);
-        builder.ArrayFSATailBuilder::build(useBinaryLabel, shouldMergeSuffix);
-        
-        const auto numElems = builder.numElems_();
-        resize(numElems, fsa.get_num_words());
-        strings_ = sa_type(builder.getStringArrayBuilder());
-        
-        auto numTrans = 0;
-        for (auto i = 0; i < numElems; i++) {
-            if (builder.isFrozen_(i)) {
-                numTrans++;
-                
-                auto isStrTrans = builder.hasLabel_(i);
-                setNext(i, builder.getNext_(i));
-                setIsStringTrans(i, isStrTrans);
-                setIsFinal(i, builder.isFinal_(i));
-                setCheck(i, builder.getCheck_(i));
-                if (isStrTrans)
-                    setStringIndex(i, builder.getLabelNumber_(i));
-                else
-                    setCheck(i, builder.getCheck_(i));
-                
-                if constexpr (NA)
-                    setWords(i, builder.getStore_(i));
-                if constexpr (C)
-                    setCumWords(i, builder.getAccStore_(i));
-                
-                if constexpr (E) {
-                    bool hasBro = builder.hasBrother_(i);
-                    setHasBrother(i, hasBro);
-                    if (hasBro)
-                        setBrother(i, builder.getBrother_(i));
-                }
-            }
-            
-            if constexpr (E) {
-                bool isNode = builder.isUsedNext_(i);
-                setIsNode(i, isNode);
-                if (isNode)
-                    setEldest(i, builder.getEldest_(i));
-            }
-        }
-        buildBitVector();
-        setNumTrans(numTrans);
-        
-        builder.showCompareWith(*this);
-        
-    }
+//    template<bool C, bool E, bool I, bool W, bool NA>
+//    void DoubleArrayCFSA<C, E, I, W, NA>::build(const DoubleArrayCFSABuilder& builder) {
+//        const auto numElems = builder.numElems_();
+//        resize(numElems, builder.getNumWords());
+//        auto sab = stringArrayBuilder(builder);
+//        setStringArray(sa_type(sab));
+//
+//        auto numTrans = 0;
+//        for (auto i = 0; i < numElems; i++) {
+//            if (builder.isFrozen_(i)) {
+//                numTrans++;
+//
+//                auto isStrTrans = builder.hasLabel_(i);
+//                setNext(i, builder.getNext_(i));
+//                setIsStringTrans(i, isStrTrans);
+//                setIsFinal(i, builder.isFinal_(i));
+//                setCheck(i, builder.getCheck_(i));
+//                if (isStrTrans)
+//                    setStringIndex(i, builder.getLabelNumber_(i));
+//                else
+//                    setCheck(i, builder.getCheck_(i));
+//
+//                if constexpr (NA)
+//                    setWords(i, builder.getStore_(i));
+//                if constexpr (C)
+//                    setCumWords(i, builder.getAccStore_(i));
+//
+//                if constexpr (E) {
+//                    bool hasBro = builder.hasBrother_(i);
+//                    setHasBrother(i, hasBro);
+//                    if (hasBro)
+//                        setBrother(i, builder.getBrother_(i));
+//                }
+//            }
+//
+//            if constexpr (E) {
+//                bool isNode = builder.isUsedNext_(i);
+//                setIsNode(i, isNode);
+//                if (isNode)
+//                    setEldest(i, builder.getEldest_(i));
+//            }
+//        }
+//        buildBitVector();
+//        setNumTrans(numTrans);
+//
+//        builder.showCompareWith(*this);
+//
+//    }
     
     template<bool C, bool E, bool I, bool W, bool NA>
     bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string &str) const {
@@ -353,7 +362,7 @@ namespace csd_automata {
     }
     
     template<bool C, bool E, bool I, bool W, bool NA>
-    size_t DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string &str) const {
+    unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string &str) const {
         size_t trans = 0;
         size_t counter = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {
@@ -381,21 +390,21 @@ namespace csd_automata {
                 
             } else {
                 size_t nextTrans = searchError;
-                for (size_t l = 1; l < 0x100; l++) {
-                    size_t nt = target(trans) ^ l;
+                for (size_t label = 1; label <= 0xFF; label++) {
+                    size_t nt = target(trans) ^ label;
                     size_t checkType;
                     
                     bool isStr = isStringTrans(nt);
                     if (!isStr) {
                         checkType = check(nt);
-                        if (checkType != l)
+                        if (checkType != label)
                             continue;
                     } else {
                         checkType = stringId(nt);
-                        if (strings_[checkType] != l)
+                        if (strings_[checkType] != label)
                             continue;
                     }
-                    if (c == l) {
+                    if (c == label) {
                         if (isStr && !strings_.isMatch(&pos, str, checkType)) { // to increment pos in source string
                             strings_.showLabels(checkType - 32, checkType + 32);
                             return searchError;
@@ -467,7 +476,7 @@ namespace csd_automata {
                     if (!isStr)
                         str += checkType;
                     else
-                        str += strings_.string(checkType);
+                        str += strings_.string_view(checkType);
                     
                     nextTrans = nt;
                     break;

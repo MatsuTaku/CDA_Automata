@@ -37,17 +37,17 @@ target_link_libraries(test_PlainFSA CSDAutomata)
 
 file(GLOB wrappers XcdatWrapper.hpp MarisaWrapper.hpp DartsCloneWrapper.hpp)
 
-add_executable(bench bench.cpp ${wrappers})
-target_link_libraries(bench CSDAutomata xcdat marisa)
+add_executable(dam_build dam_build.cpp)
+target_link_libraries(dam_build CSDAutomata)
 
-add_executable(build build.cpp DABuilder.hpp)
-target_link_libraries(build CSDAutomata)
+add_executable(dam_bench dam_bench.cpp ${wrappers})
+target_link_libraries(dam_bench CSDAutomata xcdat marisa)
 
 add_executable(convert convert.cpp)
 target_link_libraries(convert CSDAutomata)
 
-add_executable(makefsa makefsa.cpp DABuilder.hpp)
-target_link_libraries(makefsa CSDAutomata)
+add_executable(darts_build darts_build.cpp DartsCloneWrapper.hpp)
+target_link_libraries(darts_build CSDAutomata)
 
 add_executable(build_array build_array.cpp)
 target_link_libraries(build_array CSDAutomata)

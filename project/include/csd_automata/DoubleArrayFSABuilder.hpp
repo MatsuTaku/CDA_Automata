@@ -14,20 +14,31 @@
 
 namespace csd_automata {
     
-    class ArrayFSABuilder {
+    class DoubleArrayFSABuilder {
     public:
-        ArrayFSABuilder(const PlainFSA &orig_fsa) : orig_fsa_(orig_fsa) {}
+        DoubleArrayFSABuilder(const PlainFSA &srcFsa) : src_fsa_(srcFsa) {}
         
-        virtual ~ArrayFSABuilder() = default;
+        virtual ~DoubleArrayFSABuilder() = default;
         
-        ArrayFSABuilder(const ArrayFSABuilder&) = delete;
-        ArrayFSABuilder& operator=(const ArrayFSABuilder&) = delete;
+        DoubleArrayFSABuilder(const DoubleArrayFSABuilder&) = delete;
+        DoubleArrayFSABuilder& operator=(const DoubleArrayFSABuilder&) = delete;
         
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 2;
         
-        void build();
+        void build() {
+            bytes_.reserve(static_cast<size_t>(src_fsa_.get_num_trans() * 1.1 * kElemSize));
+            
+            expandBlock_();
+            freezeState_(0);
+            setFinalAndUsedNext_(0);
+            
+            arrange_(src_fsa_.get_root_state(), 0);
+            
+            // reset
+            state_map_ = std::unordered_map<size_t, size_t>();
+        }
         
         bool isFinal_(size_t index) const {
             return (bytes_[offset_(index)] & 1) == 1;
@@ -61,7 +72,7 @@ namespace csd_automata {
         static constexpr size_t kBlockSize = 0x100;
         static constexpr size_t kFreeBytes = 0x10 * kBlockSize * kElemSize; // like darts-clone
         
-        const PlainFSA &orig_fsa_;
+        const PlainFSA &src_fsa_;
         std::vector<uint8_t> bytes_;
         std::unordered_map<size_t, size_t> state_map_;
         size_t unfrozen_head_ = 0;
@@ -127,7 +138,7 @@ namespace csd_automata {
         
         // MARK: methods
         
-        void expand_();
+        void expandBlock_();
         void freezeState_(size_t index);
         void closeBlock_(size_t begin);
         
@@ -143,21 +154,8 @@ namespace csd_automata {
     
     // MARK: - public
     
-    inline void ArrayFSABuilder::build() {
-        bytes_.reserve(static_cast<size_t>(orig_fsa_.get_num_trans() * 1.1 * kElemSize));
-        
-        expand_();
-        freezeState_(0);
-        setFinalAndUsedNext_(0);
-        
-        arrange_(orig_fsa_.get_root_state(), 0);
-        
-        // reset
-        state_map_ = std::unordered_map<size_t, size_t>();
-    }
-    
     template <class T>
-    inline void ArrayFSABuilder::showCompareWith(T &fsa) {
+    inline void DoubleArrayFSABuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
         for (auto i = 0; i < numElems_(); i++) {
             if (!isFrozen_(i)) continue;
@@ -183,7 +181,7 @@ namespace csd_automata {
         }
     }
     
-    inline void ArrayFSABuilder::showMapping(bool show_density) {
+    inline void DoubleArrayFSABuilder::showMapping(bool show_density) {
         auto tab = "\t";
         
         std::vector<size_t> next_map;
@@ -232,7 +230,7 @@ namespace csd_automata {
     
     // MARK: - private
     
-    void ArrayFSABuilder::expand_() {
+    void DoubleArrayFSABuilder::expandBlock_() {
         const auto begin = index_(bytes_.size());
         const auto end = begin + kBlockSize;
         
@@ -261,7 +259,7 @@ namespace csd_automata {
         }
     }
     
-    void ArrayFSABuilder::freezeState_(size_t index) {
+    void DoubleArrayFSABuilder::freezeState_(size_t index) {
         assert(!isFrozen_(index));
         
         setFrozen_(index, true);
@@ -281,7 +279,7 @@ namespace csd_automata {
         }
     }
     
-    void ArrayFSABuilder::closeBlock_(size_t begin) {
+    void DoubleArrayFSABuilder::closeBlock_(size_t begin) {
         const auto end = begin + kBlockSize;
         
         if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
@@ -297,8 +295,8 @@ namespace csd_automata {
     }
     
     // so-called XCHECK
-    size_t ArrayFSABuilder::findNext_(size_t first_trans) const {
-        const auto symbol = orig_fsa_.get_trans_symbol(first_trans);
+    size_t DoubleArrayFSABuilder::findNext_(size_t first_trans) const {
+        const auto symbol = src_fsa_.get_trans_symbol(first_trans);
         
         if (unfrozen_head_ != 0) {
             auto unfrozen_index = unfrozen_head_;
@@ -314,25 +312,25 @@ namespace csd_automata {
         return index_(bytes_.size()) ^ symbol;
     }
     
-    bool ArrayFSABuilder::checkNext_(size_t next, size_t trans) const {
+    bool DoubleArrayFSABuilder::checkNext_(size_t next, size_t trans) const {
         if (isUsedNext_(next)) {
             return false;
         }
         
         do {
-            const auto index = next ^orig_fsa_.get_trans_symbol(trans);
+            const auto index = next ^src_fsa_.get_trans_symbol(trans);
             if (isFrozen_(index)) {
                 return false;
             }
-            trans = orig_fsa_.get_next_trans(trans);
+            trans = src_fsa_.get_next_trans(trans);
         } while (trans != 0);
         
         return true;
     }
     
     // Recusive function
-    inline void ArrayFSABuilder::arrange_(size_t state, size_t index) {
-        const auto first_trans = orig_fsa_.get_first_trans(state);
+    inline void DoubleArrayFSABuilder::arrange_(size_t state, size_t index) {
+        const auto first_trans = src_fsa_.get_first_trans(state);
         
         if (first_trans == 0) {
             setNext_(index, index); // to the terminal state
@@ -350,28 +348,28 @@ namespace csd_automata {
         
         const auto next = findNext_(first_trans);
         if (offset_(next) >= bytes_.size()) {
-            expand_();
+            expandBlock_();
         }
         
         setNext_(index, next);
         state_map_.insert(std::make_pair(state, next));
         setUsedNext_(next, true);
         
-        for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-            const auto symbol = orig_fsa_.get_trans_symbol(trans);
+        for (auto trans = first_trans; trans != 0; trans = src_fsa_.get_next_trans(trans)) {
+            const auto symbol = src_fsa_.get_trans_symbol(trans);
             const auto child_index = next ^ symbol;
             
             freezeState_(child_index);
             setCheck_(child_index, symbol);
             
-            if (orig_fsa_.is_final_trans(trans)) {
+            if (src_fsa_.is_final_trans(trans)) {
                 setFinal_(child_index, true);
             }
         }
         
-        for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-            const auto symbol = orig_fsa_.get_trans_symbol(trans);
-            arrange_(orig_fsa_.get_target_state(trans), next ^ symbol);
+        for (auto trans = first_trans; trans != 0; trans = src_fsa_.get_next_trans(trans)) {
+            const auto symbol = src_fsa_.get_trans_symbol(trans);
+            arrange_(src_fsa_.get_target_state(trans), next ^ symbol);
         }
     }
     

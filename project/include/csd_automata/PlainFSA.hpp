@@ -11,7 +11,6 @@ namespace csd_automata {
     
     class PlainFSA {
         friend class PlainFSABuilder;
-        
     public:
         static constexpr size_t kAddrSize = 4;
         static constexpr size_t kTransSize = 2 + kAddrSize * 2;

@@ -32,9 +32,11 @@ int main(int argc, const char* argv[]) {
     auto dictName = argv[2];
     int setType = atoi(argv[3]);
     
-//    setName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
-//    dictName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
-//    setType = 1;
+#ifndef NDEBUG
+    setName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
+    dictName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
+    setType = 1;
+#endif
     
     switch (setType) {
         case 0:

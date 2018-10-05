@@ -14,10 +14,9 @@ namespace csd_automata {
         static constexpr size_t kBufferGrowthSize = 0x100 * PlainFSA::kTransSize;
         
         PlainFSABuilder();
-        
         ~PlainFSABuilder() = default;
         
-        void add(const std::string& str);
+        void add(const std::string &str);
         PlainFSA release();
         
         PlainFSABuilder(const PlainFSABuilder&) = delete;
@@ -167,16 +166,6 @@ namespace csd_automata {
         
         num_words_++;
         
-        //    using std::cout, std::endl;
-        //    const auto tab = '\t';
-        //    cout << endl << tab << str << endl;
-        //    cout << "id" << tab << "symbol" << tab << "target" << tab << "final" << tab << "store" << endl;
-        //    for (auto i = 0; i < bytes_.size() / PlainFSA::kTransSize; i++) {
-        //        auto trans = i * PlainFSA::kTransSize;
-        //        if (get_symbol_(trans) == '\0')
-        //            continue;
-        //        cout << "[" << i << "]\t" << get_symbol_(trans) << tab << get_target_(trans) / PlainFSA::kTransSize << tab << is_final_trans_(trans) << tab << get_store_(trans) << endl;
-        //    }
     }
     
     PlainFSA PlainFSABuilder::release() {

@@ -20,6 +20,11 @@ namespace csd_automata {
     using DoubleArrayAutomataDictionary = DoubleArrayCFSA<true, true, true, true, true>;
     using DoubleArrayAutomataLookupDictionary = DoubleArrayCFSA<true, false, true, true, false>;
     
+    using DAMTypes = std::tuple<
+    DoubleArrayAutomataLookupDictionary,
+    DoubleArrayAutomataDictionary
+    >;
+    
 }
 
 #endif /* array_fsa_hpp */

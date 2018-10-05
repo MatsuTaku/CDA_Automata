@@ -18,17 +18,17 @@ namespace csd_automata {
     public:
         using FoundationType = Foundation;
         
-        MorfologikFSADictionary(Foundation &&fd) : fd_(std::move(fd)) {}
+        MorfologikFSADictionary(Foundation&& fd) : fd_(std::move(fd)) {}
         
-        MorfologikFSADictionary(std::istream &is) : fd_(Foundation(is)) {}
+        MorfologikFSADictionary(std::istream& is) : fd_(Foundation(is)) {}
         
         ~MorfologikFSADictionary() = default;
         
-        MorfologikFSADictionary(const MorfologikFSADictionary &) = delete;
-        MorfologikFSADictionary &operator=(const MorfologikFSADictionary &) = delete;
+        MorfologikFSADictionary(const MorfologikFSADictionary&) = delete;
+        MorfologikFSADictionary& operator=(const MorfologikFSADictionary&) = delete;
         
-        MorfologikFSADictionary(MorfologikFSADictionary &&) = default;
-        MorfologikFSADictionary &operator=(MorfologikFSADictionary &&) = default;
+        MorfologikFSADictionary(MorfologikFSADictionary&&) = default;
+        MorfologikFSADictionary& operator=(MorfologikFSADictionary&&) = default;
         
         // MARK: String-Dictionary's functions
         

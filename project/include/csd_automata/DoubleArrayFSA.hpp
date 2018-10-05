@@ -13,7 +13,7 @@
 #include "DAFoundation.hpp"
 #include "sim_ds/BitVector.hpp"
 
-#include "ArrayFSABuilder.hpp"
+#include "DoubleArrayFSABuilder.hpp"
 
 namespace csd_automata {
     
@@ -184,7 +184,7 @@ namespace csd_automata {
     
     template<bool N>
     inline void DoubleArrayFSA<N>::build(const PlainFSA &fsa) {
-        ArrayFSABuilder builder(fsa);
+        DoubleArrayFSABuilder builder(fsa);
         builder.build();
         
         const auto numElem = builder.numElems_();

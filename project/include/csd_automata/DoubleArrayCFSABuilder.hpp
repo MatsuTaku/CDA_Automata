@@ -8,28 +8,31 @@
 #ifndef ArrayFSA_TailBuilder_hpp
 #define ArrayFSA_TailBuilder_hpp
 
-#include "ArrayFSABuilder.hpp"
-
+#include "DoubleArrayFSABuilder.hpp"
 #include "StringDictBuilder.hpp"
-
 #include "sim_ds/Log.hpp"
+
+#include "DoubleArrayCFSA.hpp"
 
 namespace csd_automata {
     
-    class ArrayFSATailBuilder : public ArrayFSABuilder {
+    class DoubleArrayCFSABuilder : public DoubleArrayFSABuilder {
     public:
-        explicit ArrayFSATailBuilder(const PlainFSA &orig_fsa) : ArrayFSABuilder(orig_fsa) {}
+        explicit DoubleArrayCFSABuilder(const PlainFSA &srcFsa) : DoubleArrayFSABuilder(srcFsa) {}
         
-        ~ArrayFSATailBuilder() = default;
+        ~DoubleArrayCFSABuilder() = default;
         
-        ArrayFSATailBuilder(const ArrayFSATailBuilder&) = delete;
-        ArrayFSATailBuilder& operator=(const ArrayFSATailBuilder&) = delete;
+        DoubleArrayCFSABuilder(const DoubleArrayCFSABuilder&) = delete;
+        DoubleArrayCFSABuilder& operator=(const DoubleArrayCFSABuilder&) = delete;
         
     public:
         void build(bool binaryMode, bool mergeSuffix = false) {
-            str_dict_ = StringDictBuilder::build(orig_fsa_, binaryMode, mergeSuffix);
-            ArrayFSABuilder::build();
+            StringDictBuilder::build(str_dict_, src_fsa_, binaryMode, mergeSuffix);
+            DoubleArrayFSABuilder::build();
         }
+        
+        template <class DAM_TYPE>
+        void release(DAM_TYPE& da);
         
         // MARK: - getter
         
@@ -45,8 +48,8 @@ namespace csd_automata {
             return str_dict_.isEndLabel(index);
         }
         
-        StringArrayBuilder* getStringArrayBuilder() {
-            return &labelArray(str_dict_);
+        size_t getNumWords() const {
+            return src_fsa_.get_num_words();
         }
         
         size_t getStore_(size_t index) const {
@@ -67,6 +70,10 @@ namespace csd_automata {
         
         uint8_t getEldest_(size_t index) const {
             return bytes_[offset_(index) + 2 + kAddrSize * 4];
+        }
+        
+        friend StringArrayBuilder& stringArrayBuilder(DoubleArrayCFSABuilder& builder) {
+            return stringArrayBuilder(builder.str_dict_);
         }
         
         template <class T>
@@ -110,8 +117,55 @@ namespace csd_automata {
     };
     
     
+    template <class DAM_TYPE>
+    void DoubleArrayCFSABuilder::release(DAM_TYPE& da) {
+        const auto numElems = numElems_();
+        da.resize(numElems, getNumWords());
+        da.setStringArray(typename DAM_TYPE::strs_type(stringArrayBuilder(str_dict_)));
+        
+        auto numTrans = 0;
+        for (auto i = 0; i < numElems; i++) {
+            if (isFrozen_(i)) {
+                numTrans++;
+                
+                auto isStrTrans = hasLabel_(i);
+                da.setNext(i, getNext_(i));
+                da.setIsStringTrans(i, isStrTrans);
+                da.setIsFinal(i, isFinal_(i));
+                da.setCheck(i, getCheck_(i));
+                if (isStrTrans)
+                    da.setStringIndex(i, getLabelNumber_(i));
+                else
+                    da.setCheck(i, getCheck_(i));
+                
+                if constexpr (DAM_TYPE::isPossibleAccess)
+                    da.setWords(i, getStore_(i));
+                if constexpr (DAM_TYPE::useCumulativeWords)
+                    da.setCumWords(i, getAccStore_(i));
+                
+                if constexpr (DAM_TYPE::useEdgeLink) {
+                    bool hasBro = hasBrother_(i);
+                    da.setHasBrother(i, hasBro);
+                    if (hasBro)
+                        da.setBrother(i, getBrother_(i));
+                }
+            }
+            
+            if constexpr (DAM_TYPE::useEdgeLink) {
+                bool isNode = isUsedNext_(i);
+                da.setIsNode(i, isNode);
+                if (isNode)
+                    da.setEldest(i, getEldest_(i));
+            }
+        }
+        da.buildBitVector();
+        da.setNumTrans(numTrans);
+        
+        showCompareWith(da);
+    }
+    
     template <class T>
-    inline void ArrayFSATailBuilder::showCompareWith(T &fsa) {
+    inline void DoubleArrayCFSABuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
         for (auto i = 0; i < numElems_(); i++) {
             if (!isFrozen_(i)) continue;
@@ -144,8 +198,8 @@ namespace csd_automata {
     // MARK: - private
     
     // Recusive function
-    inline void ArrayFSATailBuilder::arrange_(size_t state, size_t index) {
-        const auto first_trans = orig_fsa_.get_first_trans(state);
+    inline void DoubleArrayCFSABuilder::arrange_(size_t state, size_t index) {
+        const auto first_trans = src_fsa_.get_first_trans(state);
         
         if (first_trans == 0) {
             setNext_(index, index); // to the terminal state
@@ -163,7 +217,7 @@ namespace csd_automata {
         
         const auto next = findNext_(first_trans);
         if (offset_(next) >= bytes_.size()) {
-            expand_();
+            expandBlock_();
         }
         
         setNext_(index, next);
@@ -174,8 +228,8 @@ namespace csd_automata {
         std::vector<std::pair<uint8_t, size_t>> nextTranses;
         
         auto storesCounter = 0;
-        for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-            const auto symbol = orig_fsa_.get_trans_symbol(trans);
+        for (auto trans = first_trans; trans != 0; trans = src_fsa_.get_next_trans(trans)) {
+            const auto symbol = src_fsa_.get_trans_symbol(trans);
             const auto child_index = next ^ symbol;
             
             freezeState_(child_index);
@@ -188,8 +242,8 @@ namespace csd_automata {
                 setLabelIndex_(child_index, str_dict_.startPos(transIndex));
                 
                 str_dict_.traceOnLabel(transIndex);
-                while (!str_dict_.isEndLabel() && orig_fsa_.is_straight_state(labelTrans)) {
-                    labelTrans = orig_fsa_.get_target_state(labelTrans);
+                while (!str_dict_.isEndLabel() && src_fsa_.is_straight_state(labelTrans)) {
+                    labelTrans = src_fsa_.get_target_state(labelTrans);
                     str_dict_.posToNext();
                 }
             } else {
@@ -197,10 +251,10 @@ namespace csd_automata {
             }
             
             // set isFinal
-            setFinal_(child_index, orig_fsa_.is_final_trans(labelTrans));
+            setFinal_(child_index, src_fsa_.is_final_trans(labelTrans));
             
             // set store
-            const auto store = orig_fsa_.get_store_trans(labelTrans);
+            const auto store = src_fsa_.get_store_trans(labelTrans);
             setStore_(child_index, store);
             setAccStore_(child_index, storesCounter);
             storesCounter += store;
@@ -218,7 +272,7 @@ namespace csd_automata {
         
         // Transition next node
         for (auto &nextTrans : nextTranses) {
-            arrange_(orig_fsa_.get_target_state(nextTrans.second), next ^ nextTrans.first);
+            arrange_(src_fsa_.get_target_state(nextTrans.second), next ^ nextTrans.first);
         }
     }
     

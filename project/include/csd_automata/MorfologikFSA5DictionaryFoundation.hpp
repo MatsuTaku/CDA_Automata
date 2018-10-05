@@ -208,7 +208,7 @@ namespace csd_automata {
             std::vector<size_t> parents;
         };
         
-        std::map<size_t, Node> nodes;
+        std::unordered_map<size_t, Node> nodes;
         
         const std::function<size_t(size_t)> dfs = [&set, &dfs, &nodes](size_t state) {
             size_t wordsCount = 0;

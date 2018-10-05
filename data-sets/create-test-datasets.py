@@ -3,7 +3,7 @@ import os
 import random
 
 num = 1000000
-dict_files = glob.glob('*/*.dict')
+dict_files = glob.glob(os.path.dirname(os.path.abspath(__file__)) + '/*/*.dict')
 
 for dict_file in dict_files:
   print('Input:', dict_file)

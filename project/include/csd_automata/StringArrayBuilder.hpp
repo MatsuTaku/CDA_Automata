@@ -14,7 +14,7 @@ namespace csd_automata {
     
     class StringArrayBuilder {
     public:
-        using CType = uint8_t;
+        using CType = char;
         static constexpr CType kEndLabel = '\0';
     public:
         StringArrayBuilder() = default;
@@ -40,7 +40,7 @@ namespace csd_automata {
         void addString(const std::string &str) {
             assert(str.size() > 0);
             for (auto c : str) {
-                bytes_.push_back(static_cast<CType>(c));
+                bytes_.emplace_back(static_cast<CType>(c));
             }
             if (binary_mode_) {
                 boundary_flags_.set(bytes_.size() - 1, true);

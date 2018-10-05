@@ -1,77 +1,56 @@
 #!/bin/bash
 
 function morfologik_fsa5 {
-  ./project/build/bench $1 $2 9 >$1.bench.stdout 2>&1
+  ./project/build/dam_bench $1 $2 9 >$1.bench.stdout 2>&1
 }
+export -f morfologik_fsa5
 
 function morfologik_cfsa2 {
-  ./project/build/bench $1 $2 10 >$1.bench.stdout 2>&1
+  ./project/build/dam_bench $1 $2 10 >$1.bench.stdout 2>&1
 }
+export -f morfologik_cfsa2
 
 function xcdat {
-  ./project/build/bench $1 $2 7 >$1.bench.stdout 2>&1
+  ./project/build/dam_bench $1 $2 7 >$1.bench.stdout 2>&1
 }
+export -f xcdat
+
+function marisa {
+  ./project/build/dam_bench $1 $2 8 >$1.bench.stdout 2>&1
+}
+export -f marisa
+
+function darts {
+  ./project/build/dam_bench $1 $2 12 >$1.bench.stdout 2>&1
+}
+export -f darts
+
+function dam {
+  ./project/build/dam_bench $1 $2 11 >$1.bench.stdout 2>&1
+}
+export -f dam
+
+function damac {
+  ./project/build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
+}
+export -f damac
 
 function centrp {
   ./software/path_decomposed_tries/perftest/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
 }
+export -f centrp
 
-function marisa {
-  ./project/build/bench $1 $2 8 >$1.bench.stdout 2>&1
-}
-
-function darts {
-  ./project/build/bench $1 $2 12 >$1.bench.stdout 2>&1
-}
-
-function array_fsa {
-  ./project/build/bench $1 $2 0 >$1.bench.stdout 2>&1
-}
-
-function dac_array_fsa {
-  ./project/build/bench $1 $2 1 >$1.bench.stdout 2>&1
-}
-
-function array_ts_fsa {
-  ./project/build/bench $1 $2 2 >$1.bench.stdout 2>&1
-}
-
-function array_ts_fsa_lookup {
-  ./project/build/bench $1 $2 11 >$1.bench.stdout 2>&1
-}
-
-function array_ts_fsa_noCuWo {
-  ./project/build/bench $1 $2 3 >$1.bench.stdout 2>&1
-}
-
-function array_ts_fsa_noBro {
-  ./project/build/bench $1 $2 4 >$1.bench.stdout 2>&1
-}
-
-function array_ts_fsa_noCompID {
-  ./project/build/bench $1 $2 5 >$1.bench.stdout 2>&1
-}
-
-function array_ts_fsa_noCompWo {
-  ./project/build/bench $1 $2 6 >$1.bench.stdout 2>&1
-}
 
 TOOLS="
+morfologik_fsa5
+morfologik_cfsa2
+xcdat
+centrp
+marisa
 darts
+dam
+damac
 "
-#array_ts_fsa
-#array_ts_fsa_lookup
-#morfologik_fsa5
-#morfologik_cfsa2
-#xcdat
-#centrp
-#marisa
-#array_ts_fsa_noCuWo
-#array_ts_fsa_noBro
-#array_ts_fsa_noCompID
-#array_ts_fsa_noCompWo
-#array_fsa
-#dac_array_fsa
 
 DATASET_DIR=data-sets
 
@@ -107,12 +86,17 @@ $DATASET_DIR/ciura-deorowicz/webster.1000000.rnd_dict
 "
 
 RESULTS_DIR=results
+export RESULTS_DIR
 
-for dataset in $DATASETS; do
-  for tool in $TOOLS; do
-    dataset_fn=`basename $dataset .rnd_dict`
-    dataset_fn=`basename $dataset_fn .1000000`
-    echo "$tool, $dataset..."
-    $tool $RESULTS_DIR/$dataset_fn/$dataset_fn.$tool $dataset
-  done
-done
+bench() {
+    dataset_fn=`basename $2 .1000000.rnd_dict`
+	dictname=$RESULTS_DIR/$dataset_fn/$dataset_fn.$1
+	echo "benchmark [$1] $dictname..."
+	$1 $dictname $2
+}
+export -f bench
+
+
+python $DATASET_DIR/create-test-datasets.py
+
+parallel -j 4 bench {1} {2} ::: $TOOLS ::: $DATASETS

@@ -65,7 +65,7 @@ namespace csd_automata {
             return str_dicts_.size();
         }
         
-        friend StringArrayBuilder& labelArray(StringDict &sd) {
+        friend StringArrayBuilder& stringArrayBuilder(StringDict& sd) {
             return sd.label_array_;
         }
         

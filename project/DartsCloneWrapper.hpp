@@ -9,7 +9,6 @@
 #define DartsCloneWrapper_hpp
 
 #include <darts.h>
-
 #include <fstream>
 #include "csd_automata/Exception.hpp"
 

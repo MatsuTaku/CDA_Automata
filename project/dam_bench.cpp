@@ -116,11 +116,11 @@ namespace {
             
             measureBenchmark(fsa, queryName, 10, needsAccess);
             
-        } catch (exception::DataNotFound e) {
-            std::cerr << "Error open " << e.data_name_ << std::endl;
+        } catch (exception::DataNotFound& e) {
+            std::cerr << e.what() << std::endl;
             return 1;
-        } catch (exception::DoesntHaveMember e) {
-            std::cout << "Doesn't have member: " << e.text << std::endl;
+        } catch (exception::DoesntHaveMember& e) {
+            std::cout << e.what() << std::endl;
             return 1;
         }
         return 0;
@@ -137,10 +137,10 @@ namespace {
             measureBenchmark(darts, queryName, 10, needsAccess);
             
         } catch (exception::DataNotFound e) {
-            std::cerr << "Error open " << e.data_name_ << std::endl;
+            std::cerr << e.what() << std::endl;
             return 1;
         } catch (exception::DoesntHaveMember e) {
-            std::cout << "Doesn't have member: " << e.text << std::endl;
+            std::cout << e.what() << std::endl;
             return 1;
         }
         return 0;
@@ -158,10 +158,10 @@ namespace {
             benchmark::measureBenchmark(fsa, query_name, 10, needsAccess);
             
         } catch (exception::DataNotFound e) {
-            std::cerr << "Error open " << e.data_name_ << std::endl;
+            std::cerr << e.what() << std::endl;
             return 1;
         } catch (exception::DoesntHaveMember e) {
-            std::cout << "Doesn't have member: " << e.text << std::endl;
+            std::cout << e.what() << std::endl;
             return 1;
         }
         return 0;
@@ -174,32 +174,21 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = atoi(argv[3]);
     
-//    fsa_name = "../../../results/wikipedia/wikipedia.da";
-//    query_name = "../../../data-sets/weiss/wikipedia.dict"; type = 12;
-//    fsa_name = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
-//    query_name = "../../../data-sets/kanda/enwiki-20150205.dict"; type = 10;
-//    query_name = "../../../data-sets/weiss/wikipedia.1000000.rnd_dict"; type='9';
-//    fsa_name = "../../../results/wikipedia2/wikipedia2.array_ts_fsa";
-//    query_name = "../../../data-sets/weiss/wikipedia2.1000000.rnd_dict"; type='5';
-//    fsa_name = "../../results/indochina-2004/indochina-2004.sac_array_fsa"; type = '6';
-//    fsa_name = "../../../results/indochina-2004/indochina-2004.sample"; type = '5';
-//    query_name = "../../../data-sets/kanda/indochina-2004.1000000.rnd_dict";
-//    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.fsa"; type = '6';
-//    fsa_name = "../../../results/jawiki-20150118/jawiki-20150118.sample"; type = '5';
-//    query_name = "../../../data-sets/kanda/jawiki-20150118.1000000.rnd_dict";
-//    fsa_name = "../../../results/full/full.fsa"; type = '5';
-//    query_name = "../../../data-sets/ciura-deorowicz/full.1000000.rnd_dict";
-//    fsa_name = "../../../results/enable/enable.sample"; type = '5';
-//    query_name = "../../../data-sets/ciura-deorowicz/enable.1000000.rnd_dict";
-//    type = '3';
+#ifndef NDEBUG
+    fsa_name = "../../../results/wikipedia/wikipedia.dam";
+    query_name = "../../../data-sets/weiss/wikipedia.dict";
+    type = 11;
+#endif
     
     switch (type) {
         case 0:
             return bench<OriginalFSA>(fsa_name, query_name);
         case 1:
             return bench<DacFSA>(fsa_name, query_name);
+        case 11:
+            return bench<DoubleArrayAutomataLookupDictionary>(fsa_name, query_name, false);
         case 2:
-            return bench<DoubleArrayCFSA<true, true, true, true, true>>(fsa_name, query_name);
+            return bench<DoubleArrayAutomataDictionary>(fsa_name, query_name);
         case 3:
             return bench<DoubleArrayCFSA<false, true, true, true, true>>(fsa_name, query_name);
         case 4:
@@ -208,8 +197,6 @@ int main(int argc, const char* argv[]) {
             return bench<DoubleArrayCFSA<true, true, false, true, true>>(fsa_name, query_name);
         case 6:
             return bench<DoubleArrayCFSA<true, true, true, false, true>>(fsa_name, query_name);
-        case 11:
-            return bench<DoubleArrayCFSA<true, false, true, true, false>>(fsa_name, query_name, false);
         case 7:
             return bench<wrapper::XcdatWrapper<false>>(fsa_name, query_name);
         case 8:
