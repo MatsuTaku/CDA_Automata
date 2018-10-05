@@ -1,5 +1,15 @@
 #!/bin/bash
 
+function dam {
+  ./project/build/dam_bench $1 $2 11 >$1.bench.stdout 2>&1
+}
+export -f dam
+
+function damac {
+  ./project/build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
+}
+export -f damac
+
 function morfologik_fsa5 {
   ./project/build/dam_bench $1 $2 9 >$1.bench.stdout 2>&1
 }
@@ -25,31 +35,22 @@ function darts {
 }
 export -f darts
 
-function dam {
-  ./project/build/dam_bench $1 $2 11 >$1.bench.stdout 2>&1
-}
-export -f dam
-
-function damac {
-  ./project/build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
-}
-export -f damac
-
 function centrp {
-  ./software/path_decomposed_tries/perftest/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
+  ./software/path_decomposed_tries/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
+  cat $1.stdout >> $1.bench.stdout
 }
 export -f centrp
 
 
 TOOLS="
+dam
+damac
 morfologik_fsa5
 morfologik_cfsa2
 xcdat
 centrp
 marisa
 darts
-dam
-damac
 "
 
 DATASET_DIR=data-sets
@@ -100,3 +101,4 @@ export -f bench
 python $DATASET_DIR/create-test-datasets.py
 
 parallel -j 4 bench {1} {2} ::: $TOOLS ::: $DATASETS
+

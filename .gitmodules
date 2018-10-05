@@ -10,6 +10,3 @@
 [submodule "project/lib/SimDS"]
 	path = project/lib/SimDS
 	url = git@github.com:MatsuTaku/SimpleDataStructure.git
-[submodule "software/path_decomposed_tries"]
-	path = software/path_decomposed_tries
-	url = https://github.com/ot/path_decomposed_tries.git

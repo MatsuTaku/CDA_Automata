@@ -1,5 +1,15 @@
 #!/bin/bash
 
+dam() {
+  ./project/build/dam_build $1 $2 >$2.stdout 2>&1
+}
+export -f dam
+
+damac() {
+  ./project/build/dam_build $1 $2 --access >$2.stdout 2>&1
+}
+export -f damac
+
 morfologik_fsa5() {
   java -server -Xms50m -jar software/cfsa2.nx/morfologik*.jar \
     fsa_build \
@@ -28,7 +38,7 @@ xcdat() {
 export -f xcdat
 
 centrp() {
-  ./software/path_decomposed_tries/perftest/tries_perftest centroid_repair prepare $1 $2 >$2.stdout 2>&1
+  ./software/path_decomposed_tries/tries_perftest centroid_repair prepare $1 $2 >$2.stdout 2>&1
 }
 export -f centrp
 
@@ -38,19 +48,9 @@ marisa() {
 export -f marisa
 
 darts() {
-  ./project/build/dam_build $1 $2 9 >$2.stdout 2>&1
+  project/build/darts_build $1 $2 >$2.stdout 2>&1
 }
 export -f darts
-
-dam() {
-  ./project/build/dam_build $1 $2 >$2.stdout 2>&1
-}
-export -f dam
-
-damac() {
-  ./project/build/dam_build $1 $2 --access >$2.stdout 2>&1
-}
-export -f damac
 
 
 TOOLS="

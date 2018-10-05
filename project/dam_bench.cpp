@@ -118,10 +118,10 @@ namespace {
             
         } catch (exception::DataNotFound& e) {
             std::cerr << e.what() << std::endl;
-            return 1;
+            return -1;
         } catch (exception::DoesntHaveMember& e) {
             std::cout << e.what() << std::endl;
-            return 1;
+            return -1;
         }
         return 0;
     }
@@ -138,10 +138,10 @@ namespace {
             
         } catch (exception::DataNotFound e) {
             std::cerr << e.what() << std::endl;
-            return 1;
+            return -1;
         } catch (exception::DoesntHaveMember e) {
             std::cout << e.what() << std::endl;
-            return 1;
+            return -1;
         }
         return 0;
     }
@@ -159,10 +159,10 @@ namespace {
             
         } catch (exception::DataNotFound e) {
             std::cerr << e.what() << std::endl;
-            return 1;
+            return -1;
         } catch (exception::DoesntHaveMember e) {
             std::cout << e.what() << std::endl;
-            return 1;
+            return -1;
         }
         return 0;
     }
@@ -209,7 +209,7 @@ int main(int argc, const char* argv[]) {
             return benchDarts(fsa_name, query_name);
         default:
             std::cout << "type is not set!" << std::endl;
-            return 1;
+            return -1;
     }
 
 }
