@@ -13,7 +13,7 @@
 #include "MultipleVector.hpp"
 
 #include "sim_ds/DacVector.hpp"
-#include "sim_ds/Calc.hpp"
+#include "sim_ds/calc.hpp"
 
 namespace csd_automata {
     
@@ -234,14 +234,14 @@ namespace csd_automata {
         // First. Set size of elements
         void resize(size_t size, size_t words = 0) {
             auto bitInto = !useNextCodes;
-            auto nextSize = sim_ds::Calc::sizeFitInBytes(bitInto ? (size << 2) : size);
+            auto nextSize = sim_ds::calc::sizeFitInBytes(bitInto ? (size << 2) : size);
             std::vector<size_t> sizes = { COMP_NEXT ? 1 : nextSize, 1 };
             if constexpr (FOR_DICT) {
                 if constexpr (COMP_WORDS) {
                     sizes.push_back(NEEDS_ACCESS ? 1 : 0);
                     sizes.push_back(1);
                 } else {
-                    auto wordsSize = sim_ds::Calc::sizeFitInBytes(words);
+                    auto wordsSize = sim_ds::calc::sizeFitInBytes(words);
                     sizes.push_back(NEEDS_ACCESS ? wordsSize : 0);
                     sizes.push_back(wordsSize);
                 }
@@ -261,20 +261,20 @@ namespace csd_automata {
         void build() {
             if constexpr (COMP_NEXT) {
                 nextLinkBits_.build();
-                nextFlow_.setFromVector(nextFlowSrc_);
+                nextFlow_.setVector(nextFlowSrc_);
                 nextFlow_.build();
             }
             if constexpr (COMP_CHECK) {
                 checkLinkBits_.build();
-                checkFlow_ = sim_ds::Vector(checkFlowSrc_);
+                checkFlow_ = sim_ds::FitVector(checkFlowSrc_);
             }
             if constexpr (FOR_DICT) {
                 if constexpr (NEEDS_ACCESS) {
                     wordsLinkBits_.build();
-                    wordsFlow_ = sim_ds::Vector(wordsFlowSrc_);
+                    wordsFlow_ = sim_ds::FitVector(wordsFlowSrc_);
                 }
                 cumWordsLinkBits_.build();
-                cumWordsFlow_ = sim_ds::Vector(cumWordsFlowSrc_);
+                cumWordsFlow_ = sim_ds::FitVector(cumWordsFlowSrc_);
             }
         }
         
@@ -333,16 +333,16 @@ namespace csd_automata {
             }
             if constexpr (COMP_CHECK) {
                 checkLinkBits_.read(is);
-                checkFlow_ = sim_ds::Vector(is);
+                checkFlow_ = sim_ds::FitVector(is);
             }
             if constexpr (FOR_DICT && COMP_WORDS) {
                 if constexpr (NEEDS_ACCESS) {
                     wordsLinkBits_.read(is);
-                    wordsFlow_ = sim_ds::Vector(is);
+                    wordsFlow_ = sim_ds::FitVector(is);
                 }
                 if constexpr (USE_CUMU_WORDS) {
                     cumWordsLinkBits_.read(is);
-                    cumWordsFlow_ = sim_ds::Vector(is);
+                    cumWordsFlow_ = sim_ds::FitVector(is);
                 }
             }
         }
@@ -357,12 +357,12 @@ namespace csd_automata {
         sim_ds::DacVector nextFlow_;
         // Enabled at NextCheck<N, true>
         sim_ds::BitVector checkLinkBits_;
-        sim_ds::Vector checkFlow_;
+        sim_ds::FitVector checkFlow_;
         // Enable ar NextCheck<N, C, true, true, CW>
         sim_ds::BitVector wordsLinkBits_;
-        sim_ds::Vector wordsFlow_;
+        sim_ds::FitVector wordsFlow_;
         sim_ds::BitVector cumWordsLinkBits_;
-        sim_ds::Vector cumWordsFlow_;
+        sim_ds::FitVector cumWordsFlow_;
         
         // For build
         std::vector<size_t> nextFlowSrc_;

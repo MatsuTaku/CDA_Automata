@@ -10,7 +10,7 @@
 #include "PlainFSA.hpp"
 #include <unordered_map>
 
-#include "sim_ds/Log.hpp"
+#include "sim_ds/log.hpp"
 
 namespace csd_automata {
     
@@ -175,8 +175,8 @@ namespace csd_automata {
             cout << "is-final: " << bf << tab << ff << endl;
 //            std::cout << i << tab << isFinal_(i) << tab << bn << tab << bc << std::endl;
 //            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fc << std::endl;
-            sim_ds::Log::showAsBinary(bn, 4);
-            sim_ds::Log::showAsBinary(fn, 4);
+            sim_ds::log::showAsBinary(bn, 4);
+            sim_ds::log::showAsBinary(fn, 4);
             std::cout << std::endl;
         }
     }

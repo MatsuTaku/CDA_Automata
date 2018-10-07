@@ -10,7 +10,7 @@
 
 #include "DoubleArrayFSABuilder.hpp"
 #include "StringDictBuilder.hpp"
-#include "sim_ds/Log.hpp"
+#include "sim_ds/log.hpp"
 
 #include "DoubleArrayCFSA.hpp"
 
@@ -186,8 +186,8 @@ namespace csd_automata {
 //            std::cout << i << tab << isFinal_(i) << tab << bn << tab << bc << tab << bi << std::endl;
 //            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fc << tab << fi << std::endl;
             if (bi || fi) {
-                sim_ds::Log::showAsBinary(bc, 4);
-                sim_ds::Log::showAsBinary(fc, 4);
+                sim_ds::log::showAsBinary(bc, 4);
+                sim_ds::log::showAsBinary(fc, 4);
             }
             std::cout << std::endl;
         }

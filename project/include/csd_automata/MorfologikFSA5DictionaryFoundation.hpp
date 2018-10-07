@@ -9,7 +9,7 @@
 #define MorfologikFSA5DictionaryFoundation_hpp
 
 #include "MorfologikFSA5.hpp"
-#include "sim_ds/Calc.hpp"
+#include "sim_ds/calc.hpp"
 
 namespace csd_automata {
     
@@ -229,10 +229,10 @@ namespace csd_automata {
         };
         
         auto totalWords = dfs(set.get_root_state());
-        element_words_lower_size_ = sim_ds::Calc::sizeFitInBytes(totalWords >> kElementWordsUpperBitsSize_);
+        element_words_lower_size_ = sim_ds::calc::sizeFitInBytes(totalWords >> kElementWordsUpperBitsSize_);
         
         auto upperNewSize = set.bytes_.size() + set.get_num_trans() * element_words_lower_size_;
-        element_address_size_ = sim_ds::Calc::sizeFitInBytes(upperNewSize);
+        element_address_size_ = sim_ds::calc::sizeFitInBytes(upperNewSize);
         
         for (size_t s = 0, t = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
             size_t paramsAndWords = set.bytes_[s + 1] & 0x07;

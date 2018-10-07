@@ -9,7 +9,7 @@
 #define MorfologikCFSA2DictionaryFoundation_hpp
 
 #include "MorfologikCFSA2.hpp"
-#include "sim_ds/Calc.hpp"
+#include "sim_ds/calc.hpp"
 
 namespace csd_automata {
     
@@ -238,7 +238,7 @@ namespace csd_automata {
         };
         
         auto totalWords = dfs(set.get_root_state());
-        element_words_lower_size_ = sim_ds::Calc::sizeFitInBytes(totalWords >> kNodeWordsUpperBitsSize_);
+        element_words_lower_size_ = sim_ds::calc::sizeFitInBytes(totalWords >> kNodeWordsUpperBitsSize_);
         
         for (size_t s = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
             nodes[s].offset = std::numeric_limits<size_t>::max();

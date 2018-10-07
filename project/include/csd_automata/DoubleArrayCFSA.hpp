@@ -164,7 +164,7 @@ namespace csd_automata {
             for (auto i = 0; i < fd_.numElements(); i++) {
                 checks[i] = isStringTrans(i) ? fd_.stringId(i) : fd_.check(i);
             }
-            sim_ds::Vector vec(checks);
+            sim_ds::FitVector vec(checks);
             vec.write(os);
         }
         
