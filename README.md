@@ -46,10 +46,12 @@ git submodule update --init --recursive
    - XOR圧縮を用いたダブル配列トライ: [XOR-Compressed Double-Array Trie][xcdat]
    - Path decomposition によるトライの圧縮表現: [Path-Decomposed tries][pdt]
    - Dawid Weissによる圧縮オートマトン表現の実装（Java）: [paper-fsa-compression][pfc]
+   - darts-clone: ダブル配列ベースの高速辞書: [darts-clone][darts-clone]
 
 [pfc]: https://github.com/dweiss/paper-fsa-compression
 [xcdat]: https://github.com/kampersanda/xcdat
 [pdt]: https://github.com/ot/path_decomposed_tries
+[darts-clone]: https://github.com/s-yata/darts-clone
 
 data-setsには「\*.dict」と「\*.1000000.rnd_dict」という二種類のデータセットが含まれており，前者が辞書を構築するときに用いるデータセットで，後者が検索時間を測るときに用いるベンチマーク用データセットです．
 データセットはGitに含まれないため，/data-sets/README.md に従ってダウンロードしてください．
