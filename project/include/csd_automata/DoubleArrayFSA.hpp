@@ -8,7 +8,7 @@
 #ifndef DoubleArrayFSA_hpp
 #define DoubleArrayFSA_hpp
 
-#include "ByteData.hpp"
+#include "IOInterface.hpp"
 
 #include "DAFoundation.hpp"
 #include "sim_ds/BitVector.hpp"
@@ -20,7 +20,7 @@ namespace csd_automata {
     class PlainFSA;
     
     template<bool N>
-    class DoubleArrayFSA : ByteData {
+    class DoubleArrayFSA : IOInterface {
     public:
         DoubleArrayFSA() = default;
         
@@ -140,7 +140,7 @@ namespace csd_automata {
             num_trans_ = read_val<size_t>(is);
         }
         
-        void showStatus(std::ostream& os) const {
+        void showStatus(std::ostream& os) const override {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << num_trans_ << endl;

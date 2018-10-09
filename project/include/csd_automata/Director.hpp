@@ -12,6 +12,7 @@
 #include "PlainFSABuilder.hpp"
 #include "DoubleArrayFSA.hpp"
 #include "DoubleArrayCFSA.hpp"
+#include "ValueSet.hpp"
 #include <fstream>
 #include "Exception.hpp"
 #include "Extension.hpp"
@@ -81,7 +82,7 @@ namespace csd_automata {
         }
         
         template <class DA_TYPE>
-        int fullyBuild(const std::string &datasetName, const std::string &outName) {
+        int fullyBuild(const std::string& outName, const std::string& datasetName, const std::string& valuesName = "") {
             std::cout << "Input dataset: " << datasetName << std::endl;
             
             try {
@@ -122,7 +123,19 @@ namespace csd_automata {
                     
                     DA_TYPE da;
                     auto timeBuildDAM = measureProcessing([&]() {
-                        da = DA_TYPE(pfa);
+                        if (valuesName == "") {
+                            da = DA_TYPE(pfa);
+                        } else {
+                            std::ifstream valuesStream(valuesName);
+                            if (!valuesStream)
+                                throw exception::DataNotFound(valuesName);
+                            std::vector<size_t> values;
+                            for (std::string v; std::getline(valuesStream, v);) {
+                                size_t vi = stoi(v);
+                                values.emplace_back(vi);
+                            }
+                            da = DA_TYPE(pfa, ValueSet(values));
+                        }
                         std::ofstream outStream(outName);
                         da.write(outStream);
                     });

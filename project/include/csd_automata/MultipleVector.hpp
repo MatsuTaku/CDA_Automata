@@ -8,11 +8,11 @@
 #ifndef FitValuesArray_hpp
 #define FitValuesArray_hpp
 
-#include "ByteData.hpp"
+#include "IOInterface.hpp"
 
 namespace csd_automata {
     
-    class MultipleVector : ByteData {
+    class MultipleVector : IOInterface {
     public:
         // MARK: copy guard
         MultipleVector() = default;

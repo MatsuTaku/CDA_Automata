@@ -8,7 +8,7 @@
 #ifndef NextCheck_hpp
 #define NextCheck_hpp
 
-#include "ByteData.hpp"
+#include "IOInterface.hpp"
 
 #include "MultipleVector.hpp"
 
@@ -18,7 +18,7 @@
 namespace csd_automata {
     
     template<bool COMP_NEXT, bool COMP_CHECK, bool COMP_ID, bool FOR_DICT, bool COMP_WORDS, bool USE_CUMU_WORDS, bool NEEDS_ACCESS>
-    class DAFoundation : ByteData {
+    class DAFoundation : IOInterface {
     public:
         static constexpr bool useNextCodes = COMP_NEXT;
         static constexpr bool useCheckCodes = COMP_CHECK;
@@ -347,7 +347,7 @@ namespace csd_automata {
             }
         }
         
-        void showStatus(std::ostream &os) const;
+        void showStatus(std::ostream &os) const override;
         void showSizeMap(std::ostream &os) const;
         
     private:

@@ -27,16 +27,23 @@ int main(int argc, const char *argv[]) {
     using types = csd_automata::DAMTypes;
     
     int typeIndex = 0;
+    std::string valuesName = "";
+    
     for (int i = 2; i < argc; i++) {
-        if (std::string(argv[i]) == "--access")
+        std::string option(argv[i]);
+        if (option == "--access")
             typeIndex = 1;
+        if (option == "--values") {
+            valuesName = argv[i + 1];
+            i++;
+        }
     }
     
     switch (typeIndex) {
         case 0:
-            return csd_automata::director::fullyBuild<std::tuple_element_t<0, types>>(datasetName, dictName);
+            return csd_automata::director::fullyBuild<std::tuple_element_t<0, types>>(dictName, datasetName, valuesName);
         case 1:
-            return csd_automata::director::fullyBuild<std::tuple_element_t<1, types>>(datasetName, dictName);
+            return csd_automata::director::fullyBuild<std::tuple_element_t<1, types>>(dictName, datasetName, valuesName);
         default:
             break;
     }

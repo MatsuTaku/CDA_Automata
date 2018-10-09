@@ -8,22 +8,26 @@
 #ifndef DoubleArrayCFSA_hpp
 #define DoubleArrayCFSA_hpp
 
-#include "ByteData.hpp"
+#include "IOInterface.hpp"
 
 #include "DAFoundation.hpp"
 #include "StringArray.hpp"
 #include "sim_ds/BitVector.hpp"
+#include "ValueSet.hpp"
 
 #include "DoubleArrayCFSABuilder.hpp"
 
 namespace csd_automata {
     
-    class PlainFSA;
-    
     template<bool WORDS_CUMU, bool EDGE_LINK, bool ID_COMP, bool WORDS_COMP, bool NEEDS_ACCESS>
-    class DoubleArrayCFSA : ByteData {
+    class DoubleArrayCFSA : IOInterface {
         friend class DoubleArrayCFSABuilder;
+        
     public:
+        static std::string name() {
+            return "DoubleArrayCFSA";
+        }
+        
         static constexpr bool useCumulativeWords = WORDS_CUMU;
         static constexpr bool useEdgeLink = EDGE_LINK;
         static constexpr bool shouldCompressID= ID_COMP;
@@ -38,15 +42,23 @@ namespace csd_automata {
 
         DoubleArrayCFSA() = default;
         
-        explicit DoubleArrayCFSA(const DoubleArrayCFSABuilder &builder) {
+        explicit DoubleArrayCFSA(const DoubleArrayCFSABuilder& builder) {
             builder.release(*this);
         }
         
-        explicit DoubleArrayCFSA(const PlainFSA &fsa) {
+        explicit DoubleArrayCFSA(const DoubleArrayCFSABuilder& builder, ValueSet&& values) : DoubleArrayCFSA(builder) {
+            values_ = std::move(values);
+        }
+        
+        explicit DoubleArrayCFSA(const PlainFSA& fsa) {
             const auto shouldMergeSuffix = true;
             DoubleArrayCFSABuilder builder(fsa);
             builder.DoubleArrayCFSABuilder::build(useBinaryLabel, shouldMergeSuffix);
             builder.release(*this);
+        }
+        
+        explicit DoubleArrayCFSA(const PlainFSA& fsa, ValueSet&& values) : DoubleArrayCFSA(fsa) {
+            values_ = std::move(values);
         }
         
         explicit DoubleArrayCFSA(std::istream &is) {
@@ -63,12 +75,7 @@ namespace csd_automata {
         DoubleArrayCFSA(DoubleArrayCFSA&& rhs) noexcept = default;
         DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
         
-    public:
-        static std::string name() {
-            return "DoubleArrayCFSA";
-        }
-        
-        void build(const DoubleArrayCFSABuilder &builder);
+        void build(const DoubleArrayCFSABuilder& builder);
         
         bool isMember(const std::string &str) const;
         
@@ -144,6 +151,7 @@ namespace csd_automata {
                 size += is_node_bits_.sizeInBytes();
                 size += size_vec(eldest_);
             }
+            size += values_.sizeInBytes();
             return size;
         }
         
@@ -157,6 +165,7 @@ namespace csd_automata {
                 is_node_bits_.write(os);
                 write_vec(eldest_, os);
             }
+            values_.write(os);
         }
         
         void writeCheck(std::ostream &os) const {
@@ -178,20 +187,22 @@ namespace csd_automata {
                 is_node_bits_.read(is);
                 eldest_ = read_vec<uint8_t>(is);
             }
+            values_.read(is);
         }
         
-        void showStatus(std::ostream& os) const {
+        void showStatus(std::ostream& os) const override {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
-            os << "#trans: " << num_trans_ << endl;
-            os << "#elems: " << fd_.numElements() << endl;
-            os << "size:   " << sizeInBytes() << endl;
+            os << "#trans:\t" << num_trans_ << endl;
+            os << "#elems:\t" << fd_.numElements() << endl;
+            os << "size:\t" << sizeInBytes() << endl;
             fd_.showStatus(os);
-            os << "size strings:    " << strings_.sizeInBytes() << endl;
+            os << "\tstrings:\t" << strings_.sizeInBytes() << endl;
             if constexpr (EDGE_LINK) {
-                os << "size brother:    " << has_brother_bits_.sizeInBytes() + size_vec(brother_) << endl;
-                os << "size eldest:    " << is_node_bits_.sizeInBytes() + size_vec(eldest_) << endl;
+                os << "\tbrother:\t" << has_brother_bits_.sizeInBytes() + size_vec(brother_) << endl;
+                os << "\teldest:\t" << is_node_bits_.sizeInBytes() + size_vec(eldest_) << endl;
             }
+            os << "\tsize values:\t" << values_.sizeInBytes() << endl;
         }
         
         void printForDebug(std::ostream& os) const {
@@ -217,6 +228,9 @@ namespace csd_automata {
         std::vector<uint8_t> brother_;
         sim_ds::BitVector is_node_bits_;
         std::vector<uint8_t> eldest_;
+        
+        // If set values
+        ValueSet values_;
         
         // MARK: - Protocol setting
         
