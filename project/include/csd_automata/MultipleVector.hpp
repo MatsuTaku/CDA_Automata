@@ -8,6 +8,7 @@
 #ifndef FitValuesArray_hpp
 #define FitValuesArray_hpp
 
+#include "basic.hpp"
 #include "IOInterface.hpp"
 
 namespace csd_automata {

@@ -8,7 +8,7 @@
 #ifndef IOInterface_hpp
 #define IOInterface_hpp
 
-#include "basic.hpp"
+#include <iostream>
 
 namespace csd_automata {
     

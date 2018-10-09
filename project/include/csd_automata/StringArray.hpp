@@ -9,13 +9,13 @@
 #define StringArray_hpp
 
 #include "StringArrayBuilder.hpp"
-
+#include "IOInterface.hpp"
 #include "sim_ds/BitVector.hpp"
 
 namespace csd_automata {
     
     template<bool BINARY = false>
-    class StringArray {
+    class StringArray : IOInterface {
     public:
         // MARK: Constructor
         
@@ -96,20 +96,20 @@ namespace csd_automata {
         
         // MARK: IO
         
-        size_t sizeInBytes() const {
+        size_t sizeInBytes() const override {
             auto size = size_vec(bytes_);
             if constexpr (BINARY)
                 size += boundary_flags_.sizeInBytes();
             return size;
         }
         
-        void write(std::ostream& os) const {
+        void write(std::ostream& os) const override {
             write_vec(bytes_, os);
             if constexpr (BINARY)
                 boundary_flags_.write(os);
         }
         
-        void read(std::istream& is) {
+        void read(std::istream& is) override {
             bytes_ = read_vec<char>(is);
             if constexpr (BINARY)
                 boundary_flags_.read(is);
