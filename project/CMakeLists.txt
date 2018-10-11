@@ -23,7 +23,7 @@ add_library(CSDAutomata STATIC ${IncludeDir}/csd_automata.cpp ${HEADER_FILES})
 #target_sources(CSDAutomata PRIVATE ${HEADER_FILES})
 target_include_directories(CSDAutomata PUBLIC ${IncludeDir})
 
-add_subdirectory(lib/SimDS)
+add_subdirectory(lib/SimpleDataStructure)
 target_link_libraries(CSDAutomata PUBLIC sim_ds)
 #get_target_property(SimDS_INCLUDE_DIR sim_ds PROPERTY ${INTERFACE_INCLUDE_DIRECTORIES})
 #target_include_directories(CSDAutomata PRIVATE ${SimDS_INCLUDE_DIR})

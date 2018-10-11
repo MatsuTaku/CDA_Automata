@@ -7,6 +7,6 @@
 [submodule "project/test/lib/googletest"]
 	path = project/test/lib/googletest
 	url = git@github.com:google/googletest
-[submodule "project/lib/SimDS"]
-	path = project/lib/SimDS
+[submodule "project/lib/SimpleDataStructure"]
+	path = project/lib/SimpleDataStructure
 	url = git@github.com:MatsuTaku/SimpleDataStructure.git
