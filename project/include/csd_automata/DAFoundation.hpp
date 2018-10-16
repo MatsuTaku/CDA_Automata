@@ -29,8 +29,8 @@ namespace csd_automata {
         enum ElementNumber {
             ENNext = 0,
             ENCheck = 1,
-            ENWords = 2,
-            ENCWords = 3,
+            ENCWords = 2,
+            ENWords = 3,
         };
         
     public:
@@ -93,7 +93,7 @@ namespace csd_automata {
             assert(FOR_DICT);
             assert(NEEDS_ACCESS);
             if constexpr (COMP_WORDS) {
-                size_t words = elements_.get<ENWords, uint8_t>(index) & 0x0f;
+                size_t words = elements_.get<ENCWords, uint8_t>(index) >> kFixedBitsWords;
                 if (!wordsLinkBits_[index])
                     return words;
                 else {
@@ -111,7 +111,7 @@ namespace csd_automata {
             
             if constexpr (COMP_WORDS) {
                 if constexpr (NEEDS_ACCESS) {
-                    size_t cw = elements_.get<ENCWords, uint8_t>(index) >> kFixedBitsWords;
+                    size_t cw = elements_.get<ENCWords, uint8_t>(index) & 0x0F;
                     if (!cumWordsLinkBits_[index])
                         return cw;
                     else {
@@ -191,8 +191,9 @@ namespace csd_automata {
             assert(NEEDS_ACCESS);
             
             if constexpr (COMP_WORDS) {
-                auto base = elements_.get<ENWords, uint8_t>(index) & 0xf0;
-                elements_.set<ENWords>(index, base | (words & 0x0f));
+                // Shared same byte with c-store to save each upper 4bits.
+                auto base = elements_.get<ENCWords, uint8_t>(index) & 0x0F;
+                elements_.set<ENCWords>(index, base | ((words & 0x0F) << kFixedBitsWords));
                 auto flow = words >> kFixedBitsWords;
                 bool hasFlow = flow > 0;
                 wordsLinkBits_.set(index, hasFlow);
@@ -209,8 +210,8 @@ namespace csd_automata {
             
             if constexpr (COMP_WORDS) {
                 if constexpr (NEEDS_ACCESS) {
-                    auto base = elements_.get<ENCWords, uint8_t>(index) & 0x0f;
-                    elements_.set<ENCWords>(index, base | ((cw & 0x0f) << kFixedBitsWords));
+                    auto base = elements_.get<ENCWords, uint8_t>(index) & 0xF0;
+                    elements_.set<ENCWords>(index, base | (cw & 0x0F));
                     auto flow = cw >> kFixedBitsWords;
                     bool hasFlow = flow > 0;
                     cumWordsLinkBits_.set(index, hasFlow);
@@ -238,12 +239,12 @@ namespace csd_automata {
             std::vector<size_t> sizes = { COMP_NEXT ? 1 : nextSize, 1 };
             if constexpr (FOR_DICT) {
                 if constexpr (COMP_WORDS) {
-                    sizes.push_back(NEEDS_ACCESS ? 1 : 0);
                     sizes.push_back(1);
                 } else {
                     auto wordsSize = sim_ds::calc::sizeFitInBytes(words);
-                    sizes.push_back(NEEDS_ACCESS ? wordsSize : 0);
                     sizes.push_back(wordsSize);
+                    if (NEEDS_ACCESS)
+                        sizes.push_back(wordsSize);
                 }
             }
             elements_.setValueSizes(sizes);
@@ -251,9 +252,9 @@ namespace csd_automata {
             if (COMP_NEXT) nextLinkBits_.resize(size);
             if (COMP_CHECK) checkLinkBits_.resize(size);
             if (FOR_DICT && COMP_WORDS) {
+                cumWordsLinkBits_.resize(size);
                 if (NEEDS_ACCESS)
                     wordsLinkBits_.resize(size);
-                cumWordsLinkBits_.resize(size);
             }
         }
         
@@ -385,16 +386,20 @@ namespace csd_automata {
         os << "size next:   " << numElements() * elements_.valueSize(ENNext) + nextLinkBits_.sizeInBytes() +  nextFlow_.sizeInBytes() << endl;
         os << "size check:   " << numElements() + checkLinkBits_.sizeInBytes() + checkFlow_.sizeInBytes() << endl;
         if constexpr (D) {
+            size_t cWordsSize;
             if constexpr (NA) {
                 size_t wordsSize;
                 if constexpr (CW) {
                     wordsSize = numElements() / 2 + wordsLinkBits_.sizeInBytes() + wordsFlow_.sizeInBytes();
+                    cWordsSize = numElements() / 2 + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes();
                 } else {
                     wordsSize = numElements() * elements_.valueSize(ENWords);
+                    cWordsSize = numElements() * elements_.valueSize(ENCWords);
                 }
                 os << "size words:   " << wordsSize << endl;
+            } else {
+                cWordsSize = CW ? (numElements() + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes()) : (numElements() * elements_.valueSize(ENCWords));
             }
-            size_t cWordsSize = CW ? (numElements() + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes()) : (numElements() * elements_.valueSize(ENCWords));
             os << "size cumWords:   " << cWordsSize << endl;
             
             os << "---  ---" << endl;
@@ -416,8 +421,6 @@ namespace csd_automata {
                 os << c << "\t" << endl;
             os << "/ " << numElem << endl;
         };
-        //        auto counts = sim_ds::Calc::separateCountsInSizeOf(nexts);
-        //        showList(counts);
         
     }
     

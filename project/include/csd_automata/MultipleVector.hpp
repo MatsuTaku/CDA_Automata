@@ -28,10 +28,8 @@ namespace csd_automata {
     public:
         using IdType = uint8_t;
         
-        void setValueSize(size_t index, size_t size);
-        
-        template <typename T>
-        void setValueSizes(std::vector<T> &sizes) {
+        template <typename CONTAINER>
+        void setValueSizes(CONTAINER& sizes) {
             value_sizes_ = {};
             for (auto i = 0; i < sizes.size(); i++)
                 value_sizes_.push_back(sizes[i]);
@@ -87,8 +85,7 @@ namespace csd_automata {
             bytes_ = read_vec<IdType>(is);
             
             auto sizes = read_vec<uint8_t>(is);
-            for (auto i = 0; i < sizes.size(); i++)
-                setValueSize(i, sizes[i]);
+            setValueSizes(sizes);
         }
         
     private:
@@ -100,20 +97,8 @@ namespace csd_automata {
         
     };
     
-    // MARK: - inline function
     
-    inline void MultipleVector::setValueSize(size_t index, size_t size) {
-        element_size_ += size;
-        value_sizes_.insert(value_sizes_.begin() + index, size);
-        
-        auto pos = value_positions_.size() > 0 ? value_positions_[index - 1] + value_sizes_[index - 1] : 0;
-        value_positions_.insert(value_positions_.begin() + index, pos);
-        
-        if (index == value_positions_.size() - 1)
-            return;
-        for (auto i = index + 1; i < value_positions_.size(); i++)
-            value_positions_[i] += size;
-    }
+    // MARK: - inline function
     
     template <int N, typename T>
     inline T MultipleVector::get(size_t index) const {
@@ -123,6 +108,7 @@ namespace csd_automata {
             value |= T(bytes_[pos + i]) << (i * 8);
         return value;
     }
+    
     
     template <int N, typename T>
     inline void MultipleVector::set(size_t index, T value) {

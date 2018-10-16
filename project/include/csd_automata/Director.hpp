@@ -77,8 +77,9 @@ namespace csd_automata {
                 if (!sd.isMember(line))
                     throw exception::DoesntHaveMember(line);
             }
-            std::cout << "Num of queries: " << count << std::endl;
-            std::cout << "Average query length: " << float(length) / count << std::endl;
+            std::cout << "Check membering all queries success!" << std::endl
+            << "Num of queries: " << count << std::endl
+            << "Average query length: " << float(length) / count << std::endl;
         }
         
         template <class DA_TYPE>

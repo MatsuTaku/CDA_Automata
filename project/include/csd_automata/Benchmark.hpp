@@ -27,6 +27,8 @@ namespace csd_automata {
         
         template <class T>
         void measureBenchmark(const T &fsa, const char *queryName, int runs, bool needsAccess) {
+            using std::cout, std::endl;
+            
             const auto &strs = KeySet::getKeySets(queryName);
             auto num = strs.size();
             auto ng = 0;
@@ -38,12 +40,12 @@ namespace csd_automata {
                 }
             }
             if (ng > 0)
-                fsa.printForDebug(std::cout);
+                fsa.printForDebug(cout);
             auto mSec = sw.get_micro_sec();
             
-            std::cout << "Search time: " << mSec / num << " µs/query" << std::endl;
-            std::cout << "OK: " << num - ng << std::endl;
-            std::cout << "NG: " << ng << std::endl;
+            cout << "Search time: " << mSec / num << " µs/query" << endl
+            << "OK: " << num - ng << endl
+            << "NG: " << ng << endl;
             
             std::vector<size_t> values(strs.size());
             for (auto i = 0; i < strs.size(); i++) {
@@ -59,10 +61,10 @@ namespace csd_automata {
                 }
             }
             mSec = sw.get_micro_sec();
-            std::cout << "------" << std::endl;
-            std::cout << "Lookup time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
-            std::cout << "OK: " << num - ng << std::endl;
-            std::cout << "NG: " << ng << std::endl;
+            cout << "------" << endl
+            << "Lookup time on " << runs << " runs: " << mSec / runs / num << " µs/query" << endl
+            << "OK: " << num - ng << endl
+            << "NG: " << ng << endl;
             
             if (needsAccess) {
                 sw = Stopwatch();
@@ -76,15 +78,15 @@ namespace csd_automata {
                     }
                 }
                 if (ng > 0)
-                    fsa.printForDebug(std::cout);
+                    fsa.printForDebug(cout);
                 mSec = sw.get_micro_sec();
-                std::cout << "------" << std::endl;
-                std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
-                std::cout << "OK: " << num - ng << std::endl;
-                std::cout << "NG: " << ng << std::endl;
+                cout << "------" << endl;
+                cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << endl;
+                cout << "OK: " << num - ng << endl;
+                cout << "NG: " << ng << endl;
             }
             
-            fsa.showStatus(std::cout);
+            fsa.showStatus(cout);
         }
         
     };

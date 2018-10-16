@@ -1,6 +1,7 @@
 # cmake project
 __MACOSX
 /array-fsa/build
+/xcode
 /results
 /data-sets/*
 !/data-sets/*.py

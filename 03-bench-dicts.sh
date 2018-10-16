@@ -1,37 +1,37 @@
 #!/bin/bash
 
 function dam {
-  ./project/build/dam_bench $1 $2 11 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 11 >$1.bench.stdout 2>&1
 }
 export -f dam
 
 function damac {
-  ./project/build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
 }
 export -f damac
 
 function morfologik_fsa5 {
-  ./project/build/dam_bench $1 $2 9 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 9 >$1.bench.stdout 2>&1
 }
 export -f morfologik_fsa5
 
 function morfologik_cfsa2 {
-  ./project/build/dam_bench $1 $2 10 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 10 >$1.bench.stdout 2>&1
 }
 export -f morfologik_cfsa2
 
 function xcdat {
-  ./project/build/dam_bench $1 $2 7 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 7 >$1.bench.stdout 2>&1
 }
 export -f xcdat
 
 function marisa {
-  ./project/build/dam_bench $1 $2 8 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 8 >$1.bench.stdout 2>&1
 }
 export -f marisa
 
 function darts {
-  ./project/build/dam_bench $1 $2 12 >$1.bench.stdout 2>&1
+  ./build/dam_bench $1 $2 12 >$1.bench.stdout 2>&1
 }
 export -f darts
 
@@ -43,8 +43,8 @@ export -f centrp
 
 
 TOOLS="
-dam
 damac
+dam
 morfologik_fsa5
 morfologik_cfsa2
 xcdat
@@ -100,5 +100,5 @@ export -f bench
 
 python $DATASET_DIR/create-test-datasets.py
 
-parallel -j 4 bench {1} {2} ::: $TOOLS ::: $DATASETS
+parallel -j 2 bench {1} {2} ::: $TOOLS ::: $DATASETS
 

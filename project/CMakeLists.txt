@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.12)
 
 project(csd_automata)
 
 set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_CXX_FLAGS "-Wall -std=c++1z")
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -32,9 +31,6 @@ link_directories(/usr/local/lib)
 include_directories(/usr/local/include)
 
 
-add_executable(test_PlainFSA test_PlainFSA.cpp)
-target_link_libraries(test_PlainFSA CSDAutomata)
-
 file(GLOB wrappers XcdatWrapper.hpp MarisaWrapper.hpp DartsCloneWrapper.hpp)
 
 add_executable(dam_build dam_build.cpp)
@@ -53,15 +49,11 @@ add_executable(build_array build_array.cpp)
 target_link_libraries(build_array CSDAutomata)
 
 
-# Build Static Library for Development on Xcode
-#add_library(CSDAutomata_dev STATIC ${IncludeDir}/array_fsa.cpp ${HEADER_FILES})
-#include_directories(${IncludeDir})
-#target_link_libraries(CSDAutomata_dev PRIVATE sim_ds)
-
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+	configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+
 	message(STATUS "Enable test CSDAutomata")
-	enable_testing()
 	add_subdirectory(test)
 endif()
 

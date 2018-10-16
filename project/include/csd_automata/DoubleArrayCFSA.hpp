@@ -143,7 +143,6 @@ namespace csd_automata {
         size_t sizeInBytes() const override {
             auto size = sizeof(num_trans_);
             size += fd_.sizeInBytes();
-            //            size += is_string_bits_.sizeInBytes();
             size += strings_.sizeInBytes();
             if constexpr (EDGE_LINK) {
                 size += has_brother_bits_.sizeInBytes();
@@ -168,7 +167,7 @@ namespace csd_automata {
             values_.write(os);
         }
         
-        void writeCheck(std::ostream &os) const {
+        void writeCheck(std::ostream& os) const {
             std::vector<size_t> checks(fd_.numElements());
             for (auto i = 0; i < fd_.numElements(); i++) {
                 checks[i] = isStringTrans(i) ? fd_.stringId(i) : fd_.check(i);
@@ -192,10 +191,10 @@ namespace csd_automata {
         
         void showStatus(std::ostream& os) const override {
             using std::endl;
-            os << "--- Stat of " << name() << " ---" << endl;
-            os << "#trans:\t" << num_trans_ << endl;
-            os << "#elems:\t" << fd_.numElements() << endl;
-            os << "size:\t" << sizeInBytes() << endl;
+            os << "--- Stat of " << name() << " ---" << endl
+            << "#trans:\t" << num_trans_ << endl
+            << "#elems:\t" << fd_.numElements() << endl
+            << "size:\t" << sizeInBytes() << endl;
             fd_.showStatus(os);
             os << "\tstrings:\t" << strings_.sizeInBytes() << endl;
             if constexpr (EDGE_LINK) {
@@ -305,55 +304,6 @@ namespace csd_automata {
     };
     
     
-//    template<bool C, bool E, bool I, bool W, bool NA>
-//    void DoubleArrayCFSA<C, E, I, W, NA>::build(const DoubleArrayCFSABuilder& builder) {
-//        const auto numElems = builder.numElems_();
-//        resize(numElems, builder.getNumWords());
-//        auto sab = stringArrayBuilder(builder);
-//        setStringArray(sa_type(sab));
-//
-//        auto numTrans = 0;
-//        for (auto i = 0; i < numElems; i++) {
-//            if (builder.isFrozen_(i)) {
-//                numTrans++;
-//
-//                auto isStrTrans = builder.hasLabel_(i);
-//                setNext(i, builder.getNext_(i));
-//                setIsStringTrans(i, isStrTrans);
-//                setIsFinal(i, builder.isFinal_(i));
-//                setCheck(i, builder.getCheck_(i));
-//                if (isStrTrans)
-//                    setStringIndex(i, builder.getLabelNumber_(i));
-//                else
-//                    setCheck(i, builder.getCheck_(i));
-//
-//                if constexpr (NA)
-//                    setWords(i, builder.getStore_(i));
-//                if constexpr (C)
-//                    setCumWords(i, builder.getAccStore_(i));
-//
-//                if constexpr (E) {
-//                    bool hasBro = builder.hasBrother_(i);
-//                    setHasBrother(i, hasBro);
-//                    if (hasBro)
-//                        setBrother(i, builder.getBrother_(i));
-//                }
-//            }
-//
-//            if constexpr (E) {
-//                bool isNode = builder.isUsedNext_(i);
-//                setIsNode(i, isNode);
-//                if (isNode)
-//                    setEldest(i, builder.getEldest_(i));
-//            }
-//        }
-//        buildBitVector();
-//        setNumTrans(numTrans);
-//
-//        builder.showCompareWith(*this);
-//
-//    }
-    
     template<bool C, bool E, bool I, bool W, bool NA>
     bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string &str) const {
         size_t trans = 0;
@@ -374,6 +324,7 @@ namespace csd_automata {
         }
         return isFinal(trans);
     }
+    
     
     template<bool C, bool E, bool I, bool W, bool NA>
     unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string &str) const {
@@ -441,6 +392,7 @@ namespace csd_automata {
         return isFinal(trans) ? ++counter : searchError;
     }
     
+    
     template<bool C, bool E, bool I, bool W, bool NA>
     std::string DoubleArrayCFSA<C, E, I, W, NA>::access(size_t key) const {
         size_t trans = 0;
@@ -449,7 +401,7 @@ namespace csd_automata {
         while (counter > 0) {
             auto targetNode = target(trans);
             size_t nextTrans = searchError;
-            uint8_t c = E ? eldest(targetNode) : 1;
+            uint8_t c = (E ? eldest(targetNode) : 1);
             while (true) {
                 size_t nt = targetNode ^ c;
                 size_t checkType;
@@ -461,7 +413,7 @@ namespace csd_automata {
                     checkClear = checkType == c;
                 } else {
                     checkType = stringId(nt);
-                    checkClear = strings_[checkType] == c;
+                    checkClear = uint8_t(strings_[checkType]) == c;
                 }
                 if (!checkClear) {
                     if constexpr (E) {

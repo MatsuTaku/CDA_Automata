@@ -12,7 +12,13 @@ using namespace csd_automata;
 
 namespace {
     
-    void measureBenchmark(const wrapper::MarisaWrapper &fsa, const char *queryName, int runs, bool needsAccess) {
+#ifdef NDEBUG
+    const int RUNS = 10;
+#else
+    const int RUNS = 1;
+#endif
+    
+    void measureBenchmark(const wrapper::MarisaWrapper &fsa, const char *queryName, bool needsAccess) {
         marisa::Keyset keyset;
         wrapper::setMarisaKeyset(queryName, &keyset);
         auto num = keyset.size();
@@ -27,7 +33,7 @@ namespace {
         }
         
         csd_automata::Stopwatch sw;
-        for (auto r = 0; r < runs; r++) {
+        for (auto r = 0; r < RUNS; r++) {
             ng = 0;
             for (auto i = 0; i < keyset.size(); i++) {
                 agent.set_query(keyset[i].ptr(), keyset[i].length());
@@ -37,13 +43,13 @@ namespace {
         }
         auto mSec = sw.get_micro_sec();
         std::cout << "------" << std::endl;
-        std::cout << "Lookup time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
+        std::cout << "Lookup time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
         if (needsAccess) {
             sw = csd_automata::Stopwatch();
-            for (auto r = 0; r < runs; r++) {
+            for (auto r = 0; r < RUNS; r++) {
                 ng = 0;
                 for (auto i = 0; i < keyset.size(); i++) {
                     agent.set_query(values[i]);
@@ -55,7 +61,7 @@ namespace {
             }
             mSec = sw.get_micro_sec();
             std::cout << "------" << std::endl;
-            std::cout << "Access time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
+            std::cout << "Access time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
             std::cout << "OK: " << num - ng << std::endl;
             std::cout << "NG: " << ng << std::endl;
         }
@@ -63,7 +69,7 @@ namespace {
         fsa.showStatus(std::cout);
     }
     
-    void measureBenchmark(const wrapper::DartsCloneWrapper &da, const char *queryName, int runs, bool needsAccess) {
+    void measureBenchmark(const wrapper::DartsCloneWrapper &da, const char *queryName, bool needsAccess) {
         std::vector<char *> strs;
         size_t num;
         {
@@ -85,7 +91,7 @@ namespace {
         }
         
         sw = csd_automata::Stopwatch();
-        for (auto r = 0; r < runs; r++) {
+        for (auto r = 0; r < RUNS; r++) {
             ng = 0;
             for (auto i = 0; i < num; i++) {
                 if (da.lookup(strs[i]) != values[i])
@@ -94,7 +100,7 @@ namespace {
         }
         auto mSec = sw.get_micro_sec();
         std::cout << "------" << std::endl;
-        std::cout << "Lookup time on " << runs << " runs: " << mSec / runs / num << " µs/query" << std::endl;
+        std::cout << "Lookup time on " << RUNS << " runs: " << mSec / RUNS / num << " µs/query" << std::endl;
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
@@ -114,7 +120,7 @@ namespace {
             
             std::cout << "Search benchmark for " << queryName << std::endl;
             
-            measureBenchmark(fsa, queryName, 10, needsAccess);
+            measureBenchmark(fsa, queryName, needsAccess);
             
         } catch (exception::DataNotFound& e) {
             std::cerr << e.what() << std::endl;
@@ -134,7 +140,7 @@ namespace {
             
             std::cout << "Search benchmark for " << queryName << std::endl;
             
-            measureBenchmark(darts, queryName, 10, needsAccess);
+            measureBenchmark(darts, queryName, needsAccess);
             
         } catch (exception::DataNotFound e) {
             std::cerr << e.what() << std::endl;
@@ -155,7 +161,7 @@ namespace {
             
             std::cout << "Search benchmark for " << query_name << std::endl;
             
-            benchmark::measureBenchmark(fsa, query_name, 10, needsAccess);
+            benchmark::measureBenchmark(fsa, query_name, RUNS, needsAccess);
             
         } catch (exception::DataNotFound e) {
             std::cerr << e.what() << std::endl;
@@ -175,9 +181,9 @@ int main(int argc, const char* argv[]) {
     auto type = atoi(argv[3]);
     
 #ifndef NDEBUG
-    fsa_name = "../../../results/wikipedia/wikipedia.dam";
-    query_name = "../../../data-sets/weiss/wikipedia.dict";
-    type = 11;
+    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.damac";
+    query_name = "../../data-sets/kanda/jawiki-20150118.dict";
+    type = 2;
 #endif
     
     switch (type) {
@@ -208,7 +214,7 @@ int main(int argc, const char* argv[]) {
         case 12:
             return benchDarts(fsa_name, query_name);
         default:
-            std::cout << "type is not set!" << std::endl;
+            std::cerr << "type is invalid value: " << type << std::endl;
             return -1;
     }
 

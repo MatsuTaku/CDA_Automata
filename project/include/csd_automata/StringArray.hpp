@@ -17,9 +17,19 @@ namespace csd_automata {
     template<bool BINARY = false>
     class StringArray : IOInterface {
     public:
-        // MARK: Constructor
+        // MARK: Copy guard
         
         StringArray() = default;
+        ~StringArray() = default;
+        
+        StringArray(const StringArray&) = delete;
+        StringArray& operator=(const StringArray&) = delete;
+        
+        StringArray(StringArray&&) noexcept = default;
+        StringArray& operator=(StringArray&&) noexcept = default;
+        static constexpr bool binaryMode = BINARY;
+        
+        // MARK: Constructor
         
         explicit StringArray(StringArrayBuilder& builder) {
             if (BINARY != builder.isBinary()) {
@@ -32,20 +42,10 @@ namespace csd_automata {
             }
         }
         
-        explicit StringArray(std::istream &is) {
+        explicit StringArray(std::istream& is) {
             read(is);
         }
         
-        ~StringArray() = default;
-        
-        // MARK: Copy guard
-        
-        StringArray(const StringArray&) = delete;
-        StringArray& operator=(const StringArray&) = delete;
-        
-        StringArray(StringArray&&) noexcept = default;
-        StringArray& operator=(StringArray&&) noexcept = default;
-        static constexpr bool binaryMode = BINARY;
         
     public:
         using CharType = char;

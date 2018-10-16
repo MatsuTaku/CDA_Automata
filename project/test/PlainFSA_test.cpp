@@ -4,10 +4,11 @@
 
 #include <cassert>
 #include <iostream>
+#include <unistd.h>
 
+#include "gtest/gtest.h"
 #include "csd_automata/PlainFSABuilder.hpp"
 
-#include <unistd.h>
 
 using namespace csd_automata;
 using namespace std;
@@ -47,10 +48,10 @@ namespace {
             
             for (char c : str) {
                 trans = fsa.get_trans(state, static_cast<uint8_t>(c));
-                assert(trans != 0);
+                EXPECT_TRUE(trans != 0);
                 state = fsa.get_target_state(trans);
             }
-            assert(fsa.is_final_trans(trans));
+            EXPECT_TRUE(fsa.is_final_trans(trans));
         }
     }
     
@@ -64,7 +65,7 @@ namespace {
     
 }
 
-int main() {
+TEST(PlainFSATest, build) {
     char *cwd ;
     cwd=getcwd(NULL, 0);
     printf("current working directory:%s\n", cwd);
@@ -73,6 +74,5 @@ int main() {
     auto strs = sample_strs();
     test(strs);
     
-    return 0;
 }
 

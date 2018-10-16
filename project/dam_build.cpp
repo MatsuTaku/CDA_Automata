@@ -19,13 +19,6 @@ int main(int argc, const char *argv[]) {
     auto datasetName = argv[1];
     auto dictName = argv[2];
     
-#ifndef NDEBUG
-    datasetName = "../../../data-sets/weiss/wikipedia.dict";
-    dictName = "../../../results/wikipedia/wikipedia.dam";
-#endif
-    
-    using types = csd_automata::DAMTypes;
-    
     int typeIndex = 0;
     std::string valuesName = "";
     
@@ -39,6 +32,13 @@ int main(int argc, const char *argv[]) {
         }
     }
     
+#ifndef NDEBUG
+    datasetName = "../../../data-sets/kanda/jawiki-20150118.dict";
+    dictName = "../../../results/jawiki-20150118/jawiki-20150118.damac";
+    typeIndex = 1;
+#endif
+    
+    using types = csd_automata::DAMTypes;
     switch (typeIndex) {
         case 0:
             return csd_automata::director::fullyBuild<std::tuple_element_t<0, types>>(dictName, datasetName, valuesName);

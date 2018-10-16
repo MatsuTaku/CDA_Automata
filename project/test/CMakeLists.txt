@@ -1,16 +1,43 @@
-cmake_minimum_required(VERSION 3.10)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif()
 
-add_subdirectory(lib/googletest/googletest)
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-file(GLOB TEST_SOURCES *_test.cpp)
-foreach(TEST_SOURCE ${TEST_SOURCES})
-  get_filename_component(TEST_SOURCE_NAME ${TEST_SOURCE} NAME_WE)
-  add_executable(${TEST_SOURCE_NAME} ${TEST_SOURCE})
-  target_link_libraries(${TEST_SOURCE_NAME} gtest_main CSDAutomata)
-  add_test(${TEST_SOURCE_NAME} ${TEST_SOURCE_NAME})
-endforeach()
+# Add googletest directly to our build. This defines
+# the gtest and gtest_main targets.
+add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                 ${CMAKE_BINARY_DIR}/googletest-build
+                 EXCLUDE_FROM_ALL)
+
+# The gtest/gtest_main targets carry header search path
+# dependencies automatically when using CMake 2.8.11 or
+# later. Otherwise we have to add them here ourselves.
+if (CMAKE_VERSION VERSION_LESS 2.8.11)
+  include_directories("${gtest_SOURCE_DIR}/include")
+endif()
+
+
+file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*_test.cpp)
+#foreach(TEST_SOURCE ${TEST_SOURCES})
+#  get_filename_component(TEST_SOURCE_NAME ${TEST_SOURCE} NAME_WE)
+#  add_executable(${TEST_SOURCE_NAME} ${TEST_SOURCE})
+#  target_link_libraries(${TEST_SOURCE_NAME} gtest_main CSDAutomata)
+#  add_test(${TEST_SOURCE_NAME} ${TEST_SOURCE_NAME})
+#endforeach()
 
 add_executable(CSDAutomata_test ${TEST_SOURCES})
 target_link_libraries(CSDAutomata_test gtest_main CSDAutomata)
-add_test(CSDAutomata_test CSDAutomata_test)
+add_test(NAME CSDAutomata_test COMMAND CSDAutomata_test)
 

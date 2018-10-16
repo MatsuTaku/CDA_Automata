@@ -1,12 +1,12 @@
 #!/bin/bash
 
 dam() {
-  ./project/build/dam_build $1 $2 >$2.stdout 2>&1
+  ./build/dam_build $1 $2 >$2.stdout 2>&1
 }
 export -f dam
 
 damac() {
-  ./project/build/dam_build $1 $2 --access >$2.stdout 2>&1
+  ./build/dam_build $1 $2 --access >$2.stdout 2>&1
 }
 export -f damac
 
@@ -17,7 +17,7 @@ morfologik_fsa5() {
        --progress \
        --sorted -i $1 \
        -o $2 >$2.stdout 2>&1
-  ./project/build/convert $2 $2 0 >> $2.stdout 2>&1
+  ./build/convert $2 $2 0 >> $2.stdout 2>&1
 }
 export -f morfologik_fsa5
 
@@ -28,7 +28,7 @@ morfologik_cfsa2() {
        --progress \
        --sorted -i $1 \
        -o $2 >$2.stdout 2>&1
-  ./project/build/convert $2 $2 1 >> $2.stdout 2>&1
+  ./build/convert $2 $2 1 >> $2.stdout 2>&1
 }
 export -f morfologik_cfsa2
 
@@ -48,14 +48,14 @@ marisa() {
 export -f marisa
 
 darts() {
-  project/build/darts_build $1 $2 >$2.stdout 2>&1
+  ./build/darts_build $1 $2 >$2.stdout 2>&1
 }
 export -f darts
 
 
 TOOLS="
-dam
 damac
+dam
 morfologik_fsa5
 morfologik_cfsa2
 darts
