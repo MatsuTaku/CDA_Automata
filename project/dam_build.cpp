@@ -24,17 +24,17 @@ int main(int argc, const char *argv[]) {
     
     for (int i = 2; i < argc; i++) {
         std::string option(argv[i]);
-        if (option == "--access")
+        if (option == "--access") {
             typeIndex = 1;
-        if (option == "--values") {
+        } else if (option == "--values") {
             valuesName = argv[i + 1];
             i++;
         }
     }
     
 #ifndef NDEBUG
-    datasetName = "../../../data-sets/kanda/jawiki-20150118.dict";
-    dictName = "../../../results/jawiki-20150118/jawiki-20150118.damac";
+    datasetName = "../../data-sets/local/enwiki-20181001.dict";
+    dictName = "../../results/enwiki-20181001/enwiki-20181001.dam";
     typeIndex = 1;
 #endif
     

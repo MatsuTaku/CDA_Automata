@@ -61,7 +61,7 @@ namespace csd_automata {
             values_ = std::move(values);
         }
         
-        explicit DoubleArrayCFSA(std::istream &is) {
+        explicit DoubleArrayCFSA(std::istream& is) {
             read(is);
         }
         
@@ -305,7 +305,7 @@ namespace csd_automata {
     
     
     template<bool C, bool E, bool I, bool W, bool NA>
-    bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string &str) const {
+    bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string& str) const {
         size_t trans = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {
             uint8_t c = str[pos];
@@ -327,7 +327,7 @@ namespace csd_automata {
     
     
     template<bool C, bool E, bool I, bool W, bool NA>
-    unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string &str) const {
+    unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string& str) const {
         size_t trans = 0;
         size_t counter = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {

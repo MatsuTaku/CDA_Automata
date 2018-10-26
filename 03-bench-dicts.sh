@@ -54,43 +54,15 @@ darts
 "
 
 DATASET_DIR=data-sets
-
-DATASETS="
-$DATASET_DIR/kanda/enwiki-20150205.1000000.rnd_dict
-$DATASET_DIR/kanda/jawiki-20150118.1000000.rnd_dict
-$DATASET_DIR/kanda/indochina-2004.1000000.rnd_dict
-$DATASET_DIR/kanda/word-over999.1000000.rnd_dict
-$DATASET_DIR/weiss/pl.1000000.rnd_dict
-$DATASET_DIR/weiss/wikipedia.1000000.rnd_dict
-$DATASET_DIR/weiss/wikipedia2.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/abc.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/deutsch.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/dimacs.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/enable.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/english.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/eo.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/esp.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/files.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/fr.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/full.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/ifiles.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/one.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/polish.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/random.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/russian.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/sample.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/scrable.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/test.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/unix_m.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/unix.1000000.rnd_dict
-$DATASET_DIR/ciura-deorowicz/webster.1000000.rnd_dict
-"
+DAATASET_EXT='.1000000.rnd_dict'
+export DATASET_EXT
+DATASETS=`find $DATASET_DIR -name '*'$DATASET_EXT`
 
 RESULTS_DIR=results
 export RESULTS_DIR
 
 bench() {
-    dataset_fn=`basename $2 .1000000.rnd_dict`
+    dataset_fn=`basename $2 .$DATASET_EXT`
 	dictname=$RESULTS_DIR/$dataset_fn/$dataset_fn.$1
 	echo "benchmark [$1] $dictname..."
 	$1 $dictname $2
@@ -98,7 +70,18 @@ bench() {
 export -f bench
 
 
+
+echo '--- Benchmark targets ---'
+for f in $DATASETS; do
+	echo $f
+done
+echo '------'
+
 python $DATASET_DIR/create-test-datasets.py
 
-parallel -j 2 bench {1} {2} ::: $TOOLS ::: $DATASETS
+THREADS=1
+if [ $# >= 1 ] ; then
+	THREADS=$1
+fi
+parallel -j $THREADS bench {1} {2} ::: $TOOLS ::: $DATASETS
 

@@ -17,7 +17,7 @@ namespace csd_automata {
     namespace benchmark {
         
         template <class T>
-        T getFSAFrom(const char *fsaName) {
+        T getFSAFrom(const char* fsaName) {
             std::ifstream ifs(fsaName);
             if (!ifs)
                 throw exception::DataNotFound(fsaName);
@@ -26,14 +26,14 @@ namespace csd_automata {
         }
         
         template <class T>
-        void measureBenchmark(const T &fsa, const char *queryName, int runs, bool needsAccess) {
+        void measureBenchmark(const T& fsa, const char* queryName, int runs, bool needsAccess) {
             using std::cout, std::endl;
             
             const auto &strs = KeySet::getKeySets(queryName);
             auto num = strs.size();
             auto ng = 0;
             Stopwatch sw;
-            for (const std::string &str : strs) {
+            for (const std::string& str : strs) {
                 if (!fsa.isMember(str)) {
                     ++ng;
                     break;
@@ -71,8 +71,8 @@ namespace csd_automata {
                 for (auto r = 0; r < runs; r++) {
                     ng = 0;
                     for (auto i = 0; i < strs.size(); i++) {
-                        auto &needs = strs[i];
-                        const auto &getStr = fsa.access(values[i]);
+                        auto& needs = strs[i];
+                        const auto& getStr = fsa.access(values[i]);
                         if (getStr != needs)
                             ng++;
                     }

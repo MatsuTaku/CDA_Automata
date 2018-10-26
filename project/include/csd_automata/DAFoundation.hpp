@@ -304,7 +304,7 @@ namespace csd_automata {
             return size;
         }
         
-        void write(std::ostream &os) const override {
+        void write(std::ostream& os) const override {
             elements_.write(os);
             if constexpr (COMP_NEXT) {
                 nextLinkBits_.write(os);
@@ -326,7 +326,7 @@ namespace csd_automata {
             }
         }
         
-        void read(std::istream &is) override {
+        void read(std::istream& is) override {
             elements_.read(is);
             if constexpr (COMP_NEXT) {
                 nextLinkBits_.read(is);
@@ -348,8 +348,8 @@ namespace csd_automata {
             }
         }
         
-        void showStatus(std::ostream &os) const override;
-        void showSizeMap(std::ostream &os) const;
+        void showStatus(std::ostream& os) const override;
+        void showSizeMap(std::ostream& os) const;
         
     private:
         MultipleVector elements_;
@@ -375,9 +375,9 @@ namespace csd_automata {
     
     
     template<bool N, bool C, bool CI, bool D, bool W, bool CW, bool NA>
-    void DAFoundation<N, C, CI, D, W, CW, NA>::showStatus(std::ostream &os) const {
+    void DAFoundation<N, C, CI, D, W, CW, NA>::showStatus(std::ostream& os) const {
         using std::endl;
-        auto codesName = [=](bool use) {
+        auto codesName = [](bool use) {
             return use ? "DACs" : "Plain";
         };
         os << "--- Stat of " << "DAFoundation " << codesName(useNextCodes) << "|" << codesName(useCheckCodes) << " ---" << endl;
@@ -408,7 +408,7 @@ namespace csd_automata {
     }
     
     template<bool N, bool C, bool CI, bool D, bool W, bool CW, bool NA>
-    void DAFoundation<N, C, CI, D, W, CW, NA>::showSizeMap(std::ostream &os) const {
+    void DAFoundation<N, C, CI, D, W, CW, NA>::showSizeMap(std::ostream& os) const {
         auto numElem = numElements();
         std::vector<size_t> nexts(numElem);
         for (auto i = 0; i < numElem; i++)

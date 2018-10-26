@@ -92,11 +92,11 @@ namespace csd_automata {
             return isStraight;
         }
         
-        void print_for_debug(std::ostream& os) const {
+        void print_for_debug(std::ostream& os, size_t startIndex = 0) const {
             using std::endl;
             
             os << "\tS\tF\tL\tM\tP" << endl;
-            for (size_t i = 0; i < bytes_.size();) {
+            for (size_t i = startIndex; i < bytes_.size();) {
                 if ((bytes_[i] & 0x80) != 0) {
                     i += kTransSize * 0x100;
                     continue;

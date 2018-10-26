@@ -31,7 +31,7 @@ namespace csd_automata {
         }
         
         // Might throw DataNotFoundException
-        PlainFSA buildPlainFSA(const std::string &dataName) {
+        PlainFSA buildPlainFSA(const std::string& dataName) {
             std::ifstream ifs(dataName);
             if (!ifs)
                 throw exception::DataNotFound(dataName);
@@ -43,7 +43,7 @@ namespace csd_automata {
             return builder.release();
         }
         
-        PlainFSA readPlainFSA(const std::string &plainFsaName) {
+        PlainFSA readPlainFSA(const std::string& plainFsaName) {
             std::ifstream ifs(plainFsaName);
             if (!ifs)
                 throw exception::DataNotFound(plainFsaName);
@@ -52,7 +52,7 @@ namespace csd_automata {
             return plainFsa;
         }
         
-        void generate(const std::string &dataName, const std::string &plainFsaName) {
+        void generate(const std::string& dataName, const std::string& plainFsaName) {
             auto plainFsa = buildPlainFSA(dataName);
             std::ofstream ofs(plainFsaName);
             if (!ofs)
@@ -90,10 +90,11 @@ namespace csd_automata {
                 double buildTime = measureProcessing([&]() {
                     // Extract base name of dataset
                     std::string baseName = outName;
-                    auto daExe = extension::DoubleArrayAutomataExtension;
-                    if (baseName.size() > daExe.size() &&
-                        baseName.substr(baseName.size() - daExe.size()) == daExe) {
-                        baseName.erase(baseName.end() - daExe.size(), baseName.end());
+                    auto daExt = extension::DoubleArrayAutomataExtension;
+                    // If baseName's extension is same as '.dam'...
+                    if (baseName.size() > daExt.size() &&
+                        baseName.substr(baseName.size() - daExt.size()) == daExt) {
+                        baseName.erase(baseName.end() - daExt.size(), baseName.end());
                     }
                     
                     // Union extension of plain FSA to base name
