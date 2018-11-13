@@ -41,12 +41,12 @@ namespace csd_automata {
             return dataOf(index).place;
         }
         
-        bool isEndLabel(size_t index) const {
-            return label_array_.isEnd(index);
+        bool isBackOfLabelAt(size_t index) const {
+            return label_array_.isBackAt(index);
         }
         
         bool isEndLabel() const {
-            return isEndLabel(pos_on_label_);
+            return isBackOfLabelAt(pos_on_label_);
         }
         
         uint8_t topCharOnPos(size_t index) const {

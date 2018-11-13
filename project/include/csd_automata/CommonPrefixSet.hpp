@@ -37,7 +37,7 @@ namespace csd_automata {
         void appendPrefix(size_t length, size_t id) {
             if (length == 0 || length > base_string_.size())
                 return;
-            terminals_.set(length - 1, true);
+            terminals_[length - 1] = true;
             ids_.emplace_back(id);
         }
         

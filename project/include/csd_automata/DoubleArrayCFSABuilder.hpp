@@ -41,10 +41,6 @@ namespace csd_automata {
             return getAddress_(offset_(index) + 1 + kAddrSize);
         }
         
-        bool isLabelEnd_(size_t index) const {
-            return str_dict_.isEndLabel(index);
-        }
-        
         size_t getNumWords() const {
             return src_fsa_.get_num_words();
         }
@@ -72,13 +68,18 @@ namespace csd_automata {
         template <class T>
         void showCompareWith(T &fsa);
         
+        // MARK: Copy guard
+        
         ~DoubleArrayCFSABuilder() = default;
         
         DoubleArrayCFSABuilder(const DoubleArrayCFSABuilder&) = delete;
         DoubleArrayCFSABuilder& operator=(const DoubleArrayCFSABuilder&) = delete;
         
+        DoubleArrayCFSABuilder(DoubleArrayCFSABuilder&&) = default;
+        DoubleArrayCFSABuilder& operator=(DoubleArrayCFSABuilder&&) = default;
+        
     private:
-        // MARK: - setter
+        // MARK: Setter
         
         void setHasLabel_(size_t index) {
             bytes_[offset_(index)] |= 8;
@@ -117,7 +118,7 @@ namespace csd_automata {
     void DoubleArrayCFSABuilder::release(DAM_TYPE& da) {
         const auto numElems = numElems_();
         da.resize(numElems, getNumWords());
-        da.setStringArray(serializedStringsBuilder(str_dict_).release<typename DAM_TYPE::strs_type>());
+        serializedStringsBuilder(str_dict_).release(da.serialized_strings_);
         
         auto numTrans = 0;
         for (auto i = 0; i < numElems; i++) {
@@ -160,6 +161,7 @@ namespace csd_automata {
         showCompareWith(da);
     }
     
+    
     template <class T>
     inline void DoubleArrayCFSABuilder::showCompareWith(T &fsa) {
         auto tab = "\t";
@@ -192,7 +194,7 @@ namespace csd_automata {
     
     // MARK: - private
     
-    // Recusive function
+    // Recursive function
     inline void DoubleArrayCFSABuilder::arrange_(size_t state, size_t index) {
         const auto first_trans = src_fsa_.get_first_trans(state);
         

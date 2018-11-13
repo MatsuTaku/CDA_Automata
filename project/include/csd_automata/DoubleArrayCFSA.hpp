@@ -254,7 +254,7 @@ namespace csd_automata {
         }
         
         void setHasBrother(size_t index, bool has) {
-            has_brother_bits_.set(index, has);
+            has_brother_bits_[index] = has;
         }
         
         void setBrother(size_t index, uint8_t bro) {
@@ -262,7 +262,7 @@ namespace csd_automata {
         }
         
         void setIsNode(size_t index, bool isNode) {
-            is_node_bits_.set(index, isNode);
+            is_node_bits_[index] = isNode;
         }
         
         void setEldest(size_t index, uint8_t eldest) {

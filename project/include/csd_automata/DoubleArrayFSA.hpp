@@ -168,7 +168,7 @@ namespace csd_automata {
         void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
             if (N) {
                 nc_.setNext(index, next);
-                is_final_bits_.set(index, isFinal);
+                is_final_bits_[index] = isFinal;
             } else {
                 nc_.setNext(index, (next << 1) | isFinal);
             }

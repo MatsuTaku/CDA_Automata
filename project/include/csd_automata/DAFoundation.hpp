@@ -153,7 +153,7 @@ namespace csd_automata {
                 value = (value & ~(1 << 1)) | (isStr << 1);
                 elements_.set<ENNext>(index, value);
             } else {
-                checkLinkBits_.set(index, isStr);
+                checkLinkBits_[index] = isStr;
             }
         }
         
@@ -165,7 +165,7 @@ namespace csd_automata {
             if constexpr (!COMP_NEXT) return;
             auto flow = next >> kFixedBits;
             bool hasFlow = flow > 0;
-            nextLinkBits_.set(index, hasFlow);
+            nextLinkBits_[index] = hasFlow;
             if (hasFlow)
                 nextFlowSrc_.emplace_back(flow);
         }
@@ -181,7 +181,7 @@ namespace csd_automata {
             auto flow = strIndex >> kFixedBits;
             bool hasFlow = flow > 0;
             if constexpr (COMP_ID)
-                checkLinkBits_.set(index, hasFlow);
+                checkLinkBits_[index] = hasFlow;
             if (!COMP_ID || hasFlow)
                 checkFlowSrc_.emplace_back(flow);
         }
@@ -196,7 +196,7 @@ namespace csd_automata {
                 elements_.set<ENCWords>(index, base | ((words & 0x0F) << kFixedBitsWords));
                 auto flow = words >> kFixedBitsWords;
                 bool hasFlow = flow > 0;
-                wordsLinkBits_.set(index, hasFlow);
+                wordsLinkBits_[index] = hasFlow;
                 if (hasFlow)
                     wordsFlowSrc_.emplace_back(flow);
             } else {
@@ -214,14 +214,14 @@ namespace csd_automata {
                     elements_.set<ENCWords>(index, base | (cw & 0x0F));
                     auto flow = cw >> kFixedBitsWords;
                     bool hasFlow = flow > 0;
-                    cumWordsLinkBits_.set(index, hasFlow);
+                    cumWordsLinkBits_[index] = hasFlow;
                     if (hasFlow)
                         cumWordsFlowSrc_.emplace_back(flow);
                 } else {
                     elements_.set<ENCWords>(index, cw & 0xFF);
                     auto flow = cw >> kFixedBits;
                     bool hasFlow = flow > 0;
-                    cumWordsLinkBits_.set(index, hasFlow);
+                    cumWordsLinkBits_[index] = hasFlow;
                     if (hasFlow)
                         cumWordsFlowSrc_.emplace_back(flow);
                 }
