@@ -35,7 +35,7 @@ int main(int argc, const char *argv[]) {
 #ifndef NDEBUG
     datasetName = "../../data-sets/local/enwiki-20181001.dict";
     dictName = "../../results/enwiki-20181001/enwiki-20181001.dam";
-    typeIndex = 1;
+    typeIndex = 0;
 #endif
     
     using types = csd_automata::DAMTypes;

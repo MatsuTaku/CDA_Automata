@@ -64,6 +64,7 @@ namespace csd_automata {
         // May throw Exceptions
         template <class SD_TYPE>
         void checkHasMember(std::string datasetName, SD_TYPE& sd) {
+            std::cout << "Check membering ... ";
             std::ifstream ifs(datasetName);
             if (!ifs)
                 throw exception::DataNotFound(datasetName);
@@ -77,7 +78,7 @@ namespace csd_automata {
                 if (!sd.isMember(line))
                     throw exception::DoesntHaveMember(line);
             }
-            std::cout << "Check membering all queries success!" << std::endl
+            std::cout << "all queries success!" << std::endl
             << "Num of queries: " << count << std::endl
             << "Average query length: " << float(length) / count << std::endl;
         }

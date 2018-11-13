@@ -11,9 +11,11 @@
 #include "IOInterface.hpp"
 
 #include "DAFoundation.hpp"
-#include "StringArray.hpp"
+#include "SerializedStrings.hpp"
 #include "sim_ds/BitVector.hpp"
 #include "ValueSet.hpp"
+
+#include "CommonPrefixSet.hpp"
 
 #include "DoubleArrayCFSABuilder.hpp"
 
@@ -21,6 +23,7 @@ namespace csd_automata {
     
     template<bool WORDS_CUMU, bool EDGE_LINK, bool ID_COMP, bool WORDS_COMP, bool NEEDS_ACCESS>
     class DoubleArrayCFSA : IOInterface {
+    private:
         friend class DoubleArrayCFSABuilder;
         
     public:
@@ -30,16 +33,17 @@ namespace csd_automata {
         
         static constexpr bool useCumulativeWords = WORDS_CUMU;
         static constexpr bool useEdgeLink = EDGE_LINK;
-        static constexpr bool shouldCompressID= ID_COMP;
+        static constexpr bool shouldCompressID = ID_COMP;
         static constexpr bool shouldCompressWords = WORDS_COMP;
         static constexpr bool isPossibleAccess = NEEDS_ACCESS;
         
+        static constexpr size_t kLookupError = 0;
+        
         static constexpr bool useBinaryLabel = false;
-        static constexpr size_t searchError = -1;
         
         using foundation_type = DAFoundation<false, true, shouldCompressID, true, shouldCompressWords, useCumulativeWords, isPossibleAccess>;
-        using strs_type = StringArray<useBinaryLabel>;
-
+        using strs_type = SerializedStrings<useBinaryLabel>;
+        
         DoubleArrayCFSA() = default;
         
         explicit DoubleArrayCFSA(const DoubleArrayCFSABuilder& builder) {
@@ -65,56 +69,15 @@ namespace csd_automata {
             read(is);
         }
         
-        ~DoubleArrayCFSA() = default;
-        
-        // MARK: - Copy guard
-        
-        DoubleArrayCFSA (const DoubleArrayCFSA&) = delete;
-        DoubleArrayCFSA& operator=(const DoubleArrayCFSA&) = delete;
-        
-        DoubleArrayCFSA(DoubleArrayCFSA&& rhs) noexcept = default;
-        DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
-        
         void build(const DoubleArrayCFSABuilder& builder);
         
-        bool isMember(const std::string &str) const;
+        bool isMember(const std::string& str) const;
         
-        unsigned long long lookup(const std::string &str) const;
+        CommonPrefixSet commonPrefixSearch(const std::string& str) const;
+        
+        unsigned long long lookup(const std::string& str) const;
         
         std::string access(size_t key) const;
-        
-        size_t target(size_t index) const {
-            return next(index) ^ index;
-        }
-        
-        size_t next(size_t index) const {
-            return fd_.next(index);
-        }
-        
-        uint8_t check(size_t index) const {
-            return fd_.check(index);
-        }
-        
-        size_t stringId(size_t index) const {
-            assert(isStringTrans(index));
-            return fd_.stringId(index);
-        }
-        
-        bool isFinal(size_t index) const {
-            return fd_.isFinal(index);
-        }
-        
-        bool isStringTrans(size_t index) const {
-            return fd_.isString(index);
-        }
-        
-        size_t store(size_t index) const {
-            return fd_.words(index);
-        }
-        
-        size_t accStore(size_t index) const {
-            return fd_.cumWords(index);
-        }
         
         bool hasBrother(size_t index) const {
             assert(EDGE_LINK);
@@ -143,7 +106,7 @@ namespace csd_automata {
         size_t sizeInBytes() const override {
             auto size = sizeof(num_trans_);
             size += fd_.sizeInBytes();
-            size += strings_.sizeInBytes();
+            size += serialized_strings_.sizeInBytes();
             if constexpr (EDGE_LINK) {
                 size += has_brother_bits_.sizeInBytes();
                 size += size_vec(brother_);
@@ -157,7 +120,7 @@ namespace csd_automata {
         void write(std::ostream& os) const override {
             write_val(num_trans_, os);
             fd_.write(os);
-            strings_.write(os);
+            serialized_strings_.write(os);
             if constexpr (EDGE_LINK) {
                 has_brother_bits_.write(os);
                 write_vec(brother_, os);
@@ -167,19 +130,10 @@ namespace csd_automata {
             values_.write(os);
         }
         
-        void writeCheck(std::ostream& os) const {
-            std::vector<size_t> checks(fd_.numElements());
-            for (auto i = 0; i < fd_.numElements(); i++) {
-                checks[i] = isStringTrans(i) ? fd_.stringId(i) : fd_.check(i);
-            }
-            sim_ds::FitVector vec(checks);
-            vec.write(os);
-        }
-        
         void read(std::istream& is) override {
             num_trans_ = read_val<size_t>(is);
             fd_.read(is);
-            strings_.read(is);
+            serialized_strings_.read(is);
             if constexpr (EDGE_LINK) {
                 has_brother_bits_.read(is);
                 brother_ = read_vec<uint8_t>(is);
@@ -196,7 +150,7 @@ namespace csd_automata {
             << "#elems:\t" << fd_.numElements() << endl
             << "size:\t" << sizeInBytes() << endl;
             fd_.showStatus(os);
-            os << "\tstrings:\t" << strings_.sizeInBytes() << endl;
+            os << "\tstrings:\t" << serialized_strings_.sizeInBytes() << endl;
             if constexpr (EDGE_LINK) {
                 os << "\tbrother:\t" << has_brother_bits_.sizeInBytes() + size_vec(brother_) << endl;
                 os << "\teldest:\t" << is_node_bits_.sizeInBytes() + size_vec(eldest_) << endl;
@@ -212,16 +166,26 @@ namespace csd_automata {
                 if (!fd_.isString(i)) {
                     cout << fd_.check(i);
                 } else {
-                    cout << strings_.string_view(fd_.stringId(i));
+                    cout << serialized_strings_.string_view(fd_.stringId(i));
                 }
                 cout << '\t' << fd_.words(i) << endl;
             }
         }
         
+        // MARK: Copy guard
+        
+        ~DoubleArrayCFSA() = default;
+        
+        DoubleArrayCFSA (const DoubleArrayCFSA&) = delete;
+        DoubleArrayCFSA& operator=(const DoubleArrayCFSA&) = delete;
+        
+        DoubleArrayCFSA(DoubleArrayCFSA&& rhs) noexcept = default;
+        DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
+        
     private:
         size_t num_trans_ = 0;
         foundation_type fd_;
-        strs_type strings_;
+        strs_type serialized_strings_;
         // If use EDGE_LINK
         sim_ds::BitVector has_brother_bits_;
         std::vector<uint8_t> brother_;
@@ -231,19 +195,31 @@ namespace csd_automata {
         // If set values
         ValueSet values_;
         
-        // MARK: - Protocol setting
+        // MARK: Getter
+        
+        size_t target(size_t index) const {
+            return fd_.next(index) ^ index;
+        }
+        
+        size_t transition(size_t prevTrans, uint8_t label) const {
+            return target(prevTrans) ^ label;
+        }
+        
+        // MARK: Protocol setting
         
         void resize(size_t num, size_t words) {
             fd_.resize(num, words);
-            has_brother_bits_.resize(num);
-            is_node_bits_.resize(num);
+            if constexpr (EDGE_LINK) {
+                has_brother_bits_.resize(num);
+                is_node_bits_.resize(num);
+            }
         }
         
         void setNumTrans(size_t num) {
             num_trans_ = num;
         }
         
-        // MARK: - build
+        // MARK: For build
         
         void setCheck(size_t index, uint8_t check) {
             fd_.setCheck(index, check);
@@ -266,7 +242,7 @@ namespace csd_automata {
         }
         
         void setStringArray(strs_type &&sArr) {
-            strings_ = std::move(sArr);
+            serialized_strings_ = std::move(sArr);
         }
         
         void setWords(size_t index, size_t store) {
@@ -309,20 +285,56 @@ namespace csd_automata {
         size_t trans = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {
             uint8_t c = str[pos];
-            trans = target(trans) ^ c;
-            if (!isStringTrans(trans)) {
-                auto checkE = check(trans);
+            trans = transition(trans, c);
+            if (!fd_.isString(trans)) {
+                // Check label that is character
+                uint8_t checkE = fd_.check(trans);
                 if (checkE != c)
                     return false;
             } else {
-                auto sid = stringId(trans);
-                if (!strings_.isMatch(&pos, str, sid)) {
-                    strings_.showLabels(sid - 32, sid + 32);
+                // Check label that is indexed string
+                auto sid = fd_.stringId(trans);
+                if (!serialized_strings_.match(&pos, str, sid)) {
+#ifndef NDEBUG
+                    serialized_strings_.showLabels(sid - 32, sid + 32);
+#endif
                     return false;
                 }
             }
         }
-        return isFinal(trans);
+        return fd_.isFinal(trans);
+    }
+    
+    
+    template<bool C, bool E, bool I, bool W, bool NA>
+    CommonPrefixSet DoubleArrayCFSA<C, E, I, W, NA>::commonPrefixSearch(const std::string& str) const {
+        CommonPrefixSet prefixSet(str);
+        size_t counter = 0;
+        
+        size_t trans = 0;
+        for (size_t pos = 0, size = str.size(); pos < size; pos++) {
+            uint8_t c = str[pos];
+            trans = transition(trans, c);
+            if (!fd_.isString(trans)) {
+                auto checkE = fd_.check(trans);
+                if (checkE != c)
+                    break;
+            } else {
+                auto sid = fd_.stringId(trans);
+                if (!serialized_strings_.match(&pos, str, sid)) {
+#ifndef NDEBUG
+                    serialized_strings_.showLabels(sid - 32, sid + 32);
+#endif
+                    break;
+                }
+            }
+            counter += fd_.cumWords(trans);
+            if (fd_.isFinal(trans)) {
+                counter++;
+                prefixSet.appendPrefix(pos + 1, counter);
+            }
+        }
+        return prefixSet;
     }
     
     
@@ -331,89 +343,93 @@ namespace csd_automata {
         size_t trans = 0;
         size_t counter = 0;
         for (size_t pos = 0, size = str.size(); pos < size; pos++) {
-            if (trans > 0 && isFinal(trans))
+            if (trans > 0 && fd_.isFinal(trans))
                 counter++;
             
             uint8_t c = str[pos];
             
             // Separate algorithm from template parameters, that is to use cumulative-words.
             if constexpr (C) {
-                trans = target(trans) ^ c;
-                if (!isStringTrans(trans)) {
-                    auto checkE = check(trans);
+                trans = transition(trans, c);
+                
+                if (!fd_.isString(trans)) {
+                    const uint8_t checkE = fd_.check(trans);
                     if (checkE != c)
-                        return searchError;
+                        return kLookupError;
                 } else {
-                    auto sid = stringId(trans);
-                    if (!strings_.isMatch(&pos, str, sid)) {
-                        strings_.showLabels(sid - 32, sid + 32);
-                        return searchError;
+                    const auto sid = fd_.stringId(trans);
+                    if (!serialized_strings_.match(&pos, str, sid)) { // Increment 'pos'
+#ifndef NDEBUG
+                        serialized_strings_.showLabels(sid - 32, sid + 32);
+#endif
+                        return kLookupError;
                     }
                 }
                 
-                counter += accStore(trans);
-                
+                counter += fd_.cumWords(trans);
             } else {
-                size_t nextTrans = searchError;
+                size_t nextTrans = -1;
                 for (size_t label = 1; label <= 0xFF; label++) {
-                    size_t nt = target(trans) ^ label;
+                    size_t nt = transition(trans, label);
                     size_t checkType;
                     
-                    bool isStr = isStringTrans(nt);
+                    bool isStr = fd_.isString(nt);
                     if (!isStr) {
-                        checkType = check(nt);
+                        checkType = fd_.check(nt);
                         if (checkType != label)
                             continue;
                     } else {
-                        checkType = stringId(nt);
-                        if (strings_[checkType] != label)
+                        checkType = fd_.stringId(nt);
+                        if (serialized_strings_[checkType] != label)
                             continue;
                     }
                     if (c == label) {
-                        if (isStr && !strings_.isMatch(&pos, str, checkType)) { // to increment pos in source string
-                            strings_.showLabels(checkType - 32, checkType + 32);
-                            return searchError;
+                        if (isStr && !serialized_strings_.match(&pos, str, checkType)) { // Increment 'pos'
+#ifndef NDEBUG
+                            serialized_strings_.showLabels(checkType - 32, checkType + 32);
+#endif
+                            return kLookupError;
                         }
                         
                         nextTrans = nt;
                         break;
                     }
                     
-                    counter += store(nt);
+                    counter += fd_.words(nt);
                 }
-                
-                if (nextTrans == searchError)
-                    return searchError;
-                
+                if (nextTrans == -1)
+                    return kLookupError;
                 trans = nextTrans;
-                
             }
         }
-        return isFinal(trans) ? ++counter : searchError;
+        
+        return fd_.isFinal(trans) ? ++counter : kLookupError;
     }
     
     
     template<bool C, bool E, bool I, bool W, bool NA>
     std::string DoubleArrayCFSA<C, E, I, W, NA>::access(size_t key) const {
+        assert(NA);
+        
         size_t trans = 0;
         size_t counter = key;
         std::string str = "";
         while (counter > 0) {
             auto targetNode = target(trans);
-            size_t nextTrans = searchError;
+            size_t nextTrans = kLookupError;
             uint8_t c = (E ? eldest(targetNode) : 1);
             while (true) {
                 size_t nt = targetNode ^ c;
                 size_t checkType;
                 
-                bool isStr = isStringTrans(nt);
+                bool isStr = fd_.isString(nt);
                 bool checkClear;
                 if (!isStr) {
-                    checkType = check(nt);
+                    checkType = fd_.check(nt);
                     checkClear = checkType == c;
                 } else {
-                    checkType = stringId(nt);
-                    checkClear = uint8_t(strings_[checkType]) == c;
+                    checkType = fd_.stringId(nt);
+                    checkClear = uint8_t(serialized_strings_[checkType]) == c;
                 }
                 if (!checkClear) {
                     if constexpr (E) {
@@ -424,7 +440,7 @@ namespace csd_automata {
                     }
                 }
                 
-                auto curStore = store(nt);
+                auto curStore = fd_.words(nt);
                 if (curStore < counter) {
                     counter -= curStore;
                     if constexpr (E) {
@@ -437,19 +453,19 @@ namespace csd_automata {
                         c++;
                     }
                 } else {
-                    if (isFinal(nt))
+                    if (fd_.isFinal(nt))
                         counter--;
                     if (!isStr)
                         str += checkType;
                     else
-                        str += strings_.string_view(checkType);
+                        str += serialized_strings_.string_view(checkType);
                     
                     nextTrans = nt;
                     break;
                 }
             }
             
-            if (nextTrans == searchError)
+            if (nextTrans == kLookupError)
                 return "";
             
             trans = nextTrans;

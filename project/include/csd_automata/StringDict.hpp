@@ -10,7 +10,7 @@
 
 #include "basic.hpp"
 #include "StrDictData.hpp"
-#include "StringArrayBuilder.hpp"
+#include "SerializedStringsBuilder.hpp"
 
 namespace csd_automata {
     
@@ -65,7 +65,7 @@ namespace csd_automata {
             return str_dicts_.size();
         }
         
-        friend StringArrayBuilder& stringArrayBuilder(StringDict& sd) {
+        friend SerializedStringsBuilder& serializedStringsBuilder(StringDict& sd) {
             return sd.label_array_;
         }
         
@@ -79,7 +79,7 @@ namespace csd_automata {
         std::vector<StrDictData> str_dicts_;
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
-        StringArrayBuilder label_array_;
+        SerializedStringsBuilder label_array_;
         
         size_t pos_on_label_ = 0;
         

@@ -17,15 +17,12 @@
 namespace csd_automata {
     
     class DoubleArrayCFSABuilder : public DoubleArrayFSABuilder {
+    private:
+        StringDict str_dict_;
+        
     public:
         explicit DoubleArrayCFSABuilder(const PlainFSA &srcFsa) : DoubleArrayFSABuilder(srcFsa) {}
         
-        ~DoubleArrayCFSABuilder() = default;
-        
-        DoubleArrayCFSABuilder(const DoubleArrayCFSABuilder&) = delete;
-        DoubleArrayCFSABuilder& operator=(const DoubleArrayCFSABuilder&) = delete;
-        
-    public:
         void build(bool binaryMode, bool mergeSuffix = false) {
             StringDictBuilder::build(str_dict_, src_fsa_, binaryMode, mergeSuffix);
             DoubleArrayFSABuilder::build();
@@ -72,16 +69,15 @@ namespace csd_automata {
             return bytes_[offset_(index) + 2 + kAddrSize * 4];
         }
         
-        friend StringArrayBuilder& stringArrayBuilder(DoubleArrayCFSABuilder& builder) {
-            return stringArrayBuilder(builder.str_dict_);
-        }
-        
         template <class T>
         void showCompareWith(T &fsa);
         
-    private:
-        StringDict str_dict_;
+        ~DoubleArrayCFSABuilder() = default;
         
+        DoubleArrayCFSABuilder(const DoubleArrayCFSABuilder&) = delete;
+        DoubleArrayCFSABuilder& operator=(const DoubleArrayCFSABuilder&) = delete;
+        
+    private:
         // MARK: - setter
         
         void setHasLabel_(size_t index) {
@@ -121,7 +117,7 @@ namespace csd_automata {
     void DoubleArrayCFSABuilder::release(DAM_TYPE& da) {
         const auto numElems = numElems_();
         da.resize(numElems, getNumWords());
-        da.setStringArray(typename DAM_TYPE::strs_type(stringArrayBuilder(str_dict_)));
+        da.setStringArray(serializedStringsBuilder(str_dict_).release<typename DAM_TYPE::strs_type>());
         
         auto numTrans = 0;
         for (auto i = 0; i < numElems; i++) {
@@ -172,19 +168,18 @@ namespace csd_automata {
             auto bn = getNext_(i);
             auto bi = hasLabel_(i);
             auto bc = !bi ? getCheck_(i) : getLabelNumber_(i);
-            auto fn = fsa.next(i);
-            auto fi = fsa.isStringTrans(i);
-            auto fc = !fi ? fsa.check(i) : fsa.stringId(i);
+            auto fn = fsa.fd_.next(i);
+            auto fi = fsa.fd_.isString(i);
+            auto fc = !fi ? fsa.fd_.check(i) : fsa.fd_.stringId(i);
             if (bn == fn && bc == fc && bi == fi)
                 continue;
+            
             using std::cout, std::endl;
             cout << i << "] builder" << tab << "fsa" << endl;
             cout << "next: " << bn << tab << fn << endl;
             cout << "check: " << bc << tab << fc << endl;
             cout << "is-str: " << bi << tab << fi << endl;
-            cout << "accept: " << isFinal_(i) << tab << fsa.isFinal(i) << endl;
-//            std::cout << i << tab << isFinal_(i) << tab << bn << tab << bc << tab << bi << std::endl;
-//            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fc << tab << fi << std::endl;
+            cout << "accept: " << isFinal_(i) << tab << fsa.fd_.isFinal(i) << endl;
             if (bi || fi) {
                 sim_ds::log::showAsBinary(bc, 4);
                 sim_ds::log::showAsBinary(fc, 4);

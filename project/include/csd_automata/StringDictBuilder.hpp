@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 #include "basic.hpp"
-#include "StringArrayBuilder.hpp"
+#include "SerializedStringsBuilder.hpp"
 
 #include "StringDict.hpp"
 #include "PlainFSA.hpp"
@@ -37,7 +37,7 @@ namespace csd_automata {
         size_t cur_str_dict_index_;
         std::vector<size_t> fsa_target_indexes_;
         std::vector<bool> has_label_bits_;
-        StringArrayBuilder label_array_;
+        SerializedStringsBuilder label_array_;
         std::unordered_map<size_t, size_t> state_map_;
         
         std::vector<size_t> idMap;
