@@ -43,8 +43,8 @@ export -f centrp
 
 
 TOOLS="
-damac
 dam
+damac
 morfologik_fsa5
 morfologik_cfsa2
 xcdat
@@ -54,15 +54,13 @@ darts
 "
 
 DATASET_DIR=data-sets
-DAATASET_EXT='.1000000.rnd_dict'
-export DATASET_EXT
-DATASETS=`find $DATASET_DIR -name '*'$DATASET_EXT`
+DATASETS=`find $DATASET_DIR -name '*.1000000.rnd_dict'`
 
 RESULTS_DIR=results
 export RESULTS_DIR
 
 bench() {
-    dataset_fn=`basename $2 .$DATASET_EXT`
+    dataset_fn=`basename $2 .1000000.rnd_dict`
 	dictname=$RESULTS_DIR/$dataset_fn/$dataset_fn.$1
 	echo "benchmark [$1] $dictname..."
 	$1 $dictname $2

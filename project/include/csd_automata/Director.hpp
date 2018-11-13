@@ -88,77 +88,73 @@ namespace csd_automata {
             std::cout << "Input dataset: " << datasetName << std::endl;
             
             try {
-                double buildTime = measureProcessing([&]() {
-                    // Extract base name of dataset
-                    std::string baseName = outName;
-                    auto daExt = extension::DoubleArrayAutomataExtension;
-                    // If baseName's extension is same as '.dam'...
-                    if (baseName.size() > daExt.size() &&
-                        baseName.substr(baseName.size() - daExt.size()) == daExt) {
-                        baseName.erase(baseName.end() - daExt.size(), baseName.end());
-                    }
-                    
-                    // Union extension of plain FSA to base name
-                    auto plainFSAName = std::string(baseName) + extension::PlainFSAExtension;
-                    // Build plain FSA if needed
-                    std::ifstream plainFsaStream(plainFSAName);
-                    PlainFSA pfa;
-                    if (plainFsaStream) {
-                        std::cout << "Found pfsa file: " << plainFSAName << std::endl;
-                        pfa.read(plainFsaStream);
-                    } else {
-                        std::cout << "Build pfa to: " << plainFSAName << std::endl;
-                        auto timeBuildPFA = measureProcessing([&]() {
-                            try {
-                                pfa = buildPlainFSA(datasetName);
-                            } catch (exception::DataNotFound& e) {
-                                std::cerr << e.what() << std::endl;
-                                throw;
-                            }
-                            std::ofstream pfaOut(plainFSAName);
-                            pfa.write(pfaOut);
-                        });
-                        std::cout << "\tptime is... " << timeBuildPFA << " ms"  << std::endl;
-                    }
-                    
-                    // Build DoubleArrayAutomata
-                    std::cout << "Build dam to: " << outName << std::endl;
-                    
-                    DA_TYPE da;
-                    auto timeBuildDAM = measureProcessing([&]() {
-                        if (valuesName == "") {
-                            da = DA_TYPE(pfa);
-                        } else {
-                            std::ifstream valuesStream(valuesName);
-                            if (!valuesStream)
-                                throw exception::DataNotFound(valuesName);
-                            std::vector<size_t> values;
-                            for (std::string v; std::getline(valuesStream, v);) {
-                                size_t vi = stoi(v);
-                                values.emplace_back(vi);
-                            }
-                            da = DA_TYPE(pfa, ValueSet(values));
-                        }
-                        std::ofstream outStream(outName);
-                        da.write(outStream);
-                    });
-                    std::cout << "\ttime is... " << timeBuildDAM << " ms" << std::endl;
-                    
-                    // Check membered all sets
-                    try {
-                        checkHasMember(datasetName, da);
-                    } catch (exception::DataNotFound& e) {
-                        std::cerr << e.what() << std::endl;
-                        throw;
-                    } catch (exception::DoesntHaveMember& e) {
-                        std::cerr << e.what() << std::endl;
-                        throw;
-                    }
-                    
-                    da.showStatus(std::cout);
-                });
+                // Extract base name of dataset
+                std::string baseName = outName;
+                auto daExt = extension::DoubleArrayAutomataExtension;
+                // If baseName's extension is same as '.dam'...
+                if (baseName.size() > daExt.size() &&
+                    baseName.substr(baseName.size() - daExt.size()) == daExt) {
+                    baseName.erase(baseName.end() - daExt.size(), baseName.end());
+                }
                 
-                std::cout << std::endl << "Build in: " << buildTime / 1000 << " s" << std::endl;
+                // Union extension of plain FSA to base name
+                auto plainFSAName = std::string(baseName) + extension::PlainFSAExtension;
+                // Build plain FSA if needed
+                std::ifstream plainFsaStream(plainFSAName);
+                PlainFSA pfa;
+                if (plainFsaStream) {
+                    std::cout << "Found pfsa file: " << plainFSAName << std::endl;
+                    pfa.read(plainFsaStream);
+                } else {
+                    std::cout << "Build pfa to: " << plainFSAName << std::endl;
+                    auto timeBuildPFA = measureProcessing([&]() {
+                        try {
+                            pfa = buildPlainFSA(datasetName);
+                        } catch (exception::DataNotFound& e) {
+                            std::cerr << e.what() << std::endl;
+                            throw;
+                        }
+                        std::ofstream pfaOut(plainFSAName);
+                        pfa.write(pfaOut);
+                    });
+                    std::cout << "\tptime is... " << timeBuildPFA << " ms"  << std::endl;
+                }
+                
+                // Build DoubleArrayAutomata
+                std::cout << "Build dam to: " << outName << std::endl;
+                
+                DA_TYPE da;
+                auto timeBuildDAM = measureProcessing([&]() {
+                    if (valuesName == "") {
+                        da = DA_TYPE(pfa);
+                    } else {
+                        std::ifstream valuesStream(valuesName);
+                        if (!valuesStream)
+                            throw exception::DataNotFound(valuesName);
+                        std::vector<size_t> values;
+                        for (std::string v; std::getline(valuesStream, v);) {
+                            size_t vi = stoi(v);
+                            values.emplace_back(vi);
+                        }
+                        da = DA_TYPE(pfa, ValueSet(values));
+                    }
+                    std::ofstream outStream(outName);
+                    da.write(outStream);
+                });
+                std::cout << "Build in: " << timeBuildDAM << " ms" << std::endl;
+                
+                // Check membered all sets
+                try {
+                    checkHasMember(datasetName, da);
+                } catch (exception::DataNotFound& e) {
+                    std::cerr << e.what() << std::endl;
+                    throw;
+                } catch (exception::DoesntHaveMember& e) {
+                    std::cerr << e.what() << std::endl;
+                    throw;
+                }
+                
+                da.showStatus(std::cout);
                 
             } catch (std::exception& e) {
                 return -1;
