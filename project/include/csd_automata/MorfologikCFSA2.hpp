@@ -47,7 +47,7 @@ namespace csd_automata {
             return get_dest_state_offset_(trans);
         }
         bool is_final_trans(size_t trans) const {
-            return (bytes_[trans] & 0x20) != 0;
+            return static_cast<bool>(bytes_[trans] & 0x20);
         }
         
         size_t get_first_trans(size_t state) const {
@@ -57,7 +57,7 @@ namespace csd_automata {
             return is_last_trans(trans) ? 0 : skip_trans_(trans);
         }
         bool is_last_trans(size_t trans) const {
-            return (bytes_[trans] & 0x40) != 0;
+            return static_cast<bool>(bytes_[trans] & 0x40);
         }
         uint8_t get_trans_symbol(size_t trans) const {
             auto index = bytes_[trans] & 0x1F;
@@ -120,7 +120,7 @@ namespace csd_automata {
                 << bool_str(is_next_set_(i)) << "\t";
                 
                 if (!is_next_set_(i)) {
-                    os << read_vint_(i + ((bytes_[i] & 0x1F) != 0 ? 1 : 2));
+                    os << read_vint_(i + (static_cast<bool>(bytes_[i] & 0x1F) ? 1 : 2));
                 }
                 
                 i = skip_trans_(i);
@@ -173,14 +173,14 @@ namespace csd_automata {
         }
         
         bool is_next_set_(size_t trans) const {
-            return (bytes_[trans] & 0x80) != 0;
+            return static_cast<bool>(bytes_[trans] & 0x80);
         }
         size_t get_dest_state_offset_(size_t trans) const {
             if (is_next_set_(trans)) {
                 for (; !is_last_trans(trans); trans = get_next_trans(trans));
                 return skip_trans_(trans);
             } else {
-                return read_vint_(trans + ((bytes_[trans] & 0x1F) != 0 ? 1 : 2));
+                return read_vint_(trans + (static_cast<bool>(bytes_[trans] & 0x1F) ? 1 : 2));
             }
         }
         

@@ -11,11 +11,11 @@
 
 
 using namespace csd_automata;
-using namespace std;
+using string_set = std::vector<std::string>;
 
 namespace {
     
-    vector<string> sample_strs() {
+    string_set sample_strs() {
         return {
             "defied",
             "defies",
@@ -33,7 +33,7 @@ namespace {
         };
     }
     
-    PlainFSA getPlainFSAFromStrings(vector<string> strs) {
+    PlainFSA getPlainFSAFromStrings(const string_set& strs) {
         PlainFSABuilder builder;
         for (auto& str : strs) {
             builder.add(str);
@@ -41,7 +41,7 @@ namespace {
         return builder.release();
     }
     
-    void checkPlainFSAHasMember(PlainFSA& fsa, vector<string> strs) {
+    void checkPlainFSAHasMember(PlainFSA& fsa, const string_set& strs) {
         for (auto& str : strs) {
             auto state = fsa.get_root_state();
             size_t trans = 0;
@@ -55,12 +55,12 @@ namespace {
         }
     }
     
-    void test(const vector<string> &strs) {
+    void test(const string_set& strs) {
         PlainFSA fsa = getPlainFSAFromStrings(strs);
         
         checkPlainFSAHasMember(fsa, strs);
         
-        fsa.print_for_debug(std::cout);
+//        fsa.print_for_debug(std::cout);
     }
     
 }

@@ -11,8 +11,8 @@
 #include "IOInterface.hpp"
 
 #include "DAFoundation.hpp"
-#include "SerializedStrings.hpp"
 #include "sim_ds/BitVector.hpp"
+#include "SerializedStrings.hpp"
 #include "ValueSet.hpp"
 
 #include "CommonPrefixSet.hpp"
@@ -23,9 +23,6 @@ namespace csd_automata {
     
     template<bool WORDS_CUMU, bool EDGE_LINK, bool ID_COMP, bool WORDS_COMP, bool NEEDS_ACCESS>
     class DoubleArrayCFSA : IOInterface {
-    private:
-        friend class DoubleArrayCFSABuilder;
-        
     public:
         static std::string name() {
             return "DoubleArrayCFSA";
@@ -43,8 +40,24 @@ namespace csd_automata {
         
         using foundation_type = DAFoundation<false, true, shouldCompressID, true, shouldCompressWords, useCumulativeWords, isPossibleAccess>;
         using strs_type = SerializedStrings<useBinaryLabel>;
+        using bit_vector = sim_ds::BitVector;
         
-        DoubleArrayCFSA() = default;
+    private:
+        size_t num_trans_ = 0;
+        foundation_type fd_;
+        strs_type serialized_strings_;
+        // If use EDGE_LINK
+        bit_vector has_brother_bits_;
+        std::vector<uint8_t> brother_;
+        bit_vector is_node_bits_;
+        std::vector<uint8_t> eldest_;
+        
+        // If set values
+        ValueSet values_;
+        
+        friend class DoubleArrayCFSABuilder;
+        
+    public:
         
         explicit DoubleArrayCFSA(const DoubleArrayCFSABuilder& builder) {
             builder.release(*this);
@@ -174,6 +187,7 @@ namespace csd_automata {
         
         // MARK: Copy guard
         
+        DoubleArrayCFSA() = default;
         ~DoubleArrayCFSA() = default;
         
         DoubleArrayCFSA (const DoubleArrayCFSA&) = delete;
@@ -183,17 +197,6 @@ namespace csd_automata {
         DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
         
     private:
-        size_t num_trans_ = 0;
-        foundation_type fd_;
-        strs_type serialized_strings_;
-        // If use EDGE_LINK
-        sim_ds::BitVector has_brother_bits_;
-        std::vector<uint8_t> brother_;
-        sim_ds::BitVector is_node_bits_;
-        std::vector<uint8_t> eldest_;
-        
-        // If set values
-        ValueSet values_;
         
         // MARK: Getter
         

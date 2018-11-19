@@ -8,21 +8,23 @@
 #ifndef StringArrayBuilder_hpp
 #define StringArrayBuilder_hpp
 
-#include "sim_ds/BitVector.hpp"
 #include "SerializedStrings.hpp"
+#include "sim_ds/BitVector.hpp"
 
 namespace csd_automata {
     
     class SerializedStringsBuilder {
     public:
         using char_type = char;
+        using bit_vector = sim_ds::BitVector;
+        
         static constexpr char_type kEndLabel = '\0';
         
     private:
         bool binary_mode_;
         
         std::vector<char_type> bytes_;
-        sim_ds::BitVector boundary_flags_;
+        bit_vector boundary_flags_;
         
     public:
         SerializedStringsBuilder(bool binaryMode) : binary_mode_(binaryMode) {}

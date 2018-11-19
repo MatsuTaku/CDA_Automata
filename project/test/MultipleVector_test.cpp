@@ -8,8 +8,10 @@
 #include "gtest/gtest.h"
 #include "csd_automata/MultipleVector.hpp"
 
+using namespace csd_automata;
+
 TEST(MultipleVectorTest, Convert) {
-    const auto size = 0x10000;
+    const auto size = 0x100000;
     
     std::vector<uint64_t> nextSrc(size);
     for (auto i = 0; i < size; i++) {
@@ -23,23 +25,23 @@ TEST(MultipleVectorTest, Convert) {
         checkSrc[i] = 1ULL << rndWidth;
     }
     
-    csd_automata::MultipleVector fva;
-    fva.setValueSize(0, 8);
-    fva.setValueSize(1, 8);
+    MultipleVector fva;
+    std::vector<int> unitSizes = {8, 8};
+    fva.setValueSizes(unitSizes);
     fva.resize(size);
     
     for (auto i = 0; i < size; i++) {
-        fva.set<0, uint64_t>(i, nextSrc[i]);
-        fva.set<1, uint64_t>(i, checkSrc[i]);
+        fva.set<0>(i, nextSrc[i]);
+        fva.set<1>(i, checkSrc[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto next = fva.get<0, uint64_t>(i);
+        auto next = fva.get<0>(i);
         EXPECT_EQ(next, nextSrc[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto check = fva.get<1, uint64_t>(i);
+        auto check = fva.get<1>(i);
         EXPECT_EQ(check, checkSrc[i]);
     }
     

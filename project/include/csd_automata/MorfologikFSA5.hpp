@@ -48,7 +48,7 @@ namespace csd_automata {
             return get_destination_state_offset_(trans);
         }
         bool is_final_trans(size_t trans) const {
-            return (bytes_[trans + 1] & 1) != 0;
+            return static_cast<bool>(bytes_[trans + 1] & 1);
         }
         
         size_t get_first_trans(size_t state) const {
@@ -58,7 +58,7 @@ namespace csd_automata {
             return is_last_trans(trans) ? 0 : skip_trans_(trans);
         }
         bool is_last_trans(size_t trans) const {
-            return (bytes_[trans + 1] & 2) != 0;
+            return static_cast<bool>(bytes_[trans + 1] & 2);
         }
         uint8_t get_trans_symbol(size_t trans) const {
             return bytes_[trans];
@@ -154,7 +154,7 @@ namespace csd_automata {
             return offset + (is_next_set_(offset) ? 2 : 1 + gtl_);
         }
         bool is_next_set_(size_t trans) const {
-            return (bytes_[trans + 1] & 4) != 0;
+            return static_cast<bool>(bytes_[trans + 1] & 4);
         }
         size_t get_destination_state_offset_(size_t trans) const {
             return is_next_set_(trans) ? skip_trans_(trans) : get_goto_(trans);

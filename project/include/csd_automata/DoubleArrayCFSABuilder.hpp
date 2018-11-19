@@ -34,7 +34,7 @@ namespace csd_automata {
         // MARK: - getter
         
         bool hasLabel_(size_t index) const {
-            return (bytes_[offset_(index)] & 8) != 0;
+            return static_cast<bool>(bytes_[offset_(index)] & 8);
         }
         
         size_t getLabelNumber_(size_t index) const {
@@ -54,7 +54,7 @@ namespace csd_automata {
         }
         
         bool hasBrother_(size_t index) const {
-            return (bytes_[offset_(index)] & 16) != 0;
+            return static_cast<bool>(bytes_[offset_(index)] & 16);
         }
         
         uint8_t getBrother_(size_t index) const {
@@ -89,12 +89,12 @@ namespace csd_automata {
             std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &labelIndex, 4);
         }
         
-        void setStore_(size_t index, size_t store) {
-            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 2], &store, 4);
+        void setWords_(size_t index, size_t words) {
+            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 2], &words, 4);
         }
         
-        void setAccStore_(size_t index, size_t as) {
-            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 3], &as, 4);
+        void setCumWords_(size_t index, size_t cw) {
+            std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 3], &cw, 4);
         }
         
         void setHasBrother_(size_t index) {
@@ -252,8 +252,8 @@ namespace csd_automata {
             
             // set store
             const auto store = src_fsa_.get_store_trans(labelTrans);
-            setStore_(child_index, store);
-            setAccStore_(child_index, storesCounter);
+            setWords_(child_index, store);
+            setCumWords_(child_index, storesCounter);
             storesCounter += store;
             
             // Prepare to transition next node

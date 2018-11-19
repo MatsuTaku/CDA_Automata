@@ -11,25 +11,24 @@
 #include "basic.hpp"
 #include "IOInterface.hpp"
 
+#include "sim_ds/calc.hpp"
+
 namespace csd_automata {
     
     class MultipleVector : IOInterface {
     public:
-        // MARK: copy guard
-        MultipleVector() = default;
-        ~MultipleVector() = default;
+        using word_type = uint8_t;
+        static constexpr size_t _word_bits = sizeof(word_type) * 8;
         
-        MultipleVector(const MultipleVector&) = delete;
-        MultipleVector& operator=(const MultipleVector&) = delete;
-        
-        MultipleVector(MultipleVector &&rhs) noexcept = default;
-        MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
+    private:
+        uint8_t element_size_ = 0;
+        std::vector<size_t> value_sizes_ = {};
+        std::vector<size_t> value_positions_ = {};
+        std::vector<word_type> bytes_ = {};
         
     public:
-        using IdType = uint8_t;
-        
-        template <typename CONTAINER>
-        void setValueSizes(CONTAINER& sizes) {
+        template <typename _T>
+        void setValueSizes(std::vector<_T>& sizes) {
             value_sizes_ = {};
             for (auto i = 0; i < sizes.size(); i++)
                 value_sizes_.push_back(sizes[i]);
@@ -54,21 +53,36 @@ namespace csd_automata {
             return bytes_.size() / element_size_;
         }
         
-        template <int N, typename T>
-        T get(size_t index) const;
-        
-        template <int N, typename T>
-        void set(size_t index, T value);
-        
         size_t valueSize(size_t offset) const {
             return value_sizes_[offset];
+        }
+        
+        template <int _Id, typename _T = id_type>
+        id_type get(size_t index) const {
+            _T value = 0;
+            auto pos = offset(index) + value_positions_[_Id];
+            for (size_t i = 0, size = std::min(valueSize(_Id), sizeof(_T)); i < size; i++)
+                value |= static_cast<id_type>(bytes_[pos + i]) << (i * _word_bits);
+            
+            return value;
+        }
+        
+        template <int _Id>
+        void set(size_t index, id_type value) {
+            auto vs = valueSize(_Id);
+            assert(vs == 8 ||
+                   sim_ds::calc::sizeFitsInUnits(value, vs * _word_bits) == 1);
+            
+            auto pos = offset(index) + value_positions_[_Id];
+            for (size_t i = 0, size = vs; i < size; i++)
+                bytes_[pos + i] = static_cast<word_type>(value >> (i * _word_bits));
         }
         
         void resize(size_t indexSize) {
             bytes_.resize(offset(indexSize));
         }
         
-        // MARK: - ByteData method
+        // MARK: IO
         
         size_t sizeInBytes() const override {
             auto size = size_vec(bytes_);
@@ -82,40 +96,24 @@ namespace csd_automata {
         }
         
         void read(std::istream &is) override {
-            bytes_ = read_vec<IdType>(is);
+            bytes_ = read_vec<word_type>(is);
             
             auto sizes = read_vec<uint8_t>(is);
             setValueSizes(sizes);
         }
         
-    private:
-        std::vector<IdType> bytes_ = {};
+        // MARK: copy guard
         
-        uint8_t element_size_ = 0;
-        std::vector<uint8_t> value_sizes_ = {};
-        std::vector<size_t> value_positions_ = {};
+        MultipleVector() = default;
+        ~MultipleVector() = default;
+        
+        MultipleVector(const MultipleVector&) = delete;
+        MultipleVector& operator=(const MultipleVector&) = delete;
+        
+        MultipleVector(MultipleVector &&rhs) noexcept = default;
+        MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
         
     };
-    
-    
-    // MARK: - inline function
-    
-    template <int N, typename T>
-    inline T MultipleVector::get(size_t index) const {
-        T value = 0;
-        auto pos = offset(index) + value_positions_[N];
-        for (size_t i = 0, size = std::min(value_sizes_[N], uint8_t(sizeof(T))); i < size; i++)
-            value |= T(bytes_[pos + i]) << (i * 8);
-        return value;
-    }
-    
-    
-    template <int N, typename T>
-    inline void MultipleVector::set(size_t index, T value) {
-        auto pos = offset(index) + value_positions_[N];
-        for (size_t i = 0, size = std::min(value_sizes_[N], uint8_t(sizeof(T))); i < size; i++)
-            bytes_[pos + i] = static_cast<IdType>(value >> (8 * i));
-    }
     
 }
 

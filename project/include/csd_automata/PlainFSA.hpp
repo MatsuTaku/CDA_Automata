@@ -38,7 +38,7 @@ namespace csd_automata {
         }
         
         bool is_final_trans(size_t trans) const {
-            return (bytes_[trans] & 2) != 0;
+            return static_cast<bool>(bytes_[trans] & 2);
         }
         
         size_t get_store_trans(size_t trans) const {
@@ -56,11 +56,11 @@ namespace csd_automata {
         }
         
         bool is_last_trans(size_t trans) const {
-            return (bytes_[trans] & 1) != 0;
+            return static_cast<bool>(bytes_[trans] & 1);
         }
         
         bool is_multi_src_state(size_t state) const {
-            return (bytes_[get_first_trans(state)] & 4) != 0;
+            return static_cast<bool>(bytes_[get_first_trans(state)] & 4);
         }
         
         uint8_t get_trans_symbol(size_t trans) const {
@@ -97,7 +97,7 @@ namespace csd_automata {
             
             os << "\tS\tF\tL\tM\tP" << endl;
             for (size_t i = startIndex; i < bytes_.size();) {
-                if ((bytes_[i] & 0x80) != 0) {
+                if (static_cast<bool>(bytes_[i] & 0x80)) {
                     i += kTransSize * 0x100;
                     continue;
                 }

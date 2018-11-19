@@ -18,7 +18,7 @@ namespace {
     const int RUNS = 1;
 #endif
     
-    void measureBenchmark(const wrapper::MarisaWrapper &fsa, const char *queryName, bool needsAccess) {
+    void measureBenchmark(const wrapper::MarisaWrapper& fsa, const char* queryName, bool needsAccess) {
         marisa::Keyset keyset;
         wrapper::setMarisaKeyset(queryName, &keyset);
         auto num = keyset.size();
@@ -69,8 +69,8 @@ namespace {
         fsa.showStatus(std::cout);
     }
     
-    void measureBenchmark(const wrapper::DartsCloneWrapper &da, const char *queryName, bool needsAccess) {
-        std::vector<char *> strs;
+    void measureBenchmark(const wrapper::DartsCloneWrapper& da, const char* queryName, bool needsAccess) {
+        std::vector<char*> strs;
         size_t num;
         {
             const auto &sets = csd_automata::KeySet::getKeySets(queryName);
@@ -112,7 +112,7 @@ namespace {
             delete str;
     }
     
-    int benchMarisa(const char* fsaName, const char *queryName, bool needsAccess = true) {
+    int benchMarisa(const char* fsaName, const char* queryName, bool needsAccess = true) {
         try {
             std::cout << "Bench " << wrapper::MarisaWrapper::name() << " from " << fsaName << std::endl;
             
@@ -132,7 +132,7 @@ namespace {
         return 0;
     }
     
-    int benchDarts(const char* fsaName, const char *queryName, bool needsAccess = true) {
+    int benchDarts(const char* fsaName, const char* queryName, bool needsAccess = true) {
         try {
             std::cout << "Bench " << wrapper::DartsCloneWrapper::name() << " from " << fsaName << std::endl;
             

@@ -28,7 +28,7 @@ namespace wrapper {
             read(fileName);
         }
         
-        int build(const char *fileName) {
+        int build(const char* fileName) {
             std::ifstream ifs(fileName);
             if (!ifs)
                 throw csd_automata::exception::DataNotFound(fileName);
@@ -52,7 +52,7 @@ namespace wrapper {
         
         // MARK: Funcionals
         
-        size_t lookup(const char *key) const {
+        size_t lookup(const char* key) const {
             return da_.exactMatchSearch<Darts::DoubleArray::result_type>(key);
         }
         

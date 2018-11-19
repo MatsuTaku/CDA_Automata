@@ -9,7 +9,6 @@
 #define DoubleArrayFSA_hpp
 
 #include "IOInterface.hpp"
-
 #include "DAFoundation.hpp"
 #include "sim_ds/BitVector.hpp"
 
@@ -22,33 +21,27 @@ namespace csd_automata {
     template<bool N>
     class DoubleArrayFSA : IOInterface {
     public:
-        DoubleArrayFSA() = default;
-        
-        DoubleArrayFSA(const PlainFSA &fsa) {
-            build(fsa);
-        }
-        DoubleArrayFSA(std::istream &is) {
-            read(is);
-        }
-        
-        ~DoubleArrayFSA() = default;
-        
-        // MARK: - Copy guard
-        
-        DoubleArrayFSA (const DoubleArrayFSA&) = delete;
-        DoubleArrayFSA& operator=(const DoubleArrayFSA&) = delete;
-        
-        DoubleArrayFSA(DoubleArrayFSA&&) noexcept = default;
-        DoubleArrayFSA& operator=(DoubleArrayFSA&&) noexcept = default;
-        
-    public:
-        static constexpr bool useCodes = N;
-        using nc_type = DAFoundation<N, false, false, false, false, false, false>;
-        
-    public:
         static std::string name() {
             std::string name = (!useCodes ? "Original" : "Dac");
             return name + "DoubleArrayFSA";
+        }
+        
+        static constexpr bool useCodes = N;
+        using foundation_type = DAFoundation<N, false, false, false, false, false, false>;
+        using bit_vector = sim_ds::BitVector;
+        
+    private:
+        foundation_type fd_;
+        bit_vector is_final_bits_;
+        size_t num_trans_ = 0;
+        
+    public:
+        DoubleArrayFSA(const PlainFSA& fsa) {
+            build(fsa);
+        }
+        
+        DoubleArrayFSA(std::istream &is) {
+            read(is);
         }
         
         void build(const PlainFSA &fsa);
@@ -79,20 +72,20 @@ namespace csd_automata {
         
         auto next(size_t index) const {
             if constexpr (N)
-                return nc_.next(index);
+                return fd_.next(index);
             else
-                return nc_.next(index) >> 1;
+                return fd_.next(index) >> 1;
         }
         
         auto check(size_t index) const {
-            return nc_.check(index);
+            return fd_.check(index);
         }
         
         auto isFinal(size_t index) const {
             if constexpr (N)
                 return is_final_bits_[index];
             else
-                return (nc_.next(index) & 1) != 0;
+                return static_cast<bool>(fd_.next(index) & 1);
         }
         
         size_t store(size_t index) const {
@@ -106,7 +99,7 @@ namespace csd_automata {
         // MARK: - Protocol setting
         
         void setNumElement(size_t num) {
-            nc_.resize(num);
+            fd_.resize(num);
             if (useCodes) {
                 is_final_bits_.resize(num);
             }
@@ -119,7 +112,7 @@ namespace csd_automata {
         // MARK: - ByteData method
         
         size_t sizeInBytes() const override {
-            auto size = nc_.sizeInBytes();
+            auto size = fd_.sizeInBytes();
             if constexpr (N)
                 size += is_final_bits_.sizeInBytes();
             size += sizeof(num_trans_);
@@ -127,14 +120,14 @@ namespace csd_automata {
         }
         
         void write(std::ostream& os) const override {
-            nc_.write(os);
+            fd_.write(os);
             if constexpr (N)
                 is_final_bits_.write(os);
             write_val(num_trans_, os);
         }
         
         void read(std::istream& is) override {
-            nc_.read(is);
+            fd_.read(is);
             if constexpr (N)
                 is_final_bits_.read(is);
             num_trans_ = read_val<size_t>(is);
@@ -144,39 +137,47 @@ namespace csd_automata {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << num_trans_ << endl;
-            os << "#elems: " << nc_.numElements() << endl;
+            os << "#elems: " << fd_.numElements() << endl;
             os << "size:   " << sizeInBytes() << endl;
             os << "size is final:   " << is_final_bits_.sizeInBytes() << endl;
-            nc_.showStatus(os);
+            fd_.showStatus(os);
         }
         
         void printForDebug(std::ostream &os) const {
             
         }
         
+        // MARK: - Copy guard
+        
+        DoubleArrayFSA() = default;
+        ~DoubleArrayFSA() = default;
+        
+        DoubleArrayFSA (const DoubleArrayFSA&) = delete;
+        DoubleArrayFSA& operator=(const DoubleArrayFSA&) = delete;
+        
+        DoubleArrayFSA(DoubleArrayFSA&&) noexcept = default;
+        DoubleArrayFSA& operator=(DoubleArrayFSA&&) noexcept = default;
+        
     private:
-        nc_type nc_;
-        sim_ds::BitVector is_final_bits_;
-        size_t num_trans_ = 0;
         
         // MARK: - build
         
         void setCheck(size_t index, uint8_t check) {
-            nc_.setCheck(index, check);
+            fd_.setCheck(index, check);
         }
         
         void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
             if (N) {
-                nc_.setNext(index, next);
+                fd_.setNext(index, next);
                 is_final_bits_[index] = isFinal;
             } else {
-                nc_.setNext(index, (next << 1) | isFinal);
+                fd_.setNext(index, (next << 1) | isFinal);
             }
         }
         
         void buildBitArray() {
             if constexpr (!N) return;
-            nc_.build();
+            fd_.build();
         }
         
     };

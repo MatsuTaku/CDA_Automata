@@ -45,9 +45,9 @@ target_link_libraries(convert CSDAutomata)
 add_executable(darts_build darts_build.cpp DartsCloneWrapper.hpp)
 target_link_libraries(darts_build CSDAutomata)
 
-#if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
-#	message(STATUS "Enable test CSDAutomata")
-#	add_subdirectory(test)
-#endif()
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+	message(STATUS "Enable test CSDAutomata")
+	add_subdirectory(test)
+endif()
 
 

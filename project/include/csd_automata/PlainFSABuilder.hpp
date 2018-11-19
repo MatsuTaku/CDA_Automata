@@ -52,10 +52,10 @@ namespace csd_automata {
         size_t num_words_ = 0;
         
         bool is_last_trans_(size_t trans) const {
-            return (bytes_[trans] & 1) != 0;
+            return static_cast<bool>(bytes_[trans] & 1);
         }
         bool is_final_trans_(size_t trans) const {
-            return (bytes_[trans] & 2) != 0;
+            return static_cast<bool>(bytes_[trans] & 2);
         }
         uint8_t get_symbol_(size_t trans) const {
             return bytes_[trans + 1];
@@ -71,7 +71,7 @@ namespace csd_automata {
             return store;
         }
         bool is_invalid_trans_(size_t trans) const {
-            return (bytes_[trans] & 0x80) != 0;
+            return static_cast<bool>(bytes_[trans] & 0x80);
         }
         void set_final_flag_(size_t trans, bool is_final) {
             if (is_final) { bytes_[trans + 0] |= 2; }

@@ -226,7 +226,7 @@ namespace csd_automata {
         for (auto &dict : str_dicts_) {
             if (dict.isIncluded)
                 continue;
-            auto size = sim_ds::calc::sizeFitInBytes(dict.place);
+            auto size = sim_ds::calc::sizeFitsInBytes(dict.place);
             if (size == 0) continue;
             counts[size - 1] += dict.counter + 1;
         }

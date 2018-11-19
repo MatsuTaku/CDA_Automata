@@ -32,7 +32,14 @@ endif()
 
 file(GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*_test.cpp)
 
-add_executable(CSDAutomata_test ${TEST_SOURCES})
-target_link_libraries(CSDAutomata_test gtest_main CSDAutomata)
-add_test(NAME CSDAutomata_test COMMAND CSDAutomata_test)
+foreach(TEST_SOURCE ${TEST_SOURCES})
+	get_filename_component(TEST_SOURCE_NAME ${TEST_SOURCE} NAME_WE)
+	add_executable(${TEST_SOURCE_NAME} ${TEST_SOURCE})
+	target_link_libraries(${TEST_SOURCE_NAME} gtest_main CSDAutomata)
+	add_test(NAME ${TEST_SOURCE_NAME} COMMAND ${TEST_SOURCE_NAME})
+endforeach()
+
+#add_executable(CSDAutomata_test ${TEST_SOURCES})
+#target_link_libraries(CSDAutomata_test gtest_main CSDAutomata)
+#add_test(NAME CSDAutomata_test COMMAND CSDAutomata_test)
 

@@ -57,19 +57,19 @@ namespace csd_automata {
         }
         
         bool isFinalTrans(size_t trans) const {
-            return (bytes_[offsetFlags_(trans)] & 1U) != 0;
+            return static_cast<bool>(bytes_[offsetFlags_(trans)] & 1U);
         }
         
         bool isLastTrans(size_t trans) const {
-            return (bytes_[offsetFlags_(trans)] & 2U) != 0;
+            return static_cast<bool>(bytes_[offsetFlags_(trans)] & 2U);
         }
         
         bool isNextSet(size_t trans) const {
-            return (bytes_[offsetFlags_(trans)] & 4U) != 0;
+            return static_cast<bool>(bytes_[offsetFlags_(trans)] & 4U);
         }
         
         bool isWordsLarge(size_t trans) const {
-            return (bytes_[offsetFlags_(trans)] & 8U) != 0;
+            return static_cast<bool>(bytes_[offsetFlags_(trans)] & 8U);
         }
         
         // MARK: Functionals
@@ -238,7 +238,7 @@ namespace csd_automata {
         };
         
         auto totalWords = dfs(set.get_root_state());
-        element_words_lower_size_ = sim_ds::calc::sizeFitInBytes(totalWords >> kNodeWordsUpperBitsSize_);
+        element_words_lower_size_ = sim_ds::calc::sizeFitsInBytes(totalWords >> kNodeWordsUpperBitsSize_);
         
         for (size_t s = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
             nodes[s].offset = std::numeric_limits<size_t>::max();

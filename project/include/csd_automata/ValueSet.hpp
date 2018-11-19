@@ -20,26 +20,18 @@ namespace csd_automata {
     public:
         using list_type = sim_ds::FitVector;
         
-        // MARK: Constructors
+    private:
+        list_type values_;
         
-        ValueSet() = default;
+    public:
+        // MARK: Constructors
         
         template <class CONTAINER>
         ValueSet(const CONTAINER& list) {
             setList(list);
         }
         
-        ~ValueSet() = default;
-        
-        // MARK: Copy guard
-        
-        ValueSet(const ValueSet&) = delete;
-        ValueSet& operator=(const ValueSet&) = delete;
-        
-        ValueSet(ValueSet&&) noexcept = default;
-        ValueSet& operator=(ValueSet&&) noexcept = default;
-        
-        // MARK: - Functionals
+        // MARK: Functionals
         
         size_t operator[](size_t index) const {
             if (index == 0) {
@@ -72,8 +64,17 @@ namespace csd_automata {
             return values_.sizeInBytes();
         }
         
-    private:
-        list_type values_;
+        // MARK: Copy guard
+        
+        ValueSet() = default;
+        ~ValueSet() = default;
+        
+        ValueSet(const ValueSet&) = delete;
+        ValueSet& operator=(const ValueSet&) = delete;
+        
+        ValueSet(ValueSet&&) noexcept = default;
+        ValueSet& operator=(ValueSet&&) noexcept = default;
+        
         
     };
     
