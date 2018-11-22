@@ -16,11 +16,9 @@
 namespace csd_automata {
     
     class MultipleVector : IOInterface {
-    public:
         using word_type = uint8_t;
-        static constexpr size_t _word_bits = sizeof(word_type) * 8;
+        static constexpr size_t kBitsPerWord = sizeof(word_type) * 8;
         
-    private:
         uint8_t element_size_ = 0;
         std::vector<size_t> value_sizes_ = {};
         std::vector<size_t> value_positions_ = {};
@@ -57,25 +55,25 @@ namespace csd_automata {
             return value_sizes_[offset];
         }
         
-        template <int _Id, typename _T = id_type>
-        id_type get(size_t index) const {
-            _T value = 0;
-            auto pos = offset(index) + value_positions_[_Id];
-            for (size_t i = 0, size = std::min(valueSize(_Id), sizeof(_T)); i < size; i++)
-                value |= static_cast<id_type>(bytes_[pos + i]) << (i * _word_bits);
+        template <int Id, typename T = id_type>
+        void set(size_t index, T value) {
+            auto vs = valueSize(Id);
+            assert(vs == 8 ||
+                   sim_ds::calc::sizeFitsInUnits(value, vs * kBitsPerWord) == 1);
             
-            return value;
+            auto pos = offset(index) + value_positions_[Id];
+            for (size_t i = 0, size = std::min(vs, sizeof(T)); i < size; i++)
+                bytes_[pos + i] = static_cast<word_type>(value >> (i * kBitsPerWord));
         }
         
-        template <int _Id>
-        void set(size_t index, id_type value) {
-            auto vs = valueSize(_Id);
-            assert(vs == 8 ||
-                   sim_ds::calc::sizeFitsInUnits(value, vs * _word_bits) == 1);
+        template <int Id, typename T = id_type>
+        id_type get(size_t index) const {
+            T value = 0;
+            auto pos = offset(index) + value_positions_[Id];
+            for (size_t i = 0, size = std::min(valueSize(Id), sizeof(T)); i < size; i++)
+                value |= static_cast<id_type>(bytes_[pos + i]) << (i * kBitsPerWord);
             
-            auto pos = offset(index) + value_positions_[_Id];
-            for (size_t i = 0, size = vs; i < size; i++)
-                bytes_[pos + i] = static_cast<word_type>(value >> (i * _word_bits));
+            return value;
         }
         
         void resize(size_t indexSize) {
