@@ -10,7 +10,7 @@
 
 #include "csd_automata/DoubleArrayFSA.hpp"
 #include "csd_automata/DoubleArrayCFSA.hpp"
-#include "csd_automata/MorfologikFSADictionary.hpp"
+#include "csd_automata/MorfologikFsaDictionary.hpp"
 
 namespace csd_automata {
 

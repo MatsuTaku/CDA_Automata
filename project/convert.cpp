@@ -5,22 +5,22 @@
 //  Created by 松本拓真 on 2018/09/24.
 //
 
-#include "csd_automata/MorfologikFSADictionary.hpp"
+#include "csd_automata/MorfologikFsaDictionary.hpp"
 
 using namespace csd_automata;
 
 namespace {
     
-    template<class DictType>
+    template<class Dictionary>
     void buildMorfologikFSADictionary(const char *setName, const char *dictName) {
         std::ifstream ifs(setName);
         if (!ifs) {
             std::cerr << "Error! File not found: " << setName << std::endl;
         }
-        typename DictType::FoundationType::FSAType fsa;
+        typename Dictionary::Foundation::FsaSource fsa;
         fsa.read(ifs);
-        typename DictType::FoundationType foundation(fsa);
-        DictType mf5d(std::move(foundation));
+        typename Dictionary::Foundation foundation(fsa);
+        Dictionary mf5d(std::move(foundation));
         std::ofstream ofs(dictName);
         mf5d.write(ofs);
     }

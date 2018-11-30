@@ -10,13 +10,13 @@
 
 namespace csd_automata {
     
-    namespace extension {
-        
-        const std::string PlainFSAExtension = ".pfsa";
-        
-        const std::string DoubleArrayAutomataExtension = ".dam";
-        
-    } // namespace extension
+namespace extension {
+    
+const std::string PlainFSAExtension = ".pfsa";
+
+const std::string DoubleArrayAutomataExtension = ".dam";
+    
+} // namespace extension
     
 } // namespace csd_automata
 

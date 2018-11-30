@@ -10,20 +10,20 @@
 
 namespace csd_automata {
     
-    namespace KeySet {
-        
-        std::vector<std::string> getKeySets(const char *queryName) {
-            std::ifstream ifs(queryName);
-            if (!ifs)
-                throw exception::DataNotFound(queryName);
-            
-            std::vector<std::string> strs;
-            for (std::string line; std::getline(ifs, line);)
-                strs.emplace_back(line);
-            return strs;
-        }
-        
-    };
+namespace KeySet {
+    
+std::vector<std::string> getKeySets(const char *queryName) {
+    std::ifstream ifs(queryName);
+    if (!ifs)
+        throw exception::DataNotFound(queryName);
+    
+    std::vector<std::string> strs;
+    for (std::string line; std::getline(ifs, line);)
+        strs.emplace_back(line);
+    return strs;
+}
+    
+};
     
 }
 
