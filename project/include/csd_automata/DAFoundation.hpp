@@ -19,10 +19,13 @@
 
 namespace csd_automata {
     
-    template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
+    using sim_ds::bit_tools::width_mask;
+    
+    template <bool CompNext, bool UseStrId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
     class DAFoundation : IOInterface {
+        using Self = DAFoundation<CompNext, UseStrId, CompId, Hashing, CompWords, CumuWords, PlainWords>;
         static constexpr bool kCompressNext = CompNext;
-        static constexpr bool kCompressCheck = CompCheck;
+        static constexpr bool kUseStrId = UseStrId;
         static constexpr bool kCompressStrId = CompId;
         static constexpr bool kHashing = Hashing;
         static constexpr bool kCompressWords = CompWords;
@@ -34,9 +37,9 @@ namespace csd_automata {
         static constexpr size_t kFlags = !kCompressNext ? (kCompressStrId ? 2 : 1) : 0;
         
         static constexpr size_t kNextUpperBits = 8;
-        static constexpr id_type kNextUpperMask = sim_ds::bit_tools::bits_mask<kNextUpperBits>;
+        static constexpr id_type kNextUpperMask = width_mask<kNextUpperBits>;
         static constexpr size_t kWordsUpperBits = kPlainWords ? 4 : 8;
-        static constexpr id_type kWordsUpperMask = sim_ds::bit_tools::bits_mask<kWordsUpperBits>;
+        static constexpr id_type kWordsUpperMask = width_mask<kWordsUpperBits>;
         enum ElementNumber {
             kENNext = 0,
             kENCheck = 1,
@@ -91,7 +94,7 @@ namespace csd_automata {
             return elements_.get<kENCheck, uint8_t>(index);
         }
         
-        bool isString(size_t index) const {
+        bool is_string(size_t index) const {
             assert(!kCompressNext);
             if constexpr (kCompressStrId)
                 return static_cast<bool>(elements_.get<kENNext, uint8_t>(index) & kIsStrIdMask);
@@ -99,13 +102,13 @@ namespace csd_automata {
                 return checkLinkBits_[index];
         }
         
-        bool isFinal(size_t index) const {
+        bool is_final(size_t index) const {
             assert(!kCompressNext);
             return static_cast<bool>(elements_.get<kENNext, uint8_t>(index) & kAcceptMask);
         }
         
-        size_t stringId(size_t index) const {
-            assert(kCompressCheck);
+        size_t string_id(size_t index) const {
+            assert(kUseStrId);
             
             auto id = check(index);
             if (kCompressStrId && !checkLinkBits_[index]) {
@@ -132,7 +135,7 @@ namespace csd_automata {
             }
         }
         
-        size_t cumWords(size_t index) const {
+        size_t cum_words(size_t index) const {
             assert(kHashing);
             assert(kCumulatesWords);
             
@@ -160,7 +163,7 @@ namespace csd_automata {
             
         }
         
-        size_t numElements() const {
+        size_t num_elements() const {
             return elements_.size();
         }
         
@@ -168,13 +171,13 @@ namespace csd_automata {
         
         // First. Set size of elements
         void resize(size_t size, size_t words = 0) {
-            auto nextSize = sim_ds::calc::sizeFitsInBytes(size << kFlags);
+            auto nextSize = sim_ds::calc::SizeFitsInBytes(size << kFlags);
             std::vector<size_t> sizes = { kCompressNext ? 1 : nextSize, 1 };
             if constexpr (kHashing) {
                 if constexpr (kCompressWords) {
                     sizes.push_back(1);
                 } else {
-                    auto wordsSize = sim_ds::calc::sizeFitsInBytes(words);
+                    auto wordsSize = sim_ds::calc::SizeFitsInBytes(words);
                     sizes.push_back(wordsSize);
                     if (kPlainWords)
                         sizes.push_back(wordsSize);
@@ -183,7 +186,7 @@ namespace csd_automata {
             elements_.setValueSizes(sizes);
             elements_.resize(size);
             if (kCompressNext) nextLinkBits_.resize(size);
-            if (kCompressCheck) checkLinkBits_.resize(size);
+            if (kUseStrId) checkLinkBits_.resize(size);
             if (kHashing && kCompressWords) {
                 cumWordsLinkBits_.resize(size);
                 if (kPlainWords)
@@ -191,7 +194,7 @@ namespace csd_automata {
             }
         }
         
-        void setIsFinal(size_t index, bool isFinal) {
+        void set_is_final(size_t index, bool isFinal) {
             assert(!kCompressNext);
             auto value = elements_.get<kENNext, uint8_t>(index);
             if (isFinal)
@@ -201,8 +204,8 @@ namespace csd_automata {
             elements_.set<kENNext, uint8_t>(index, value);
         }
         
-        void setIsString(size_t index, bool isStr) {
-            assert(kCompressCheck);
+        void set_is_string(size_t index, bool isStr) {
+            assert(kUseStrId);
             if constexpr (kCompressStrId) {
                 auto value = elements_.get<kENNext, uint8_t>(index);
                 if (isStr)
@@ -215,9 +218,9 @@ namespace csd_automata {
             }
         }
         
-        void setNext(size_t index, size_t next) {
+        void set_next(size_t index, size_t next) {
             if constexpr (!kCompressNext) {
-                auto flags = elements_.get<kENNext, uint8_t>(index) & sim_ds::bit_tools::bits_mask<kFlags>;
+                auto flags = elements_.get<kENNext, uint8_t>(index) & width_mask<kFlags>;
                 elements_.set<kENNext>(index, next << kFlags | flags);
             } else {
                 elements_.set<kENNext>(index, next & kNextUpperMask);
@@ -230,14 +233,14 @@ namespace csd_automata {
             
         }
         
-        void setCheck(size_t index, uint8_t check) {
+        void set_check(size_t index, uint8_t check) {
             elements_.set<kENCheck>(index, check);
         }
         
-        void setStringId(size_t index, size_t strIndex) {
-            assert(kCompressCheck);
+        void set_string_id(size_t index, size_t strIndex) {
+            assert(kUseStrId);
             
-            setCheck(index, strIndex & 0xff);
+            set_check(index, strIndex & 0xff);
             auto flow = strIndex >> kNextUpperBits;
             bool hasFlow = flow > 0;
             if constexpr (kCompressStrId)
@@ -246,7 +249,7 @@ namespace csd_automata {
                 checkFlowSrc_.emplace_back(flow);
         }
         
-        void setWords(size_t index, size_t words) {
+        void set_words(size_t index, size_t words) {
             assert(kHashing);
             assert(kPlainWords);
             
@@ -264,7 +267,7 @@ namespace csd_automata {
             }
         }
         
-        void setCumWords(size_t index, size_t cw) {
+        void set_cum_words(size_t index, size_t cw) {
             assert(kHashing);
             assert(kCumulatesWords);
             
@@ -291,98 +294,98 @@ namespace csd_automata {
         }
         
         // Finaly. Serialize flows.
-        void build() {
+        void Build() {
             if constexpr (kCompressNext) {
-                nextLinkBits_.build();
-                nextFlow_.setVector(nextFlowSrc_);
-                nextFlow_.build();
+                nextLinkBits_.Build();
+                nextFlow_.ConvertFromVector(nextFlowSrc_);
+                nextFlow_.Build();
             }
-            if constexpr (kCompressCheck) {
-                checkLinkBits_.build();
+            if constexpr (kUseStrId) {
+                checkLinkBits_.Build();
                 checkFlow_ = fit_vector(checkFlowSrc_);
             }
             if constexpr (kHashing) {
                 if constexpr (kPlainWords) {
-                    wordsLinkBits_.build();
+                    wordsLinkBits_.Build();
                     wordsFlow_ = fit_vector(wordsFlowSrc_);
                 }
-                cumWordsLinkBits_.build();
+                cumWordsLinkBits_.Build();
                 cumWordsFlow_ = fit_vector(cumWordsFlowSrc_);
             }
         }
         
         // MARK: - IO
         
-        size_t sizeInBytes() const override {
-            auto size = elements_.sizeInBytes();
+        size_t size_in_Bytes() const override {
+            auto size = elements_.size_in_Bytes();
             if constexpr (kCompressNext) {
-                size += nextLinkBits_.sizeInBytes();
-                size += nextFlow_.sizeInBytes();
+                size += nextLinkBits_.size_in_bytes();
+                size += nextFlow_.size_in_bytes();
             }
-            if constexpr (kCompressCheck) {
-                size += checkLinkBits_.sizeInBytes();
-                size += checkFlow_.sizeInBytes();
+            if constexpr (kUseStrId) {
+                size += checkLinkBits_.size_in_bytes();
+                size += checkFlow_.size_in_bytes();
             }
             if constexpr (kHashing && kCompressWords) {
                 if constexpr (kPlainWords) {
-                    size += wordsLinkBits_.sizeInBytes();
-                    size += wordsFlow_.sizeInBytes();
+                    size += wordsLinkBits_.size_in_bytes();
+                    size += wordsFlow_.size_in_bytes();
                 }
                 if constexpr (kCumulatesWords) {
-                    size += cumWordsLinkBits_.sizeInBytes();
-                    size += cumWordsFlow_.sizeInBytes();
+                    size += cumWordsLinkBits_.size_in_bytes();
+                    size += cumWordsFlow_.size_in_bytes();
                 }
             }
             return size;
         }
         
-        void write(std::ostream& os) const override {
-            elements_.write(os);
+        void Write(std::ostream& os) const override {
+            elements_.Write(os);
             if constexpr (kCompressNext) {
-                nextLinkBits_.write(os);
-                nextFlow_.write(os);
+                nextLinkBits_.Write(os);
+                nextFlow_.Write(os);
             }
-            if constexpr (kCompressCheck) {
-                checkLinkBits_.write(os);
-                checkFlow_.write(os);
+            if constexpr (kUseStrId) {
+                checkLinkBits_.Write(os);
+                checkFlow_.Write(os);
             }
             if constexpr (kHashing && kCompressWords) {
                 if constexpr (kPlainWords) {
-                    wordsLinkBits_.write(os);
-                    wordsFlow_.write(os);
+                    wordsLinkBits_.Write(os);
+                    wordsFlow_.Write(os);
                 }
                 if constexpr (kCumulatesWords) {
-                    cumWordsLinkBits_.write(os);
-                    cumWordsFlow_.write(os);
+                    cumWordsLinkBits_.Write(os);
+                    cumWordsFlow_.Write(os);
                 }
             }
         }
         
-        void read(std::istream& is) override {
-            elements_.read(is);
+        void Read(std::istream& is) override {
+            elements_.Read(is);
             if constexpr (kCompressNext) {
-                nextLinkBits_.read(is);
-                nextFlow_.read(is);
+                nextLinkBits_.Read(is);
+                nextFlow_.Read(is);
             }
-            if constexpr (kCompressCheck) {
-                checkLinkBits_.read(is);
+            if constexpr (kUseStrId) {
+                checkLinkBits_.Read(is);
                 checkFlow_ = fit_vector(is);
             }
             if constexpr (kHashing && kCompressWords) {
                 if constexpr (kPlainWords) {
-                    wordsLinkBits_.read(is);
+                    wordsLinkBits_.Read(is);
                     wordsFlow_ = fit_vector(is);
                 }
                 if constexpr (kCumulatesWords) {
-                    cumWordsLinkBits_.read(is);
+                    cumWordsLinkBits_.Read(is);
                     cumWordsFlow_ = fit_vector(is);
                 }
             }
         }
         
-        void showStatus(std::ostream& os) const override;
+        void ShowStatus(std::ostream& os) const override;
         
-        void showSizeMap(std::ostream& os) const;
+        void ShowSizeMap(std::ostream& os) const;
         
         // MARK: Copy guard
         
@@ -399,30 +402,30 @@ namespace csd_automata {
     
     
     template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
-    void DAFoundation<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords>::showStatus(std::ostream& os) const {
+    void DAFoundation<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords>::ShowStatus(std::ostream& os) const {
         using std::endl;
         auto codesName = [](bool use) {
             return use ? "DACs" : "Plain";
         };
-        os << "--- Stat of " << "DAFoundation " << codesName(kCompressNext) << "|" << codesName(kCompressCheck) << " ---" << endl;
-        os << "size:   " << sizeInBytes() << endl;
-        os << "size bytes:   " << elements_.sizeInBytes() << endl;
-        os << "size next:   " << numElements() * elements_.valueSize(kENNext) + nextLinkBits_.sizeInBytes() +  nextFlow_.sizeInBytes() << endl;
-        os << "size check:   " << numElements() + checkLinkBits_.sizeInBytes() + checkFlow_.sizeInBytes() << endl;
+        os << "--- Stat of " << "DAFoundation " << codesName(kCompressNext) << "|" << codesName(kUseStrId) << " ---" << endl;
+        os << "size:   " << size_in_Bytes() << endl;
+        os << "size bytes:   " << elements_.size_in_Bytes() << endl;
+        os << "size next:   " << num_elements() * elements_.valueSize(kENNext) + nextLinkBits_.size_in_bytes() +  nextFlow_.size_in_bytes() << endl;
+        os << "size check:   " << num_elements() + checkLinkBits_.size_in_bytes() + checkFlow_.size_in_bytes() << endl;
         if constexpr (kHashing) {
             size_t cWordsSize;
             if constexpr (kPlainWords) {
                 size_t wordsSize;
                 if constexpr (kCumulatesWords) {
-                    wordsSize = numElements() / 2 + wordsLinkBits_.sizeInBytes() + wordsFlow_.sizeInBytes();
-                    cWordsSize = numElements() / 2 + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes();
+                    wordsSize = num_elements() / 2 + wordsLinkBits_.size_in_bytes() + wordsFlow_.size_in_bytes();
+                    cWordsSize = num_elements() / 2 + cumWordsLinkBits_.size_in_bytes() + cumWordsFlow_.size_in_bytes();
                 } else {
-                    wordsSize = numElements() * elements_.valueSize(kENWords);
-                    cWordsSize = numElements() * elements_.valueSize(kENCWords);
+                    wordsSize = num_elements() * elements_.valueSize(kENWords);
+                    cWordsSize = num_elements() * elements_.valueSize(kENCWords);
                 }
                 os << "size words:   " << wordsSize << endl;
             } else {
-                cWordsSize = kCumulatesWords ? (numElements() + cumWordsLinkBits_.sizeInBytes() + cumWordsFlow_.sizeInBytes()) : (numElements() * elements_.valueSize(kENCWords));
+                cWordsSize = kCumulatesWords ? (num_elements() + cumWordsLinkBits_.size_in_bytes() + cumWordsFlow_.size_in_bytes()) : (num_elements() * elements_.valueSize(kENCWords));
             }
             os << "size cumWords:   " << cWordsSize << endl;
             
@@ -432,8 +435,8 @@ namespace csd_automata {
     }
     
     template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
-    void DAFoundation<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords>::showSizeMap(std::ostream& os) const {
-        auto numElem = numElements();
+    void DAFoundation<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords>::ShowSizeMap(std::ostream& os) const {
+        auto numElem = num_elements();
         std::vector<size_t> nexts(numElem);
         for (auto i = 0; i < numElem; i++)
             nexts[i] = next(i) >> (!kCompressNext ? 1 : 0);

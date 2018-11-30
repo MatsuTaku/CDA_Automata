@@ -95,14 +95,14 @@ namespace csd_automata {
             return 4 + 1 + 2 + 1 + label_mapping_.size() + bytes_.size();
         }
         
-        void showStatus(std::ostream& os) const {
+        void ShowStatus(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << get_num_trans() << endl;
             os << "size:   " << size_in_bytes() << endl;
         }
         
-        void print_for_debug(std::ostream& os) const {
+        void PrintForDebug(std::ostream& os) const {
             using std::endl;
             os << "\tLB\tF\tL\tN\tAD" << endl;
             

@@ -41,7 +41,7 @@ namespace csd_automata {
         }
         
         DoubleArrayFSA(std::istream &is) {
-            read(is);
+            Read(is);
         }
         
         void build(const PlainFSA &fsa);
@@ -111,39 +111,39 @@ namespace csd_automata {
         
         // MARK: - ByteData method
         
-        size_t sizeInBytes() const override {
-            auto size = fd_.sizeInBytes();
+        size_t size_in_Bytes() const override {
+            auto size = fd_.size_in_Bytes();
             if constexpr (N)
-                size += is_final_bits_.sizeInBytes();
+                size += is_final_bits_.size_in_bytes();
             size += sizeof(num_trans_);
             return size;
         }
         
-        void write(std::ostream& os) const override {
-            fd_.write(os);
+        void Write(std::ostream& os) const override {
+            fd_.Write(os);
             if constexpr (N)
-                is_final_bits_.write(os);
+                is_final_bits_.Write(os);
             write_val(num_trans_, os);
         }
         
-        void read(std::istream& is) override {
-            fd_.read(is);
+        void Read(std::istream& is) override {
+            fd_.Read(is);
             if constexpr (N)
-                is_final_bits_.read(is);
+                is_final_bits_.Read(is);
             num_trans_ = read_val<size_t>(is);
         }
         
-        void showStatus(std::ostream& os) const override {
+        void ShowStatus(std::ostream& os) const override {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << num_trans_ << endl;
-            os << "#elems: " << fd_.numElements() << endl;
-            os << "size:   " << sizeInBytes() << endl;
-            os << "size is final:   " << is_final_bits_.sizeInBytes() << endl;
-            fd_.showStatus(os);
+            os << "#elems: " << fd_.num_elements() << endl;
+            os << "size:   " << size_in_Bytes() << endl;
+            os << "size is final:   " << is_final_bits_.size_in_bytes() << endl;
+            fd_.ShowStatus(os);
         }
         
-        void printForDebug(std::ostream &os) const {
+        void PrintForDebug(std::ostream &os) const {
             
         }
         
@@ -163,21 +163,21 @@ namespace csd_automata {
         // MARK: - build
         
         void setCheck(size_t index, uint8_t check) {
-            fd_.setCheck(index, check);
+            fd_.set_check(index, check);
         }
         
         void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
             if (N) {
-                fd_.setNext(index, next);
+                fd_.set_next(index, next);
                 is_final_bits_[index] = isFinal;
             } else {
-                fd_.setNext(index, (next << 1) | isFinal);
+                fd_.set_next(index, (next << 1) | isFinal);
             }
         }
         
         void buildBitArray() {
             if constexpr (!N) return;
-            fd_.build();
+            fd_.Build();
         }
         
     };

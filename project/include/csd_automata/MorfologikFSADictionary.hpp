@@ -15,20 +15,15 @@ namespace csd_automata {
     
     template<class Foundation>
     class MorfologikFSADictionary {
+        
+        const Foundation fd_;
+        
     public:
         using FoundationType = Foundation;
         
         MorfologikFSADictionary(Foundation&& fd) : fd_(std::move(fd)) {}
         
         MorfologikFSADictionary(std::istream& is) : fd_(Foundation(is)) {}
-        
-        ~MorfologikFSADictionary() = default;
-        
-        MorfologikFSADictionary(const MorfologikFSADictionary&) = delete;
-        MorfologikFSADictionary& operator=(const MorfologikFSADictionary&) = delete;
-        
-        MorfologikFSADictionary(MorfologikFSADictionary&&) = default;
-        MorfologikFSADictionary& operator=(MorfologikFSADictionary&&) = default;
         
         // MARK: String-Dictionary's functions
         
@@ -58,15 +53,15 @@ namespace csd_automata {
             return fd_.sizeInBytes();
         }
         
-        void showStatus(std::ostream& os) const {
+        void ShowStatus(std::ostream& os) const {
             using std::endl;
             os << "--- Stat of " << name() << " ---" << endl;
             os << "#trans: " << fd_.numTrans() << endl;
             os << "size:   " << sizeInBytes() << endl;
         }
         
-        void printForDebug(std::ostream& os) const {
-            fd_.printForDebug(os);
+        void PrintForDebug(std::ostream& os) const {
+            fd_.PrintForDebug(os);
         }
         
         // MARK: IO
@@ -75,8 +70,14 @@ namespace csd_automata {
             fd_.write(os);
         }
         
-    private:
-        const Foundation fd_;
+        ~MorfologikFSADictionary() = default;
+        
+        MorfologikFSADictionary(const MorfologikFSADictionary&) = delete;
+        MorfologikFSADictionary& operator=(const MorfologikFSADictionary&) = delete;
+        
+        MorfologikFSADictionary(MorfologikFSADictionary&&) = default;
+        MorfologikFSADictionary& operator=(MorfologikFSADictionary&&) = default;
+        
         
     };
     

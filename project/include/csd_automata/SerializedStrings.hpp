@@ -33,7 +33,7 @@ namespace csd_automata {
         // MARK: Constructor
         
         explicit SerializedStrings(std::istream& is) {
-            read(is);
+            Read(is);
         }
         
         // MARK: Property
@@ -79,23 +79,23 @@ namespace csd_automata {
         
         // MARK: IO
         
-        size_t sizeInBytes() const override {
+        size_t size_in_Bytes() const override {
             auto size = size_vec(bytes_);
             if constexpr (_binary_mode)
-                size += boundary_flags_.sizeInBytes();
+                size += boundary_flags_.size_in_bytes();
             return size;
         }
         
-        void write(std::ostream& os) const override {
+        void Write(std::ostream& os) const override {
             write_vec(bytes_, os);
             if constexpr (_binary_mode)
-                boundary_flags_.write(os);
+                boundary_flags_.Write(os);
         }
         
-        void read(std::istream& is) override {
+        void Read(std::istream& is) override {
             bytes_ = read_vec<char>(is);
             if constexpr (_binary_mode)
-                boundary_flags_.read(is);
+                boundary_flags_.Read(is);
         }
         
         // MARK: Show status

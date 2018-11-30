@@ -83,17 +83,17 @@ namespace csd_automata {
         StringDictBuilder builder(fsa, binaryMode);
         std::cout << "------ StringDict build bench mark ------" << std::endl;
         
-        auto inTime = director::measureProcessing([&]() {
+        auto inTime = director::MeasureProcessing([&]() {
             builder.makeDict();
         });
         std::cout << "makeDict: " << inTime << "ms" << std::endl;
         
-        inTime = director::measureProcessing([&]() {
+        inTime = director::MeasureProcessing([&]() {
             builder.setSharings(mergeSuffix);
         });
         std::cout << "setSharings: " << inTime << "ms" << std::endl;
         
-        inTime = director::measureProcessing([&]() {
+        inTime = director::MeasureProcessing([&]() {
             builder.setUpLabelArray();
         });
         std::cout << "setUpLabelArray: " << inTime << "ms" << std::endl;
@@ -226,7 +226,7 @@ namespace csd_automata {
         for (auto &dict : str_dicts_) {
             if (dict.isIncluded)
                 continue;
-            auto size = sim_ds::calc::sizeFitsInBytes(dict.place);
+            auto size = sim_ds::calc::SizeFitsInBytes(dict.place);
             if (size == 0) continue;
             counts[size - 1] += dict.counter + 1;
         }

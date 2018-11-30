@@ -13,17 +13,17 @@
 #include "csd_automata/MorfologikFSADictionary.hpp"
 
 namespace csd_automata {
-    
-    using OriginalFSA = DoubleArrayFSA<false>;
-    using DacFSA = DoubleArrayFSA<true>;
-    
-    using DoubleArrayAutomataDictionary = DoubleArrayCFSA<true, true, false, true, true>;
-    using DoubleArrayAutomataLookupDictionary = DoubleArrayCFSA<true, false, false, true, false>;
-    
-    using DAMTypes = std::tuple<
-    DoubleArrayAutomataLookupDictionary,
-    DoubleArrayAutomataDictionary
-    >;
+
+using OriginalFSA = DoubleArrayFSA<false>;
+using DacFSA = DoubleArrayFSA<true>;
+
+using DoubleArrayAutomataDictionary = DoubleArrayCFSA<true, true, false, true, true>;
+using DoubleArrayAutomataLookupDictionary = DoubleArrayCFSA<true, false, false, true, false>;
+
+using DAMTypes = std::tuple<
+DoubleArrayAutomataLookupDictionary,
+DoubleArrayAutomataDictionary
+>;
     
 }
 

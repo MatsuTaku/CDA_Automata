@@ -175,8 +175,8 @@ namespace csd_automata {
             cout << "is-final: " << bf << tab << ff << endl;
 //            std::cout << i << tab << isFinal_(i) << tab << bn << tab << bc << std::endl;
 //            std::cout << i << tab << fsa.isFinal(i) << tab << fn << tab << fc << std::endl;
-            sim_ds::log::showAsBinary(bn, 4);
-            sim_ds::log::showAsBinary(fn, 4);
+            sim_ds::log::ShowAsBinary(bn, 4);
+            sim_ds::log::ShowAsBinary(fn, 4);
             std::cout << std::endl;
         }
     }

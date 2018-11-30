@@ -14,7 +14,7 @@ namespace {
     
     std::vector<uint64_t> randVector(size_t size) {
         std::vector<uint64_t> src(size);
-        auto bitsWidth = sim_ds::calc::sizeFitsInBits(size);
+        auto bitsWidth = sim_ds::calc::SizeFitsInBits(size);
         for (auto i = 0; i < size; i++) {
             auto rndWidth = rand() % bitsWidth;
             src[i] = 1ULL << rndWidth;
@@ -35,16 +35,16 @@ TEST(DAFoundationTest, UseDac) {
     std::vector<bool> isStrIds(size);
 
     for (auto i = 0; i < size; i++) {
-        fd.setNext(i, nextSrc[i]);
+        fd.set_next(i, nextSrc[i]);
         auto check = checkSrc[i];
         isStrIds[i] = check >> 7 > 0;
         if (!isStrIds[i]) {
-            fd.setCheck(i, check);
+            fd.set_check(i, check);
         } else {
-            fd.setStringId(i, check);
+            fd.set_string_id(i, check);
         }
     }
-    fd.build();
+    fd.Build();
 
     for (auto i = 0; i < size; i++) {
         EXPECT_EQ(fd.next(i), nextSrc[i]);
@@ -54,7 +54,7 @@ TEST(DAFoundationTest, UseDac) {
         if (!isStrIds[i])
             EXPECT_EQ(fd.check(i), checkSrc[i]);
         else
-            EXPECT_EQ(fd.stringId(i), checkSrc[i]);
+            EXPECT_EQ(fd.string_id(i), checkSrc[i]);
     }
 
 }
@@ -71,18 +71,18 @@ TEST(DAFoundationTest, LookupDict) {
     std::vector<bool> isStrIds(size);
     
     for (auto i = 0; i < size; i++) {
-        fd.setNext(i, nextSrc[i]);
+        fd.set_next(i, nextSrc[i]);
         auto check = checkSrc[i];
         isStrIds[i] = check >> 7 > 0;
-        fd.setIsString(i, isStrIds[i]);
+        fd.set_is_string(i, isStrIds[i]);
         if (!isStrIds[i]) {
-            fd.setCheck(i, check);
+            fd.set_check(i, check);
         } else {
-            fd.setStringId(i, check);
+            fd.set_string_id(i, check);
         }
-        fd.setCumWords(i, cwordsSrc[i]);
+        fd.set_cum_words(i, cwordsSrc[i]);
     }
-    fd.build();
+    fd.Build();
     
     for (auto i = 0; i < size; i++) {
         EXPECT_EQ(fd.next(i), nextSrc[i]);
@@ -92,11 +92,11 @@ TEST(DAFoundationTest, LookupDict) {
         if (!isStrIds[i])
             EXPECT_EQ(fd.check(i), checkSrc[i]);
         else
-            EXPECT_EQ(fd.stringId(i), checkSrc[i]);
+            EXPECT_EQ(fd.string_id(i), checkSrc[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        EXPECT_EQ(fd.cumWords(i), cwordsSrc[i]);
+        EXPECT_EQ(fd.cum_words(i), cwordsSrc[i]);
     }
     
 }

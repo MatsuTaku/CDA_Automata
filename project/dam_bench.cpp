@@ -157,11 +157,11 @@ namespace {
         try {
             std::cout << "Bench " << T::name() << " from " << fsa_name << std::endl;
             
-            T fsa = benchmark::getFSAFrom<T>(fsa_name);
+            T fsa = benchmark::GetFSAFrom<T>(fsa_name);
             
             std::cout << "Search benchmark for " << query_name << std::endl;
             
-            benchmark::measureBenchmark(fsa, query_name, RUNS, needsAccess);
+            benchmark::MeasureBenchmark(fsa, query_name, RUNS, needsAccess);
             
         } catch (exception::DataNotFound e) {
             std::cerr << e.what() << std::endl;
@@ -181,9 +181,9 @@ int main(int argc, const char* argv[]) {
     auto type = atoi(argv[3]);
     
 #ifndef NDEBUG
-    fsa_name = "../../results/jawiki-20150118/jawiki-20150118.damac";
-    query_name = "../../data-sets/kanda/jawiki-20150118.dict";
-    type = 2;
+    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+    query_name = "../../data-sets/local/jawiki-20181001.dict";
+    type = 11;
 #endif
     
     switch (type) {

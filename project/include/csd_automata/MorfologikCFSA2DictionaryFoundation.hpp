@@ -124,7 +124,7 @@ namespace csd_automata {
             return size;
         }
         
-        void printForDebug(std::ostream& os) const {
+        void PrintForDebug(std::ostream& os) const {
             using std::endl;
             os << "\tLB\tF\tL\tN\tLW\tWO\tAD" << endl;
             
@@ -238,7 +238,7 @@ namespace csd_automata {
         };
         
         auto totalWords = dfs(set.get_root_state());
-        element_words_lower_size_ = sim_ds::calc::sizeFitsInBytes(totalWords >> kNodeWordsUpperBitsSize_);
+        element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(totalWords >> kNodeWordsUpperBitsSize_);
         
         for (size_t s = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
             nodes[s].offset = std::numeric_limits<size_t>::max();

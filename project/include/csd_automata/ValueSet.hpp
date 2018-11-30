@@ -52,16 +52,16 @@ namespace csd_automata {
         
         // MARK: IO
         
-        void read(std::istream& is) override {
+        void Read(std::istream& is) override {
             values_ = list_type(is);
         }
         
-        void write(std::ostream& os) const override {
-            values_.write(os);
+        void Write(std::ostream& os) const override {
+            values_.Write(os);
         }
         
-        size_t sizeInBytes() const override {
-            return values_.sizeInBytes();
+        size_t size_in_Bytes() const override {
+            return values_.size_in_bytes();
         }
         
         // MARK: Copy guard

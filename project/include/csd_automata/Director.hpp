@@ -24,14 +24,14 @@ namespace csd_automata {
         /**
          Measurement iput process as milli sec
          */
-        double measureProcessing(std::function<void(void)> prc) {
+        double MeasureProcessing(std::function<void(void)> prc) {
             Stopwatch sw;
             prc();
             return sw.get_milli_sec();
         }
         
         // Might throw DataNotFoundException
-        PlainFSA buildPlainFSA(const std::string& dataName) {
+        PlainFSA BuildPlainFSA(const std::string& dataName) {
             std::ifstream ifs(dataName);
             if (!ifs)
                 throw exception::DataNotFound(dataName);
@@ -43,7 +43,7 @@ namespace csd_automata {
             return builder.release();
         }
         
-        PlainFSA readPlainFSA(const std::string& plainFsaName) {
+        PlainFSA ReadPlainFSA(const std::string& plainFsaName) {
             std::ifstream ifs(plainFsaName);
             if (!ifs)
                 throw exception::DataNotFound(plainFsaName);
@@ -52,8 +52,8 @@ namespace csd_automata {
             return plainFsa;
         }
         
-        void generate(const std::string& dataName, const std::string& plainFsaName) {
-            auto plainFsa = buildPlainFSA(dataName);
+        void Generate(const std::string& dataName, const std::string& plainFsaName) {
+            auto plainFsa = BuildPlainFSA(dataName);
             std::ofstream ofs(plainFsaName);
             if (!ofs)
                 throw exception::DataNotFound(plainFsaName);
@@ -62,8 +62,8 @@ namespace csd_automata {
         }
         
         // May throw Exceptions
-        template <class SD_TYPE>
-        void checkHasMember(std::string datasetName, SD_TYPE& sd) {
+        template <class StringDictionaryType>
+        void CheckHasMember(std::string datasetName, StringDictionaryType& sd) {
             std::cout << "Check membering ... ";
             std::ifstream ifs(datasetName);
             if (!ifs)
@@ -83,8 +83,8 @@ namespace csd_automata {
             << "Average query length: " << float(length) / count << std::endl;
         }
         
-        template <class DA_TYPE>
-        int fullyBuild(const std::string& outName, const std::string& datasetName, const std::string& valuesName = "") {
+        template <class DoubleArrayType>
+        int FullyBuild(const std::string& outName, const std::string& datasetName, const std::string& valuesName = "") {
             std::cout << "Input dataset: " << datasetName << std::endl;
             
             try {
@@ -107,9 +107,9 @@ namespace csd_automata {
                     pfa.read(plainFsaStream);
                 } else {
                     std::cout << "Build pfa to: " << plainFSAName << std::endl;
-                    auto timeBuildPFA = measureProcessing([&]() {
+                    auto timeBuildPFA = MeasureProcessing([&]() {
                         try {
-                            pfa = buildPlainFSA(datasetName);
+                            pfa = BuildPlainFSA(datasetName);
                         } catch (exception::DataNotFound& e) {
                             std::cerr << e.what() << std::endl;
                             throw;
@@ -123,10 +123,10 @@ namespace csd_automata {
                 // Build DoubleArrayAutomata
                 std::cout << "Build dam to: " << outName << std::endl;
                 
-                DA_TYPE da;
-                auto timeBuildDAM = measureProcessing([&]() {
+                DoubleArrayType da;
+                auto timeBuildDAM = MeasureProcessing([&]() {
                     if (valuesName == "") {
-                        da = DA_TYPE(pfa);
+                        da = DoubleArrayType(pfa);
                     } else {
                         std::ifstream valuesStream(valuesName);
                         if (!valuesStream)
@@ -136,16 +136,16 @@ namespace csd_automata {
                             size_t vi = stoi(v);
                             values.emplace_back(vi);
                         }
-                        da = DA_TYPE(pfa, ValueSet(values));
+                        da = DoubleArrayType(pfa, ValueSet(values));
                     }
                     std::ofstream outStream(outName);
-                    da.write(outStream);
+                    da.Write(outStream);
                 });
                 std::cout << "Build in: " << timeBuildDAM << " ms" << std::endl;
                 
                 // Check membered all sets
                 try {
-                    checkHasMember(datasetName, da);
+                    CheckHasMember(datasetName, da);
                 } catch (exception::DataNotFound& e) {
                     std::cerr << e.what() << std::endl;
                     throw;
@@ -154,7 +154,7 @@ namespace csd_automata {
                     throw;
                 }
                 
-                da.showStatus(std::cout);
+                da.ShowStatus(std::cout);
                 
             } catch (std::exception& e) {
                 return -1;

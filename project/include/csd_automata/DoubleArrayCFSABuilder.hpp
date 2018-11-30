@@ -114,8 +114,8 @@ namespace csd_automata {
     };
     
     
-    template <class DAM_TYPE>
-    void DoubleArrayCFSABuilder::release(DAM_TYPE& da) {
+    template <class Product>
+    void DoubleArrayCFSABuilder::release(Product& da) {
         const auto numElems = numElems_();
         da.resize(numElems, getNumWords());
         serializedStringsBuilder(str_dict_).release(da.serialized_strings_);
@@ -126,37 +126,37 @@ namespace csd_automata {
                 numTrans++;
                 
                 auto isStrTrans = hasLabel_(i);
-                da.setNext(i, getNext_(i));
-                da.setIsStringTrans(i, isStrTrans);
-                da.setIsFinal(i, isFinal_(i));
-                da.setCheck(i, getCheck_(i));
+                da.set_next(i, getNext_(i));
+                da.set_is_string_trans(i, isStrTrans);
+                da.set_is_final(i, isFinal_(i));
+                da.set_check(i, getCheck_(i));
                 if (isStrTrans)
-                    da.setStringIndex(i, getLabelNumber_(i));
+                    da.set_string_id(i, getLabelNumber_(i));
                 else
-                    da.setCheck(i, getCheck_(i));
+                    da.set_check(i, getCheck_(i));
                 
-                if constexpr (DAM_TYPE::isPossibleAccess)
-                    da.setWords(i, getStore_(i));
-                if constexpr (DAM_TYPE::useCumulativeWords)
-                    da.setCumWords(i, getAccStore_(i));
+                if constexpr (Product::kSupportAccess)
+                    da.set_words(i, getStore_(i));
+                if constexpr (Product::kUseCumulativeWords)
+                    da.set_cum_words(i, getAccStore_(i));
                 
-                if constexpr (DAM_TYPE::useEdgeLink) {
+                if constexpr (Product::kLinkChildren) {
                     bool hasBro = hasBrother_(i);
-                    da.setHasBrother(i, hasBro);
+                    da.set_has_brother(i, hasBro);
                     if (hasBro)
-                        da.setBrother(i, getBrother_(i));
+                        da.set_brother(i, getBrother_(i));
                 }
             }
             
-            if constexpr (DAM_TYPE::useEdgeLink) {
+            if constexpr (Product::kLinkChildren) {
                 bool isNode = isUsedNext_(i);
-                da.setIsNode(i, isNode);
+                da.set_is_node(i, isNode);
                 if (isNode)
-                    da.setEldest(i, getEldest_(i));
+                    da.set_eldest(i, getEldest_(i));
             }
         }
-        da.buildBitVector();
-        da.setNumTrans(numTrans);
+        da.BuildBitVector();
+        da.set_num_trans(numTrans);
         
         showCompareWith(da);
     }
@@ -170,9 +170,9 @@ namespace csd_automata {
             auto bn = getNext_(i);
             auto bi = hasLabel_(i);
             auto bc = !bi ? getCheck_(i) : getLabelNumber_(i);
-            auto fn = fsa.fd_.next(i);
-            auto fi = fsa.fd_.isString(i);
-            auto fc = !fi ? fsa.fd_.check(i) : fsa.fd_.stringId(i);
+            auto fn = fsa.base_.next(i);
+            auto fi = fsa.base_.is_string(i);
+            auto fc = !fi ? fsa.base_.check(i) : fsa.base_.string_id(i);
             if (bn == fn && bc == fc && bi == fi)
                 continue;
             
@@ -181,10 +181,10 @@ namespace csd_automata {
             cout << "next: " << bn << tab << fn << endl;
             cout << "check: " << bc << tab << fc << endl;
             cout << "is-str: " << bi << tab << fi << endl;
-            cout << "accept: " << isFinal_(i) << tab << fsa.fd_.isFinal(i) << endl;
+            cout << "accept: " << isFinal_(i) << tab << fsa.base_.is_final(i) << endl;
             if (bi || fi) {
-                sim_ds::log::showAsBinary(bc, 4);
-                sim_ds::log::showAsBinary(fc, 4);
+                sim_ds::log::ShowAsBinary(bc, 4);
+                sim_ds::log::ShowAsBinary(fc, 4);
             }
             std::cout << std::endl;
         }
