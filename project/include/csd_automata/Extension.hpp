@@ -9,15 +9,15 @@
 #define Extension_hpp
 
 namespace csd_automata {
-    
-namespace extension {
-    
-const std::string PlainFSAExtension = ".pfsa";
 
-const std::string DoubleArrayAutomataExtension = ".dam";
-    
+namespace extension {
+
+const std::string kExtensionPlainFSA = ".pfsa";
+
+const std::string kExtensionDoubleArrayAutomata = ".dam";
+
 } // namespace extension
-    
+
 } // namespace csd_automata
 
 #endif /* Extension_hpp */

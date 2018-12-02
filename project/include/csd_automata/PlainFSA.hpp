@@ -12,11 +12,8 @@ namespace csd_automata {
 class PlainFSA {
     friend class PlainFSABuilder;
 public:
-    static constexpr size_t kAddrSize = 4;
-    static constexpr size_t kTransSize = 2 + kAddrSize * 2;
-    
-    PlainFSA() = default;
-    ~PlainFSA() = default;
+    static constexpr size_t kSizeAddr = 4;
+    static constexpr size_t kSizeTrans = 2 + kSizeAddr * 2;
     
     size_t get_root_state() const {
         return get_target_state(0);
@@ -33,7 +30,7 @@ public:
     
     size_t get_target_state(size_t trans) const {
         size_t target = 0;
-        std::memcpy(&target, &bytes_[trans + 2], kAddrSize);
+        std::memcpy(&target, &bytes_[trans + 2], kSizeAddr);
         return target;
     }
     
@@ -43,7 +40,7 @@ public:
     
     size_t get_store_trans(size_t trans) const {
         size_t store = 0;
-        std::memcpy(&store, &bytes_[trans + 2 + kAddrSize], kAddrSize);
+        std::memcpy(&store, &bytes_[trans + 2 + kSizeAddr], kSizeAddr);
         return store;
     }
     
@@ -52,7 +49,7 @@ public:
     }
     
     size_t get_next_trans(size_t trans) const {
-        return is_last_trans(trans) ? 0 : trans + kTransSize;
+        return is_last_trans(trans) ? 0 : trans + kSizeTrans;
     }
     
     bool is_last_trans(size_t trans) const {
@@ -72,7 +69,7 @@ public:
     }
     
     size_t get_num_elements() const {
-        return bytes_.size() / kTransSize;
+        return bytes_.size() / kSizeTrans;
     }
     
     size_t get_num_words() const {
@@ -85,11 +82,11 @@ public:
     }
     
     bool is_straight_state(size_t state) const {
-        auto isSingleSrc = !is_multi_src_state(state);
-        auto isLessSingleChild = !is_multi_child_state(state);
-        auto isFinal = is_final_trans(state);
-        auto isStraight = isSingleSrc && isLessSingleChild && !isFinal;
-        return isStraight;
+        auto is_single_src = !is_multi_src_state(state);
+        auto is_less_single_child = !is_multi_child_state(state);
+        auto is_final = is_final_trans(state);
+        auto is_single_node = is_single_src && is_less_single_child && !is_final;
+        return is_single_node;
     }
     
     void print_for_debug(std::ostream& os, size_t startIndex = 0) const {
@@ -98,7 +95,7 @@ public:
         os << "\tS\tF\tL\tM\tP" << endl;
         for (size_t i = startIndex; i < bytes_.size();) {
             if (static_cast<bool>(bytes_[i] & 0x80)) {
-                i += kTransSize * 0x100;
+                i += kSizeTrans * 0x100;
                 continue;
             }
             os << i << "\t"
@@ -107,7 +104,7 @@ public:
             << is_last_trans(i) << "\t"
             << is_multi_src_state(i) << "\t"
             << get_target_state(i) << endl;
-            i += kTransSize;
+            i += kSizeTrans;
         }
     }
     
@@ -128,6 +125,9 @@ public:
         num_trans_ = read_val<size_t>(is);
         num_words_ = read_val<size_t>(is);
     }
+    
+    PlainFSA() = default;
+    ~PlainFSA() = default;
     
     PlainFSA(const PlainFSA&) = delete;
     PlainFSA& operator=(const PlainFSA&) = delete;

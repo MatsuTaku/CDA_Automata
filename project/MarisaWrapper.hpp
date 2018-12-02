@@ -15,10 +15,10 @@
 
 namespace wrapper {
     
-void setMarisaKeyset(const char *queryName, marisa::Keyset* keyset) {
-    std::ifstream ifs(queryName);
+void SetMarisaKeySet(const char* query_name, marisa::Keyset* keyset) {
+    std::ifstream ifs(query_name);
     if (!ifs)
-        throw csd_automata::exception::DataNotFound(queryName);
+        throw csd_automata::exception::DataNotFound(query_name);
     
     for (std::string line; std::getline(ifs, line);) {
         std::string::size_type delim_pos = line.find_last_of('\t');
@@ -35,29 +35,32 @@ void setMarisaKeyset(const char *queryName, marisa::Keyset* keyset) {
 }
 
 class MarisaWrapper {
+    using Trie = marisa::Trie;
+    using Agent = marisa::Agent;
+    
 public:
+    
+    static std::string name() {
+        return typeid(Trie).name();
+    }
+    
     MarisaWrapper(const char* filename) {
         trie_.load(filename);
     }
     
-public:
-    static std::string name() {
-        return typeid(marisa::Trie).name();
-    }
-    
-    bool isMember(marisa::Agent &agent) const {
+    bool Accept(Agent& agent) const {
         return trie_.lookup(agent);
     }
     
-    bool lookup(marisa::Agent &agent) const {
+    bool Lookup(Agent& agent) const {
         return trie_.lookup(agent);
     }
     
-    void access(marisa::Agent &agent) const {
+    void Access(Agent& agent) const {
         trie_.reverse_lookup(agent);
     }
     
-    void showStatus(std::ostream& os) const {
+    void ShowStatus(std::ostream& os) const {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
         os << "#tries:   " << trie_.num_tries() << endl;
@@ -68,7 +71,8 @@ public:
     }
     
 private:
-    marisa::Trie trie_;
+    Trie trie_;
+    
 };
     
 }

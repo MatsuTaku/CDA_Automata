@@ -27,19 +27,19 @@ public:
     
 public:
     
-    bool isMember(const std::string &str) const {
-        return trie_.lookup(str) != -1;
+    bool Accept(const std::string &str) const {
+        return trie_.Lookup(str) != -1;
     }
     
-    size_t lookup(const std::string &str) const {
-        return trie_.lookup(str);
+    size_t Lookup(const std::string &str) const {
+        return trie_.Lookup(str);
     }
     
-    std::string access(size_t value) const {
+    std::string Access(size_t value) const {
         return trie_.access(value);
     }
     
-    void ShowStatus(std::ostream& os) const {
+    void ShowStats(std::ostream& os) const {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
         os << "#nodes:   " << trie_.num_nodes() << endl;

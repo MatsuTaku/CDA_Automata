@@ -18,16 +18,16 @@ namespace {
     const int RUNS = 1;
 #endif
     
-    void measureBenchmark(const wrapper::MarisaWrapper& fsa, const char* queryName, bool needsAccess) {
+    void measureBenchmark(const wrapper::MarisaWrapper& marisa, const char* query_name, bool needs_access) {
         marisa::Keyset keyset;
-        wrapper::setMarisaKeyset(queryName, &keyset);
+        wrapper::SetMarisaKeySet(query_name, &keyset);
         auto num = keyset.size();
         marisa::Agent agent;
         auto ng = 0;
         std::vector<size_t> values(num);
         for (auto i = 0; i < num; i++) {
             agent.set_query(keyset[i].ptr(), keyset[i].length());
-            if (!fsa.isMember(agent))
+            if (!marisa.Accept(agent))
                 ++ng;
             values[i] = agent.key().id();
         }
@@ -37,7 +37,7 @@ namespace {
             ng = 0;
             for (auto i = 0; i < keyset.size(); i++) {
                 agent.set_query(keyset[i].ptr(), keyset[i].length());
-                if (!fsa.lookup(agent) || agent.key().id() != values[i])
+                if (!marisa.Lookup(agent) || agent.key().id() != values[i])
                     ng++;
             }
         }
@@ -47,13 +47,13 @@ namespace {
         std::cout << "OK: " << num - ng << std::endl;
         std::cout << "NG: " << ng << std::endl;
         
-        if (needsAccess) {
+        if (needs_access) {
             sw = csd_automata::Stopwatch();
             for (auto r = 0; r < RUNS; r++) {
                 ng = 0;
                 for (auto i = 0; i < keyset.size(); i++) {
                     agent.set_query(values[i]);
-                    fsa.access(agent);
+                    marisa.Access(agent);
                     if (agent.key().length() != keyset[i].length() ||
                         std::memcmp(agent.key().ptr(), keyset[i].ptr(), agent.key().length()) != 0)
                         ng++;
@@ -66,14 +66,14 @@ namespace {
             std::cout << "NG: " << ng << std::endl;
         }
         
-        fsa.showStatus(std::cout);
+        marisa.ShowStatus(std::cout);
     }
     
     void measureBenchmark(const wrapper::DartsCloneWrapper& da, const char* queryName, bool needsAccess) {
         std::vector<char*> strs;
         size_t num;
         {
-            const auto &sets = csd_automata::KeySet::getKeySets(queryName);
+            const auto &sets = csd_automata::KeySet::GetKeySets(queryName);
             num = sets.size();
             for (auto &key : sets) {
                 strs.push_back(new char[key.size() + 1]);
@@ -87,14 +87,14 @@ namespace {
         
         std::vector<size_t> values(num);
         for (auto i = 0; i < num; i++) {
-            values[i] = da.lookup(strs[i]);
+            values[i] = da.Lookup(strs[i]);
         }
         
         sw = csd_automata::Stopwatch();
         for (auto r = 0; r < RUNS; r++) {
             ng = 0;
             for (auto i = 0; i < num; i++) {
-                if (da.lookup(strs[i]) != values[i])
+                if (da.Lookup(strs[i]) != values[i])
                     ng++;
             }
         }
@@ -106,7 +106,7 @@ namespace {
         
         // Not support access!
         
-        da.showStatus(std::cout);
+        da.ShowStatus(std::cout);
         
         for (auto &str : strs)
             delete str;
@@ -188,13 +188,13 @@ int main(int argc, const char* argv[]) {
     
     switch (type) {
         case 0:
-            return bench<OriginalFSA>(fsa_name, query_name);
+            return bench<DaFsa>(fsa_name, query_name);
         case 1:
-            return bench<DacFSA>(fsa_name, query_name);
+            return bench<DaFsaDac>(fsa_name, query_name);
         case 11:
-            return bench<DoubleArrayAutomataLookupDictionary>(fsa_name, query_name, false);
+            return bench<SdLoDaFsa>(fsa_name, query_name, false);
         case 2:
-            return bench<DoubleArrayAutomataDictionary>(fsa_name, query_name);
+            return bench<SdDaFsa>(fsa_name, query_name);
         case 3:
             return bench<DoubleArrayCFSA<false, true, true, true, true>>(fsa_name, query_name);
         case 4:
@@ -208,9 +208,9 @@ int main(int argc, const char* argv[]) {
         case 8:
             return benchMarisa(fsa_name, query_name);
         case 9:
-            return bench<MorfologikFSA5Dictionary>(fsa_name, query_name);
+            return bench<SdMrfFsa5>(fsa_name, query_name);
         case 10:
-            return bench<MorfologikCFSA2Dictionary>(fsa_name, query_name);
+            return bench<SdMrfCfsa2>(fsa_name, query_name);
         case 12:
             return benchDarts(fsa_name, query_name);
         default:

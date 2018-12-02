@@ -53,27 +53,27 @@ class DAFoundation : IOInterface {
     
     MultipleVector elements_;
     // Enabled at NextCheck<true, C>
-    bit_vector nextLinkBits_;
-    dac_vector nextFlow_;
+    bit_vector next_link_bits_;
+    dac_vector next_flow_;
     // Enabled at NextCheck<N, true>
-    bit_vector checkLinkBits_;
-    fit_vector checkFlow_;
+    bit_vector check_link_bits_;
+    fit_vector check_flow_;
     // Enable ar NextCheck<N, C, true, true, CW>
-    bit_vector wordsLinkBits_;
-    fit_vector wordsFlow_;
-    bit_vector cumWordsLinkBits_;
-    fit_vector cumWordsFlow_;
+    bit_vector words_link_bits_;
+    fit_vector words_flow_;
+    bit_vector cum_words_link_bits_;
+    fit_vector cum_words_flow_;
     
     // For build
     using array_type = std::vector<size_t>;
-    array_type nextFlowSrc_;
-    array_type checkFlowSrc_;
-    array_type wordsFlowSrc_;
-    array_type cumWordsFlowSrc_;
+    array_type next_flow_src_;
+    array_type check_flow_src_;
+    array_type words_flow_src_;
+    array_type cum_words_flow_src_;
     
 public:
-    DAFoundation(size_t size, size_t numQueries = 0) {
-        resize(size, numQueries);
+    DAFoundation(size_t size, size_t num_queries = 0) {
+        resize(size, num_queries);
     }
     
     size_t next(size_t index) const {
@@ -81,11 +81,11 @@ public:
         if constexpr (!kCompressNext) {
             return next >> kFlags;
         } else {
-            if (!nextLinkBits_[index]) {
+            if (!next_link_bits_[index]) {
                 return next;
             } else {
-                auto rank = nextLinkBits_.rank(index);
-                return next | (nextFlow_[rank] << kNextUpperBits);
+                auto rank = next_link_bits_.rank(index);
+                return next | (next_flow_[rank] << kNextUpperBits);
             }
         }
     }
@@ -99,7 +99,7 @@ public:
         if constexpr (kCompressStrId)
             return static_cast<bool>(elements_.get<kENNext, uint8_t>(index) & kIsStrIdMask);
         else
-            return checkLinkBits_[index];
+            return check_link_bits_[index];
     }
     
     bool is_final(size_t index) const {
@@ -111,11 +111,11 @@ public:
         assert(kUseStrId);
         
         auto id = check(index);
-        if (kCompressStrId && !checkLinkBits_[index]) {
+        if (kCompressStrId && !check_link_bits_[index]) {
             return id;
         } else {
-            auto rank = checkLinkBits_.rank(index);
-            return id | (checkFlow_[rank] << kNextUpperBits);
+            auto rank = check_link_bits_.rank(index);
+            return id | (check_flow_[rank] << kNextUpperBits);
         }
     }
     
@@ -124,11 +124,11 @@ public:
         assert(kPlainWords);
         if constexpr (kCompressWords) {
             size_t words = elements_.get<kENCWords, uint8_t>(index) >> kWordsUpperBits;
-            if (!wordsLinkBits_[index])
+            if (!words_link_bits_[index])
                 return words;
             else {
-                auto rank = wordsLinkBits_.rank(index);
-                return words | (wordsFlow_[rank] << kWordsUpperBits);
+                auto rank = words_link_bits_.rank(index);
+                return words | (words_flow_[rank] << kWordsUpperBits);
             }
         } else {
             return elements_.get<kENWords>(index);
@@ -142,19 +142,19 @@ public:
         if constexpr (kCompressWords) {
             if constexpr (kPlainWords) {
                 size_t cw = elements_.get<kENCWords, uint8_t>(index) & kWordsUpperMask;
-                if (!cumWordsLinkBits_[index])
+                if (!cum_words_link_bits_[index])
                     return cw;
                 else {
-                    auto rank = cumWordsLinkBits_.rank(index);
-                    return cw | (cumWordsFlow_[rank] << kWordsUpperBits);
+                    auto rank = cum_words_link_bits_.rank(index);
+                    return cw | (cum_words_flow_[rank] << kWordsUpperBits);
                 }
             } else {
                 size_t cw = elements_.get<kENCWords, uint8_t>(index);
-                if (!cumWordsLinkBits_[index])
+                if (!cum_words_link_bits_[index])
                     return cw;
                 else {
-                    auto rank = cumWordsLinkBits_.rank(index);
-                    return cw | (cumWordsFlow_[rank] << kWordsUpperBits);
+                    auto rank = cum_words_link_bits_.rank(index);
+                    return cw | (cum_words_flow_[rank] << kWordsUpperBits);
                 }
             }
         } else {
@@ -183,14 +183,14 @@ public:
                     sizes.push_back(wordsSize);
             }
         }
-        elements_.setValueSizes(sizes);
+        elements_.set_value_sizes(sizes);
         elements_.resize(size);
-        if (kCompressNext) nextLinkBits_.resize(size);
-        if (kUseStrId) checkLinkBits_.resize(size);
+        if (kCompressNext) next_link_bits_.resize(size);
+        if (kUseStrId) check_link_bits_.resize(size);
         if (kHashing && kCompressWords) {
-            cumWordsLinkBits_.resize(size);
+            cum_words_link_bits_.resize(size);
             if (kPlainWords)
-                wordsLinkBits_.resize(size);
+                words_link_bits_.resize(size);
         }
     }
     
@@ -214,7 +214,7 @@ public:
                 value &= ~kIsStrIdMask;
             elements_.set<kENNext, uint8_t>(index, value);
         } else {
-            checkLinkBits_[index] = isStr;
+            check_link_bits_[index] = isStr;
         }
     }
     
@@ -226,9 +226,9 @@ public:
             elements_.set<kENNext>(index, next & kNextUpperMask);
             auto flow = next >> kNextUpperBits;
             bool hasFlow = flow > 0;
-            nextLinkBits_[index] = hasFlow;
+            next_link_bits_[index] = hasFlow;
             if (hasFlow)
-                nextFlowSrc_.emplace_back(flow);
+                next_flow_src_.emplace_back(flow);
         }
         
     }
@@ -244,9 +244,9 @@ public:
         auto flow = strIndex >> kNextUpperBits;
         bool hasFlow = flow > 0;
         if constexpr (kCompressStrId)
-            checkLinkBits_[index] = hasFlow;
+            check_link_bits_[index] = hasFlow;
         if (!kCompressStrId || (kCompressStrId && hasFlow))
-            checkFlowSrc_.emplace_back(flow);
+            check_flow_src_.emplace_back(flow);
     }
     
     void set_words(size_t index, size_t words) {
@@ -259,9 +259,9 @@ public:
             elements_.set<kENCWords>(index, base | ((words & kWordsUpperMask) << kWordsUpperBits));
             auto flow = words >> kWordsUpperBits;
             bool hasFlow = flow > 0;
-            wordsLinkBits_[index] = hasFlow;
+            words_link_bits_[index] = hasFlow;
             if (hasFlow)
-                wordsFlowSrc_.emplace_back(flow);
+                words_flow_src_.emplace_back(flow);
         } else {
             elements_.set<kENWords>(index, words);
         }
@@ -277,16 +277,16 @@ public:
                 elements_.set<kENCWords>(index, base | (cw & kWordsUpperMask));
                 auto flow = cw >> kWordsUpperBits;
                 bool hasFlow = flow > 0;
-                cumWordsLinkBits_[index] = hasFlow;
+                cum_words_link_bits_[index] = hasFlow;
                 if (hasFlow)
-                    cumWordsFlowSrc_.emplace_back(flow);
+                    cum_words_flow_src_.emplace_back(flow);
             } else {
                 elements_.set<kENCWords>(index, cw & kWordsUpperMask);
                 auto flow = cw >> kWordsUpperBits;
                 bool hasFlow = flow > 0;
-                cumWordsLinkBits_[index] = hasFlow;
+                cum_words_link_bits_[index] = hasFlow;
                 if (hasFlow)
-                    cumWordsFlowSrc_.emplace_back(flow);
+                    cum_words_flow_src_.emplace_back(flow);
             }
         } else {
             elements_.set<kENCWords>(index, cw);
@@ -296,44 +296,44 @@ public:
     // Finaly. Serialize flows.
     void Build() {
         if constexpr (kCompressNext) {
-            nextLinkBits_.Build();
-            nextFlow_.ConvertFromVector(nextFlowSrc_);
-            nextFlow_.Build();
+            next_link_bits_.Build();
+            next_flow_.ConvertFromVector(next_flow_src_);
+            next_flow_.Build();
         }
         if constexpr (kUseStrId) {
-            checkLinkBits_.Build();
-            checkFlow_ = fit_vector(checkFlowSrc_);
+            check_link_bits_.Build();
+            check_flow_ = fit_vector(check_flow_src_);
         }
         if constexpr (kHashing) {
             if constexpr (kPlainWords) {
-                wordsLinkBits_.Build();
-                wordsFlow_ = fit_vector(wordsFlowSrc_);
+                words_link_bits_.Build();
+                words_flow_ = fit_vector(words_flow_src_);
             }
-            cumWordsLinkBits_.Build();
-            cumWordsFlow_ = fit_vector(cumWordsFlowSrc_);
+            cum_words_link_bits_.Build();
+            cum_words_flow_ = fit_vector(cum_words_flow_src_);
         }
     }
     
     // MARK: - IO
     
-    size_t size_in_Bytes() const override {
-        auto size = elements_.size_in_Bytes();
+    size_t size_in_bytes() const override {
+        auto size = elements_.size_in_bytes();
         if constexpr (kCompressNext) {
-            size += nextLinkBits_.size_in_bytes();
-            size += nextFlow_.size_in_bytes();
+            size += next_link_bits_.size_in_bytes();
+            size += next_flow_.size_in_bytes();
         }
         if constexpr (kUseStrId) {
-            size += checkLinkBits_.size_in_bytes();
-            size += checkFlow_.size_in_bytes();
+            size += check_link_bits_.size_in_bytes();
+            size += check_flow_.size_in_bytes();
         }
         if constexpr (kHashing && kCompressWords) {
             if constexpr (kPlainWords) {
-                size += wordsLinkBits_.size_in_bytes();
-                size += wordsFlow_.size_in_bytes();
+                size += words_link_bits_.size_in_bytes();
+                size += words_flow_.size_in_bytes();
             }
             if constexpr (kCumulatesWords) {
-                size += cumWordsLinkBits_.size_in_bytes();
-                size += cumWordsFlow_.size_in_bytes();
+                size += cum_words_link_bits_.size_in_bytes();
+                size += cum_words_flow_.size_in_bytes();
             }
         }
         return size;
@@ -342,21 +342,21 @@ public:
     void Write(std::ostream& os) const override {
         elements_.Write(os);
         if constexpr (kCompressNext) {
-            nextLinkBits_.Write(os);
-            nextFlow_.Write(os);
+            next_link_bits_.Write(os);
+            next_flow_.Write(os);
         }
         if constexpr (kUseStrId) {
-            checkLinkBits_.Write(os);
-            checkFlow_.Write(os);
+            check_link_bits_.Write(os);
+            check_flow_.Write(os);
         }
         if constexpr (kHashing && kCompressWords) {
             if constexpr (kPlainWords) {
-                wordsLinkBits_.Write(os);
-                wordsFlow_.Write(os);
+                words_link_bits_.Write(os);
+                words_flow_.Write(os);
             }
             if constexpr (kCumulatesWords) {
-                cumWordsLinkBits_.Write(os);
-                cumWordsFlow_.Write(os);
+                cum_words_link_bits_.Write(os);
+                cum_words_flow_.Write(os);
             }
         }
     }
@@ -364,26 +364,26 @@ public:
     void Read(std::istream& is) override {
         elements_.Read(is);
         if constexpr (kCompressNext) {
-            nextLinkBits_.Read(is);
-            nextFlow_.Read(is);
+            next_link_bits_.Read(is);
+            next_flow_.Read(is);
         }
         if constexpr (kUseStrId) {
-            checkLinkBits_.Read(is);
-            checkFlow_ = fit_vector(is);
+            check_link_bits_.Read(is);
+            check_flow_ = fit_vector(is);
         }
         if constexpr (kHashing && kCompressWords) {
             if constexpr (kPlainWords) {
-                wordsLinkBits_.Read(is);
-                wordsFlow_ = fit_vector(is);
+                words_link_bits_.Read(is);
+                words_flow_ = fit_vector(is);
             }
             if constexpr (kCumulatesWords) {
-                cumWordsLinkBits_.Read(is);
-                cumWordsFlow_ = fit_vector(is);
+                cum_words_link_bits_.Read(is);
+                cum_words_flow_ = fit_vector(is);
             }
         }
     }
     
-    void ShowStatus(std::ostream& os) const override;
+    void ShowStats(std::ostream& os) const override;
     
     void ShowSizeMap(std::ostream& os) const;
     
@@ -402,30 +402,30 @@ public:
 
 
 template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
-void DAFoundation<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords>::ShowStatus(std::ostream& os) const {
+void DAFoundation<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords>::ShowStats(std::ostream& os) const {
     using std::endl;
     auto codesName = [](bool use) {
         return use ? "DACs" : "Plain";
     };
     os << "--- Stat of " << "DAFoundation " << codesName(kCompressNext) << "|" << codesName(kUseStrId) << " ---" << endl;
-    os << "size:   " << size_in_Bytes() << endl;
-    os << "size bytes:   " << elements_.size_in_Bytes() << endl;
-    os << "size next:   " << num_elements() * elements_.valueSize(kENNext) + nextLinkBits_.size_in_bytes() +  nextFlow_.size_in_bytes() << endl;
-    os << "size check:   " << num_elements() + checkLinkBits_.size_in_bytes() + checkFlow_.size_in_bytes() << endl;
+    os << "size:   " << size_in_bytes() << endl;
+    os << "size bytes:   " << elements_.size_in_bytes() << endl;
+    os << "size next:   " << num_elements() * elements_.value_size(kENNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+    os << "size check:   " << num_elements() + check_link_bits_.size_in_bytes() + check_flow_.size_in_bytes() << endl;
     if constexpr (kHashing) {
         size_t cWordsSize;
         if constexpr (kPlainWords) {
             size_t wordsSize;
             if constexpr (kCumulatesWords) {
-                wordsSize = num_elements() / 2 + wordsLinkBits_.size_in_bytes() + wordsFlow_.size_in_bytes();
-                cWordsSize = num_elements() / 2 + cumWordsLinkBits_.size_in_bytes() + cumWordsFlow_.size_in_bytes();
+                wordsSize = num_elements() / 2 + words_link_bits_.size_in_bytes() + words_flow_.size_in_bytes();
+                cWordsSize = num_elements() / 2 + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes();
             } else {
-                wordsSize = num_elements() * elements_.valueSize(kENWords);
-                cWordsSize = num_elements() * elements_.valueSize(kENCWords);
+                wordsSize = num_elements() * elements_.value_size(kENWords);
+                cWordsSize = num_elements() * elements_.value_size(kENCWords);
             }
             os << "size words:   " << wordsSize << endl;
         } else {
-            cWordsSize = kCumulatesWords ? (num_elements() + cumWordsLinkBits_.size_in_bytes() + cumWordsFlow_.size_in_bytes()) : (num_elements() * elements_.valueSize(kENCWords));
+            cWordsSize = kCumulatesWords ? (num_elements() + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes()) : (num_elements() * elements_.value_size(kENCWords));
         }
         os << "size cumWords:   " << cWordsSize << endl;
         

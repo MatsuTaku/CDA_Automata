@@ -11,16 +11,21 @@ namespace csd_automata {
     
 class PlainFSABuilder {
 public:
-    static constexpr size_t kBufferGrowthSize = 0x100 * PlainFSA::kTransSize;
+    static constexpr size_t kSizeTrans = PlainFSA::kSizeTrans;
+    static constexpr size_t kSizeBufferGrowth = 0x100 * kSizeTrans;
     
     PlainFSABuilder();
-    ~PlainFSABuilder() = default;
     
     void add(const std::string &str);
     PlainFSA release();
     
+    ~PlainFSABuilder() = default;
+    
     PlainFSABuilder(const PlainFSABuilder&) = delete;
     PlainFSABuilder& operator=(const PlainFSABuilder&) = delete;
+    
+    PlainFSABuilder(PlainFSABuilder&&) = default;
+    PlainFSABuilder& operator=(PlainFSABuilder&&) = default;
     
 protected:
     struct Range {
@@ -62,12 +67,12 @@ protected:
     }
     size_t get_target_(size_t trans) const {
         size_t target = 0;
-        std::memcpy(&target, &bytes_[trans + 2], PlainFSA::kAddrSize);
+        std::memcpy(&target, &bytes_[trans + 2], PlainFSA::kSizeAddr);
         return target;
     }
     size_t get_store_(size_t trans) const {
         size_t store = 0;
-        std::memcpy(&store, &bytes_[trans + 2 + PlainFSA::kAddrSize], PlainFSA::kAddrSize);
+        std::memcpy(&store, &bytes_[trans + 2 + PlainFSA::kSizeAddr], PlainFSA::kSizeAddr);
         return store;
     }
     bool is_invalid_trans_(size_t trans) const {
@@ -81,10 +86,10 @@ protected:
         bytes_[trans + 1] = static_cast<uint8_t>(symbol);
     }
     void set_target_(size_t arc, size_t target) {
-        std::memcpy(&bytes_[arc + 2], &target, PlainFSA::kAddrSize);
+        std::memcpy(&bytes_[arc + 2], &target, PlainFSA::kSizeAddr);
     }
     void set_store_(size_t arc, size_t store) {
-        std::memcpy(&bytes_[arc + 2 + PlainFSA::kAddrSize], &store, PlainFSA::kAddrSize);
+        std::memcpy(&bytes_[arc + 2 + PlainFSA::kSizeAddr], &store, PlainFSA::kSizeAddr);
     }
     void set_is_multi_src_state_(size_t trans, bool is_multi_src) {
         if (is_multi_src) { bytes_[trans] |= 4; }
@@ -135,7 +140,7 @@ void PlainFSABuilder::add(const std::string& str) {
         // minimize
         for (size_t i = active_len_ - 1; i > lcp; --i) {
             const auto state = freeze_state_(active_path_[i]);
-            set_target_(active_path_[i - 1].end - PlainFSA::kTransSize, state);
+            set_target_(active_path_[i - 1].end - kSizeTrans, state);
             active_path_[i].close_to_end();
         }
     }
@@ -148,13 +153,13 @@ void PlainFSABuilder::add(const std::string& str) {
         set_symbol_(trans, str[i]);
         set_target_(trans, !is_final ? active_path_[i + 1].begin : 0);
         set_store_(trans, 0);
-        active_path_[i].end = trans + PlainFSA::kTransSize;
+        active_path_[i].end = trans + kSizeTrans;
     }
     
     // Set store, that is number of suffixes exist after transition.
     auto counter = 0;
     for (auto i = 0; i < str.length(); i++) {
-        const auto trans = active_path_[i].end - PlainFSA::kTransSize;
+        const auto trans = active_path_[i].end - kSizeTrans;
         const auto store = get_store_(trans);
         if (store > 0 && store == counter)
             break;
@@ -184,25 +189,25 @@ PlainFSA PlainFSABuilder::release() {
     }
     
     // detect duplicating targets
-    std::vector<bool> flags(bytes_.size() / PlainFSA::kTransSize, false);
+    std::vector<bool> flags(bytes_.size() / kSizeTrans, false);
     for (size_t i = 0; i < bytes_.size();) {
         if (is_invalid_trans_(i)) {
-            i += PlainFSA::kTransSize * 0x100;
+            i += kSizeTrans * 0x100;
             continue;
         }
         auto target = get_target_(i);
-        auto flags_target = target / PlainFSA::kTransSize;
+        auto flags_target = target / kSizeTrans;
         if (!flags[flags_target]) {
             flags[flags_target] = true;
         } else {
             set_is_multi_src_state_(target, true);
         }
         
-        i += PlainFSA::kTransSize;
+        i += kSizeTrans;
     }
     
     PlainFSA fsa;
-    fsa.num_trans_ = bytes_.size() / PlainFSA::kTransSize - active_path_.size() * 0x100;
+    fsa.num_trans_ = bytes_.size() / kSizeTrans - active_path_.size() * 0x100;
     fsa.bytes_ = std::move(bytes_);
     fsa.num_words_ = num_words_;
     
@@ -215,7 +220,7 @@ PlainFSA PlainFSABuilder::release() {
 size_t PlainFSABuilder::get_lcp_(const std::string& str) const {
     const auto len = std::min(str.length(), active_len_);
     for (size_t i = 0; i < len; ++i) {
-        const auto trans = active_path_[i].end - PlainFSA::kTransSize;
+        const auto trans = active_path_[i].end - kSizeTrans;
         if (static_cast<uint8_t>(str[i]) != get_symbol_(trans)) {
             return i;
         }
@@ -224,7 +229,7 @@ size_t PlainFSABuilder::get_lcp_(const std::string& str) const {
 }
 
 size_t PlainFSABuilder::freeze_state_(const Range& range) {
-    bytes_[range.end - PlainFSA::kTransSize + 0] |= 1; // set last flag
+    bytes_[range.end - kSizeTrans + 0] |= 1; // set last flag
     
     const auto bucket_mask = register_.size() - 1;
     auto slot = hash_(range) & bucket_mask;
@@ -255,7 +260,7 @@ size_t PlainFSABuilder::hash_(Range range) const {
         if (is_final_trans_(range.begin)) {
             h += 17;
         }
-        range.press_size(PlainFSA::kTransSize);
+        range.press_size(kSizeTrans);
     }
     return h;
 }
@@ -279,22 +284,22 @@ size_t PlainFSABuilder::allocate_state_(size_t num_trans) {
     expand_buffers_();
     
     const auto new_state = bytes_.size();
-    bytes_.resize(new_state + num_trans * PlainFSA::kTransSize);
+    bytes_.resize(new_state + num_trans * kSizeTrans);
     return new_state;
 }
 
 PlainFSABuilder::Range PlainFSABuilder::get_range_(size_t begin) const {
     Range range { begin, begin };
     while (!is_last_trans_(range.end)) {
-        range.append_size(PlainFSA::kTransSize);
+        range.append_size(kSizeTrans);
     }
-    range.append_size(PlainFSA::kTransSize);
+    range.append_size(kSizeTrans);
     return range;
 }
 
 void PlainFSABuilder::expand_buffers_() {
-    if (bytes_.capacity() < bytes_.size() + kBufferGrowthSize) {
-        bytes_.reserve(bytes_.capacity() + kBufferGrowthSize);
+    if (bytes_.capacity() < bytes_.size() + kSizeBufferGrowth) {
+        bytes_.reserve(bytes_.capacity() + kSizeBufferGrowth);
     }
 }
 

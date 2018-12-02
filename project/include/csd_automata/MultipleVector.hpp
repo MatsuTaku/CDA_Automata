@@ -24,8 +24,8 @@ class MultipleVector : IOInterface {
     std::vector<storage_type> bytes_ = {};
     
 public:
-    template <typename _T>
-    void setValueSizes(std::vector<_T>& sizes) {
+    template <typename T>
+    void set_value_sizes(std::vector<T>& sizes) {
         value_sizes_ = {};
         for (auto i = 0; i < sizes.size(); i++)
             value_sizes_.push_back(sizes[i]);
@@ -37,61 +37,53 @@ public:
         }
     }
     
-    size_t offset(size_t index) const {
-        return index * elementSize();
-    }
-    
-    size_t elementSize() const {
+    size_t element_size() const {
         return value_positions_.back() + value_sizes_.back();
     }
     
     size_t size() const {
-        return bytes_.size() / elementSize();
+        return bytes_.size() / element_size();
     }
     
-    size_t valueSize(size_t offset) const {
+    size_t value_size(size_t offset) const {
         return value_sizes_[offset];
     }
     
     template <int Id, typename T = id_type>
     void set(size_t index, T value) {
-        auto vs = valueSize(Id);
+        auto vs = value_size(Id);
         assert(vs == 8 ||
                sim_ds::calc::SizeFitsInUnits(value, vs * kBitsPerWord) == 1);
         
-        auto pos = offset(index) + value_positions_[Id];
+        auto pos = offset_(index) + value_positions_[Id];
         for (size_t i = 0, size = std::min(vs, sizeof(T)); i < size; i++)
             bytes_[pos + i] = static_cast<storage_type>(value >> (i * kBitsPerWord));
     }
     
     template <int Id, typename T = id_type>
-    id_type get(size_t index) const {
+    T get(size_t index) const {
         T value = 0;
-        auto pos = offset(index) + value_positions_[Id];
-        for (size_t i = 0, size = std::min(valueSize(Id), sizeof(T)); i < size; i++)
-            value |= static_cast<id_type>(bytes_[pos + i]) << (i * kBitsPerWord);
+        auto pos = offset_(index) + value_positions_[Id];
+        auto size = std::min(value_size(Id), sizeof(T));
+        for (size_t i = 0; i < size; i++)
+            value |= T(bytes_[pos + i]) << (i * kBitsPerWord);
         
         return value;
     }
     
     void resize(size_t indexSize) {
-        bytes_.resize(offset(indexSize));
+        bytes_.resize(offset_(indexSize));
     }
     
     // MARK: IO
     
-    size_t size_in_Bytes() const override {
+    size_t size_in_bytes() const override {
         auto size = size_vec(bytes_);
         size += size_vec(value_sizes_);
         return size;
     }
     
-    void Write(std::ostream &os) const override {
-        write_vec(bytes_, os);
-        write_vec(value_sizes_, os);
-    }
-    
-    void Read(std::istream &is) override {
+    void Read(std::istream& is) override {
         bytes_ = read_vec<storage_type>(is);
         
         value_sizes_ = read_vec<size_t>(is);
@@ -100,6 +92,11 @@ public:
             value_positions_.push_back(pos);
             pos += value_sizes_[i];
         }
+    }
+    
+    void Write(std::ostream& os) const override {
+        write_vec(bytes_, os);
+        write_vec(value_sizes_, os);
     }
     
     // MARK: copy guard
@@ -112,6 +109,12 @@ public:
     
     MultipleVector(MultipleVector &&rhs) noexcept = default;
     MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
+    
+private:
+    size_t offset_(size_t index) const {
+        return index * element_size();
+    }
+    
     
 };
     

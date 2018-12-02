@@ -23,7 +23,7 @@ class MorfologikFSA5 {
     
 public:
     
-    bool isMember(const std::string &str) const {
+    bool Accept(const std::string &str) const {
         size_t state = get_root_state(), arc = 0;
         
         for (uint8_t c : str) {
@@ -78,7 +78,7 @@ public:
     }
     
     void read(std::istream& is) {
-        if (0x5c667361 != morfologik_FileUtils::read_int(is)) {
+        if (0x5c667361 != MorfologikFileUtils::read_int(is)) {
             std::cerr << "Invalid file header magic bytes." << std::endl;
             return;
         }
@@ -94,7 +94,7 @@ public:
         node_data_length_ = gtl_ >> 4 & 0x0F;
         gtl_ &= 0x0F;
         
-        bytes_ = morfologik_FileUtils::fully_read(is);
+        bytes_ = MorfologikFileUtils::fully_read(is);
     }
     
     size_t size_in_bytes() const {

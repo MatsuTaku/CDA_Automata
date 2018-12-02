@@ -48,7 +48,7 @@ public:
     
     // MARK: - getter
     
-    bool isMember(const std::string &str) const {
+    bool Accept(const std::string &str) const {
         size_t trans = 0;
         for (uint8_t c : str) {
             trans = target(trans) ^ c;
@@ -58,11 +58,11 @@ public:
         return isFinal(trans);
     }
     
-    size_t lookup(const std::string &str) const {
+    size_t Lookup(const std::string &str) const {
         return -1;
     }
     
-    std::string access(size_t key) const {
+    std::string Access(size_t key) const {
         return std::string("");
     }
     
@@ -111,8 +111,8 @@ public:
     
     // MARK: - ByteData method
     
-    size_t size_in_Bytes() const override {
-        auto size = fd_.size_in_Bytes();
+    size_t size_in_bytes() const override {
+        auto size = fd_.size_in_bytes();
         if constexpr (N)
             size += is_final_bits_.size_in_bytes();
         size += sizeof(num_trans_);
@@ -133,14 +133,14 @@ public:
         num_trans_ = read_val<size_t>(is);
     }
     
-    void ShowStatus(std::ostream& os) const override {
+    void ShowStats(std::ostream& os) const override {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
         os << "#trans: " << num_trans_ << endl;
         os << "#elems: " << fd_.num_elements() << endl;
-        os << "size:   " << size_in_Bytes() << endl;
+        os << "size:   " << size_in_bytes() << endl;
         os << "size is final:   " << is_final_bits_.size_in_bytes() << endl;
-        fd_.ShowStatus(os);
+        fd_.ShowStats(os);
     }
     
     void PrintForDebug(std::ostream &os) const {

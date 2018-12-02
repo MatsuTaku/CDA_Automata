@@ -24,7 +24,7 @@ public:
     explicit DoubleArrayCFSABuilder(const PlainFSA &srcFsa) : DoubleArrayFSABuilder(srcFsa) {}
     
     void build(bool binaryMode, bool mergeSuffix = false) {
-        StringDictBuilder::build(str_dict_, src_fsa_, binaryMode, mergeSuffix);
+        StringDictBuilder::Build(str_dict_, src_fsa_, binaryMode, mergeSuffix);
         DoubleArrayFSABuilder::build();
     }
     
@@ -118,7 +118,7 @@ template <class Product>
 void DoubleArrayCFSABuilder::release(Product& da) {
     const auto numElems = numElems_();
     da.resize(numElems, getNumWords());
-    serializedStringsBuilder(str_dict_).release(da.serialized_strings_);
+    GetSerializedStringsBuilder(str_dict_).Release(da.serialized_strings_);
     
     auto numTrans = 0;
     for (auto i = 0; i < numElems; i++) {
@@ -232,16 +232,16 @@ inline void DoubleArrayCFSABuilder::arrange_(size_t state, size_t index) {
         freezeState_(child_index);
         
         // Set: hasLabel, check or stringId
-        auto transIndex = trans / PlainFSA::kTransSize;
+        auto transIndex = trans / PlainFSA::kSizeTrans;
         auto labelTrans = trans;
-        if (str_dict_.isLabelSource(transIndex)) {
+        if (str_dict_.is_label_source(transIndex)) {
             setHasLabel_(child_index);
-            setLabelIndex_(child_index, str_dict_.startPos(transIndex));
+            setLabelIndex_(child_index, str_dict_.start_pos(transIndex));
             
-            str_dict_.traceOnLabel(transIndex);
-            while (!str_dict_.isEndLabel() && src_fsa_.is_straight_state(labelTrans)) {
+            str_dict_.TraceOnLabel(transIndex);
+            while (!str_dict_.is_end_label() && src_fsa_.is_straight_state(labelTrans)) {
                 labelTrans = src_fsa_.get_target_state(labelTrans);
-                str_dict_.posToNext();
+                str_dict_.pos_to_next();
             }
         } else {
             setCheck_(child_index, symbol);

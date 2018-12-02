@@ -14,16 +14,11 @@
 
 namespace csd_automata {
 
-using OriginalFSA = DoubleArrayFSA<false>;
-using DacFSA = DoubleArrayFSA<true>;
+using DaFsa = DoubleArrayFSA<false>;
+using DaFsaDac = DoubleArrayFSA<true>;
 
-using DoubleArrayAutomataDictionary = DoubleArrayCFSA<true, true, false, true, true>;
-using DoubleArrayAutomataLookupDictionary = DoubleArrayCFSA<true, false, false, true, false>;
-
-using DAMTypes = std::tuple<
-DoubleArrayAutomataLookupDictionary,
-DoubleArrayAutomataDictionary
->;
+using SdDaFsa = DoubleArrayCFSA<true, true, false, true, true>;
+using SdLoDaFsa = DoubleArrayCFSA<true, false, false, true, false>;
     
 }
 

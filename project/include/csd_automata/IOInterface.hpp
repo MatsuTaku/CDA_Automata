@@ -16,14 +16,14 @@ class IOInterface {
 public:
     // MARK: Protocol methods
     
+    virtual size_t size_in_bytes() const = 0;
     virtual void Read(std::istream&) = 0;
     virtual void Write(std::ostream&) const = 0;
-    virtual size_t size_in_Bytes() const = 0;
     
     // MARK: Optional methods
     
-    virtual void ShowStatus(std::ostream& os) const {
-        os << "Not supports showStatus(std::ostream)" << std::endl;
+    virtual void ShowStats(std::ostream& os) const {
+        os << "ShowStatus(std::ostream) isn't supported!" << std::endl;
     }
     
 };

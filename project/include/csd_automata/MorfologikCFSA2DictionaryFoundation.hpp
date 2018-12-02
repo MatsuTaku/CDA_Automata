@@ -16,8 +16,8 @@ namespace csd_automata {
 class MorfologikCFSA2DictionaryFoundation {
     
     const size_t kNumFlags_ = 4;
-    const size_t kNodeSymbolSize_ = 1;
-    const size_t kNodeWordsUpperBitsSize_ = 4;
+    const size_t kSizeNodeSymbol_ = 1;
+    const size_t kSizeNodeWordsUpperBits_ = 4;
     
     size_t element_words_lower_size_ = 4;
     std::vector<uint8_t> bytes_;
@@ -25,28 +25,32 @@ class MorfologikCFSA2DictionaryFoundation {
 public:
     using FsaSource = MorfologikCFSA2;
     
+    static std::string name() {
+        return FsaSource::name();
+    }
+    
     MorfologikCFSA2DictionaryFoundation(const FsaSource& set);
     
     MorfologikCFSA2DictionaryFoundation(std::istream &is) {
-        read(is);
+        Read(is);
     }
     
     // MARK: Transition parameters
     
-    uint8_t getTransSymbol(size_t trans) const {
-        return bytes_[offsetSymbol_(trans)];
+    uint8_t get_trans_symbol(size_t trans) const {
+        return bytes_[offset_symbol_(trans)];
     }
     
-    size_t getTransWords(size_t trans) const {
+    size_t get_trans_words(size_t trans) const {
         size_t words = 0;
-        auto size = isWordsLarge(trans) ? 1 + element_words_lower_size_ : 1;
-        std::memcpy(&words, &bytes_[offsetUpperWords_(trans)], size);
+        auto size = is_words_large(trans) ? 1 + element_words_lower_size_ : 1;
+        std::memcpy(&words, &bytes_[offset_upper_words_(trans)], size);
         return words >> kNumFlags_;
     }
     
-    size_t getGoto(size_t trans) const {
-        assert(!isNextSet(trans));
-        auto offset = offsetAddress_(trans);
+    size_t get_goto(size_t trans) const {
+        assert(!is_next_set(trans));
+        auto offset = offset_address_(trans);
         auto byte = bytes_[offset];
         size_t ret = static_cast<size_t>(byte & 0x7F);
         for (size_t shift = 7; byte & 0x80; shift += 7) {
@@ -56,52 +60,52 @@ public:
         return ret;
     }
     
-    bool isFinalTrans(size_t trans) const {
-        return static_cast<bool>(bytes_[offsetFlags_(trans)] & 1U);
+    bool is_final_trans(size_t trans) const {
+        return static_cast<bool>(bytes_[offset_flags_(trans)] & 1U);
     }
     
-    bool isLastTrans(size_t trans) const {
-        return static_cast<bool>(bytes_[offsetFlags_(trans)] & 2U);
+    bool is_last_trans(size_t trans) const {
+        return static_cast<bool>(bytes_[offset_flags_(trans)] & 2U);
     }
     
-    bool isNextSet(size_t trans) const {
-        return static_cast<bool>(bytes_[offsetFlags_(trans)] & 4U);
+    bool is_next_set(size_t trans) const {
+        return static_cast<bool>(bytes_[offset_flags_(trans)] & 4U);
     }
     
-    bool isWordsLarge(size_t trans) const {
-        return static_cast<bool>(bytes_[offsetFlags_(trans)] & 8U);
+    bool is_words_large(size_t trans) const {
+        return static_cast<bool>(bytes_[offset_flags_(trans)] & 8U);
     }
     
     // MARK: Functionals
     
-    size_t getFirstTrans(size_t state) const {
+    size_t get_first_trans(size_t state) const {
         return state;
     }
     
-    size_t skipTrans(size_t trans) const {
-        return offsetAddress_(trans) + getAddrSize(trans);
+    size_t skip_trans(size_t trans) const {
+        return offset_address_(trans) + get_addr_size(trans);
     }
     
-    size_t getNextTrans(size_t trans) const {
-        return isLastTrans(trans) ? 0 : skipTrans(trans);
+    size_t get_next_trans(size_t trans) const {
+        return is_last_trans(trans) ? 0 : skip_trans(trans);
     }
     
-    size_t getTargetState(size_t trans) const {
-        if (isNextSet(trans)) {
-            for (; !isLastTrans(trans); trans = getNextTrans(trans));
-            return skipTrans(trans);
+    size_t get_target_state(size_t trans) const {
+        if (is_next_set(trans)) {
+            for (; !is_last_trans(trans); trans = get_next_trans(trans));
+            return skip_trans(trans);
         } else {
-            return getGoto(trans);
+            return get_goto(trans);
         }
     }
     
-    size_t getRootState() const {
-        return getTargetState(getFirstTrans(0));
+    size_t get_root_state() const {
+        return get_target_state(get_first_trans(0));
     }
     
-    size_t getTrans(size_t state, uint8_t symbol) const {
-        for (auto t = getFirstTrans(state); t != 0; t = getNextTrans(t)) {
-            if (getTransWords(t) == symbol)
+    size_t get_trans(size_t state, uint8_t symbol) const {
+        for (auto t = get_first_trans(state); t != 0; t = get_next_trans(t)) {
+            if (get_trans_words(t) == symbol)
                 return t;
         }
         return 0;
@@ -109,15 +113,15 @@ public:
     
     // MARK: FSA functions
     
-    size_t numTrans() const {
+    size_t num_trans() const {
         size_t ret = 0;
-        for (size_t i = 0; i < bytes_.size(); i = skipTrans(i)) {
+        for (size_t i = 0; i < bytes_.size(); i = skip_trans(i)) {
             ++ret;
         }
         return ret;
     }
     
-    size_t sizeInBytes() const {
+    size_t size_in_bytes() const {
         auto size = 0;
         size += sizeof(element_words_lower_size_);
         size += size_vec(bytes_);
@@ -130,33 +134,33 @@ public:
         
         size_t i = 0;
         while (i < bytes_.size()) {
-            char c = getTransWords(i);
+            char c = get_trans_words(i);
             if (c == '\r') {
                 c = '?';
             }
             os << i << "\t"
             << c << "\t"
-            << bool_str(isFinalTrans(i)) << "\t"
-            << bool_str(isLastTrans(i)) << "\t"
-            << bool_str(isNextSet(i)) << "\t"
-            << bool_str(isWordsLarge(i)) << "\t"
-            << getTransWords(i) << "\t";
-            if (!isNextSet(i)) {
-                os << getGoto(i);
+            << bool_str(is_final_trans(i)) << "\t"
+            << bool_str(is_last_trans(i)) << "\t"
+            << bool_str(is_next_set(i)) << "\t"
+            << bool_str(is_words_large(i)) << "\t"
+            << get_trans_words(i) << "\t";
+            if (!is_next_set(i)) {
+                os << get_goto(i);
             }
             os << endl;
-            i = skipTrans(i);
+            i = skip_trans(i);
         }
     }
     
     // MARK: IO
     
-    void read(std::istream &is) {
+    void Read(std::istream &is) {
         element_words_lower_size_ = read_val<size_t>(is);
         bytes_ = read_vec<uint8_t>(is);
     }
     
-    void write(std::ostream &os) const {
+    void Write(std::ostream &os) const {
         write_val(element_words_lower_size_, os);
         write_vec(bytes_, os);
     }
@@ -173,36 +177,36 @@ public:
 private:
     // MARK: Offsets
     
-    size_t offsetSymbol_(size_t trans) const {
+    size_t offset_symbol_(size_t trans) const {
         assert(trans < bytes_.size());
         return trans;
     }
     
-    size_t offsetFlags_(size_t trans) const {
+    size_t offset_flags_(size_t trans) const {
         assert(trans < bytes_.size());
-        return offsetSymbol_(trans) + kNodeSymbolSize_;
+        return offset_symbol_(trans) + kSizeNodeSymbol_;
     }
     
-    size_t offsetUpperWords_(size_t trans) const {
+    size_t offset_upper_words_(size_t trans) const {
         assert(trans < bytes_.size());
-        return offsetFlags_(trans);
+        return offset_flags_(trans);
     }
     
-    size_t offsetLowerWords(size_t trans) const {
+    size_t offset_lower_words(size_t trans) const {
         assert(trans < bytes_.size());
-        return offsetUpperWords_(trans) + 1;
+        return offset_upper_words_(trans) + 1;
     }
     
-    size_t offsetAddress_(size_t trans) const {
+    size_t offset_address_(size_t trans) const {
         assert(trans < bytes_.size());
-        return offsetLowerWords(trans) + (isWordsLarge(trans) ? element_words_lower_size_ : 0);
+        return offset_lower_words(trans) + (is_words_large(trans) ? element_words_lower_size_ : 0);
     }
     
-    size_t getAddrSize(size_t trans) const {
+    size_t get_addr_size(size_t trans) const {
         assert(trans < bytes_.size());
-        if (isNextSet(trans))
+        if (is_next_set(trans))
             return 0;
-        auto offset = offsetAddress_(trans);
+        auto offset = offset_address_(trans);
         auto size = 1;
         uint8_t byte = bytes_[offset];
         while (byte & 0x80) {
@@ -222,77 +226,77 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
     std::unordered_map<size_t, Node> nodes;
     
     const std::function<size_t(size_t)> dfs = [&set, &dfs, &nodes](size_t state) {
-        size_t wordsCount = 0;
+        size_t count_words = 0;
         for (auto t = set.get_first_trans(state); t != 0; t = set.get_next_trans(t)) {
             auto it = nodes.find(t);
             if (it != nodes.end()) {
-                wordsCount += it->second.words;
+                count_words += it->second.words;
             } else {
                 size_t word = dfs(set.get_target_state(t));
                 if (set.is_final_trans(t))
                     word++;
                 nodes[t].words = word;
-                wordsCount += word;
+                count_words += word;
             }
         }
         
-        return wordsCount;
+        return count_words;
     };
     
     auto totalWords = dfs(set.get_root_state());
-    element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(totalWords >> kNodeWordsUpperBitsSize_);
+    element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(totalWords >> kSizeNodeWordsUpperBits_);
     
     for (size_t s = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
         nodes[s].offset = std::numeric_limits<size_t>::max();
     }
     
     // Transpose fsa
-    bool valueChanged = true;
-    while (valueChanged) {
-        valueChanged = false;
+    bool is_value_changed = true;
+    while (is_value_changed) {
+        is_value_changed = false;
         
         bytes_.resize(0);
         for (size_t s = 0, offset = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
-            auto &node = nodes[s];
+            auto& node = nodes[s];
             
             assert(node.offset >= offset); // Every time target offset is decreasing repeats.
             if (node.offset != offset) {
-                valueChanged = true;
+                is_value_changed = true;
                 node.offset = offset;
             }
             
             // Enumerate parameters
-            size_t flagsAndWords = set.is_final_trans(s) | (set.is_last_trans(s) << 1) | (set.is_next_set_(s) << 2);
+            size_t flags_and_words = set.is_final_trans(s) | (set.is_last_trans(s) << 1) | (set.is_next_set_(s) << 2);
             size_t words = node.words;
-            flagsAndWords |= (words << kNumFlags_);
+            flags_and_words |= (words << kNumFlags_);
             auto sizePW = 1;
-            bool isLargeWords = words >= (1ULL << kNodeWordsUpperBitsSize_);
+            bool isLargeWords = words >= (1ULL << kSizeNodeWordsUpperBits_);
             if (isLargeWords) {
-                flagsAndWords |= 0x08;
+                flags_and_words |= 0x08;
                 sizePW += element_words_lower_size_;
             }
             
-            auto nodeSize = kNodeSymbolSize_ + sizePW;
-            bytes_.resize(offset + nodeSize);
+            auto node_size = kSizeNodeSymbol_ + sizePW;
+            bytes_.resize(offset + node_size);
             uint8_t symbol = set.get_trans_symbol(s);
             // Transfer symbol
             bytes_[offset] = symbol;
             // Transfer flags
-            std::memcpy(&bytes_[offset + kNodeSymbolSize_], &flagsAndWords, sizePW);
+            std::memcpy(&bytes_[offset + kSizeNodeSymbol_], &flags_and_words, sizePW);
             
             // Transfer address
             if (!set.is_next_set_(s)) {
                 size_t value = nodes[set.get_target_state(s)].offset;
                 while (value > 0x7F) {
                     bytes_.emplace_back(0x80 | (value & 0x7F));
-                    nodeSize++;
+                    node_size++;
                     value >>= 7;
                 }
                 bytes_.emplace_back(static_cast<uint8_t>(value));
-                nodeSize++;
+                node_size++;
             }
             
-            offset += nodeSize;
+            offset += node_size;
             
         }
         std::cerr << nodes[set.get_dest_state_offset_(0)].offset << std::endl;

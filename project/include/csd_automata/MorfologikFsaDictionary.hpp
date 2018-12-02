@@ -19,17 +19,18 @@ class MorfologikFsaDictionary {
     const FoundationType fd_;
     
 public:
+    
     using Foundation = FoundationType;
+    
+    static std::string name() {
+        return Foundation::name();
+    }
     
     MorfologikFsaDictionary(Foundation&& fd) : fd_(std::move(fd)) {}
     
     MorfologikFsaDictionary(std::istream& is) : fd_(Foundation(is)) {}
     
     // MARK: String-Dictionary's functions
-    
-    static std::string name() {
-        return "MorfologikFSA5Dictionary";
-    }
     
     /**
      Check is a string stored.
@@ -38,26 +39,26 @@ public:
      @return Boolean that a string is stored or not
      */
     template<typename S>
-    bool isMember(const S &str) const;
+    bool Accept(const S &str) const;
     
     template<typename S>
-    size_t lookup(const S &str) const;
+    size_t Lookup(const S &str) const;
     
-    std::string access(size_t id) const;
+    std::string Access(size_t id) const;
     
-    size_t getNumTrans() const {
+    size_t get_num_trans() const {
         fd_.numTrans();
     }
     
-    size_t sizeInBytes() const {
-        return fd_.sizeInBytes();
+    size_t size_in_bytes() const {
+        return fd_.size_in_bytes();
     }
     
-    void ShowStatus(std::ostream& os) const {
+    void ShowStats(std::ostream& os) const {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
-        os << "#trans: " << fd_.numTrans() << endl;
-        os << "size:   " << sizeInBytes() << endl;
+        os << "#trans: " << fd_.num_trans() << endl;
+        os << "size:   " << size_in_bytes() << endl;
     }
     
     void PrintForDebug(std::ostream& os) const {
@@ -66,8 +67,8 @@ public:
     
     // MARK: IO
     
-    void write(std::ostream &os) const {
-        fd_.write(os);
+    void Write(std::ostream &os) const {
+        fd_.Write(os);
     }
     
     MorfologikFsaDictionary() = default;
@@ -85,59 +86,59 @@ public:
 
 template<class FoundationType>
 template<typename S>
-inline bool MorfologikFsaDictionary<FoundationType>::isMember(const S& str) const {
-    size_t state = fd_.getRootState(), trans = 0;
+inline bool MorfologikFsaDictionary<FoundationType>::Accept(const S& str) const {
+    size_t state = fd_.get_root_state(), trans = 0;
     for (uint8_t c : str) {
-        trans = fd_.getTrans(state, c);
+        trans = fd_.get_trans(state, c);
         if (trans == 0) {
             std::cerr << "Error not membered: " << str << std::endl;
             return false;
         }
         
-        state = fd_.getTargetState(trans);
+        state = fd_.get_target_state(trans);
     }
     
-    return fd_.isFinalTrans(trans);
+    return fd_.is_final_trans(trans);
 }
 
 template<class FoundationType>
 template<typename S>
-inline size_t MorfologikFsaDictionary<FoundationType>::lookup(const S& str) const {
+inline size_t MorfologikFsaDictionary<FoundationType>::Lookup(const S& str) const {
     size_t words = 0;
     
-    size_t state = fd_.getRootState(), trans = 0;
+    size_t state = fd_.get_root_state(), trans = 0;
     for (uint8_t c : str) {
-        for (trans = fd_.getFirstTrans(state); trans != 0 && fd_.getTransSymbol(trans) != c; trans = fd_.getNextTrans(trans)) {
-            words += fd_.getTransWords(trans);
+        for (trans = fd_.get_first_trans(state); trans != 0 && fd_.get_trans_symbol(trans) != c; trans = fd_.get_next_trans(trans)) {
+            words += fd_.get_trans_words(trans);
         }
         if (trans == 0) {
             std::cerr << "Error not membered: " << str << std::endl;
             return 0;
         }
         
-        if (fd_.isFinalTrans(trans))
+        if (fd_.is_final_trans(trans))
             words++;
         
-        state = fd_.getTargetState(trans);
+        state = fd_.get_target_state(trans);
     }
     
-    return fd_.isFinalTrans(trans) ? words : -1;
+    return fd_.is_final_trans(trans) ? words : -1;
 }
 
 template<class FoundationType>
-inline std::string MorfologikFsaDictionary<FoundationType>::access(size_t id) const {
+inline std::string MorfologikFsaDictionary<FoundationType>::Access(size_t id) const {
     std::string str = "";
     
     size_t counter = id;
-    for (size_t state = fd_.getRootState(), trans = 0; counter > 0; state = fd_.getTargetState(trans)) {
-        for (trans = fd_.getFirstTrans(state); trans != 0 && counter > 0; trans = fd_.getNextTrans(trans)) {
-            auto words = fd_.getTransWords(trans);
+    for (size_t state = fd_.get_root_state(), trans = 0; counter > 0; state = fd_.get_target_state(trans)) {
+        for (trans = fd_.get_first_trans(state); trans != 0 && counter > 0; trans = fd_.get_next_trans(trans)) {
+            auto words = fd_.get_trans_words(trans);
             if (words < counter) {
                 counter -= words;
             } else {
-                if (fd_.isFinalTrans(trans))
+                if (fd_.is_final_trans(trans))
                     counter--;
-                str += fd_.getTransSymbol(trans);
+                str += fd_.get_trans_symbol(trans);
                 break;
             }
         }
@@ -152,8 +153,8 @@ inline std::string MorfologikFsaDictionary<FoundationType>::access(size_t id) co
 
 
 
-using MorfologikFSA5Dictionary = MorfologikFsaDictionary<MorfologikFSA5DictionaryFoundation>;
-using MorfologikCFSA2Dictionary = MorfologikFsaDictionary<MorfologikCFSA2DictionaryFoundation>;
+using SdMrfFsa5 = MorfologikFsaDictionary<MorfologikFSA5DictionaryFoundation>;
+using SdMrfCfsa2 = MorfologikFsaDictionary<MorfologikCFSA2DictionaryFoundation>;
     
 }
 

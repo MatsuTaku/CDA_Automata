@@ -22,7 +22,7 @@ namespace {
         typename Dictionary::Foundation foundation(fsa);
         Dictionary mf5d(std::move(foundation));
         std::ofstream ofs(dictName);
-        mf5d.write(ofs);
+        mf5d.Write(ofs);
     }
     
 }
@@ -40,10 +40,10 @@ int main(int argc, const char* argv[]) {
     
     switch (setType) {
         case 0:
-            buildMorfologikFSADictionary<MorfologikFSA5Dictionary>(setName, dictName);
+            buildMorfologikFSADictionary<SdMrfFsa5>(setName, dictName);
             break;
         case 1:
-            buildMorfologikFSADictionary<MorfologikCFSA2Dictionary>(setName, dictName);
+            buildMorfologikFSADictionary<SdMrfCfsa2>(setName, dictName);
             break;
         default:
             std::cerr << "Error setType: " << setType << std::endl;

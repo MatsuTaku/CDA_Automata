@@ -26,9 +26,9 @@ private:
 public:
     // MARK: Constructors
     
-    template <class CONTAINER>
-    ValueSet(const CONTAINER& list) {
-        setList(list);
+    template <class Sequence>
+    ValueSet(const Sequence& list) {
+        set_list(list);
     }
     
     // MARK: Functionals
@@ -45,8 +45,8 @@ public:
         return values_.size();
     }
     
-    template <class CONTAINER>
-    void setList(const CONTAINER& list) {
+    template <class Sequence>
+    void set_list(const Sequence& list) {
         values_ = list_type(list);
     }
     
@@ -60,7 +60,7 @@ public:
         values_.Write(os);
     }
     
-    size_t size_in_Bytes() const override {
+    size_t size_in_bytes() const override {
         return values_.size_in_bytes();
     }
     

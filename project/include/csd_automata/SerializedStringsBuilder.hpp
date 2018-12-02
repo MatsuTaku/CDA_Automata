@@ -16,7 +16,7 @@ namespace csd_automata {
 class SerializedStringsBuilder {
 public:
     using char_type = char;
-    using bit_vector = sim_ds::BitVector;
+    using BitVector = sim_ds::BitVector;
     
     static constexpr char_type kEndLabel = '\0';
     
@@ -24,14 +24,14 @@ private:
     bool binary_mode_;
     
     std::vector<char_type> bytes_;
-    bit_vector boundary_flags_;
+    BitVector boundary_flags_;
     
 public:
     SerializedStringsBuilder(bool binaryMode) : binary_mode_(binaryMode) {}
     
     // MARK: For build
     
-    void addString(const std::string& str) {
+    void AddString(const std::string& str) {
         assert(str.size() > 0);
         for (auto c : str) {
             bytes_.emplace_back(static_cast<char_type>(c));
@@ -43,22 +43,22 @@ public:
         }
     }
     
-    template<class _Prod>
-    void release(_Prod& product) {
-        assert(_Prod::_binary_mode == binary_mode_);
-        if (_Prod::_binary_mode != binary_mode_) {
+    template<class Product>
+    void Release(Product& product) {
+        assert(Product::kIsBinaryMode == binary_mode_);
+        if (Product::kIsBinaryMode != binary_mode_) {
             std::cout << "StringArray error type of binary mode!!" << std::endl;
             abort();
         }
         product.bytes_ = move(bytes_);
-        if (_Prod::_binary_mode) {
+        if (Product::kIsBinaryMode) {
             product.boundary_flags_ = boundary_flags_;
         }
     }
     
     // MARK: Parameter
     
-    bool isBinaryMode() const {
+    bool is_binary_mode() const {
         return binary_mode_;
     }
     
@@ -70,7 +70,7 @@ public:
         return bytes_.size();
     }
     
-    bool isBackAt(size_t index) const {
+    bool is_back_at(size_t index) const {
         return binary_mode_ ? boundary_flags_[index] : bytes_[index + 1] == kEndLabel;
     }
     

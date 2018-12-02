@@ -87,13 +87,13 @@ public:
         Read(is);
     }
     
-    bool isMember(const std::string& str) const;
+    bool Accept(const std::string& str) const;
     
     CommonPrefixSet CommonPrefixSearch(const std::string& str) const;
     
-    unsigned long long lookup(const std::string& str) const;
+    unsigned long long Lookup(const std::string& str) const;
     
-    std::string access(size_t key) const;
+    std::string Access(size_t key) const;
     
     bool has_brother(size_t index) const {
         assert(kLinkChildren);
@@ -119,31 +119,18 @@ public:
     
     // MARK: - ByteData method
     
-    size_t size_in_Bytes() const override {
+    size_t size_in_bytes() const override {
         auto size = sizeof(num_trans_);
-        size += base_.size_in_Bytes();
-        size += serialized_strings_.size_in_Bytes();
+        size += base_.size_in_bytes();
+        size += serialized_strings_.size_in_bytes();
         if constexpr (kLinkChildren) {
             size += has_brother_bits_.size_in_bytes();
             size += size_vec(brother_);
             size += is_node_bits_.size_in_bytes();
             size += size_vec(eldest_);
         }
-        size += values_.size_in_Bytes();
+        size += values_.size_in_bytes();
         return size;
-    }
-    
-    void Write(std::ostream& os) const override {
-        write_val(num_trans_, os);
-        base_.Write(os);
-        serialized_strings_.Write(os);
-        if constexpr (kLinkChildren) {
-            has_brother_bits_.Write(os);
-            write_vec(brother_, os);
-            is_node_bits_.Write(os);
-            write_vec(eldest_, os);
-        }
-        values_.Write(os);
     }
     
     void Read(std::istream& is) override {
@@ -159,19 +146,32 @@ public:
         values_.Read(is);
     }
     
-    void ShowStatus(std::ostream& os) const override {
+    void Write(std::ostream& os) const override {
+        write_val(num_trans_, os);
+        base_.Write(os);
+        serialized_strings_.Write(os);
+        if constexpr (kLinkChildren) {
+            has_brother_bits_.Write(os);
+            write_vec(brother_, os);
+            is_node_bits_.Write(os);
+            write_vec(eldest_, os);
+        }
+        values_.Write(os);
+    }
+    
+    void ShowStats(std::ostream& os) const override {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl
         << "#trans:\t" << num_trans_ << endl
         << "#elems:\t" << base_.num_elements() << endl
-        << "size:\t" << size_in_Bytes() << endl;
-        base_.ShowStatus(os);
-        os << "\tstrings:\t" << serialized_strings_.size_in_Bytes() << endl;
+        << "size:\t" << size_in_bytes() << endl;
+        base_.ShowStats(os);
+        os << "\tstrings:\t" << serialized_strings_.size_in_bytes() << endl;
         if constexpr (kLinkChildren) {
             os << "\tbrother:\t" << has_brother_bits_.size_in_bytes() + size_vec(brother_) << endl;
             os << "\teldest:\t" << is_node_bits_.size_in_bytes() + size_vec(eldest_) << endl;
         }
-        os << "\tsize values:\t" << values_.size_in_Bytes() << endl;
+        os << "\tsize values:\t" << values_.size_in_bytes() << endl;
     }
     
     void PrintForDebug(std::ostream& os) const {
@@ -287,7 +287,7 @@ private:
 
 
 template<bool C, bool E, bool I, bool W, bool NA>
-bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string& str) const {
+bool DoubleArrayCFSA<C, E, I, W, NA>::Accept(const std::string& str) const {
     size_t trans = 0;
     for (size_t pos = 0, size = str.size(); pos < size; pos++) {
         uint8_t c = str[pos];
@@ -302,7 +302,7 @@ bool DoubleArrayCFSA<C, E, I, W, NA>::isMember(const std::string& str) const {
             auto sid = base_.string_id(trans);
             if (!serialized_strings_.match(&pos, str, sid)) {
 #ifndef NDEBUG
-                serialized_strings_.showLabels(sid - 32, sid + 32);
+                serialized_strings_.ShowLabels(sid - 32, sid + 32);
 #endif
                 return false;
             }
@@ -329,7 +329,7 @@ CommonPrefixSet DoubleArrayCFSA<C, E, I, W, NA>::CommonPrefixSearch(const std::s
             auto sid = base_.string_id(trans);
             if (!serialized_strings_.match(&pos, str, sid)) {
 #ifndef NDEBUG
-                serialized_strings_.showLabels(sid - 32, sid + 32);
+                serialized_strings_.ShowLabels(sid - 32, sid + 32);
 #endif
                 break;
             }
@@ -345,7 +345,7 @@ CommonPrefixSet DoubleArrayCFSA<C, E, I, W, NA>::CommonPrefixSearch(const std::s
 
 
 template<bool C, bool E, bool I, bool W, bool NA>
-unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string& str) const {
+unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::Lookup(const std::string& str) const {
     size_t trans = 0;
     size_t counter = 0;
     for (size_t pos = 0, size = str.size(); pos < size; pos++) {
@@ -366,7 +366,7 @@ unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string& st
                 const auto sid = base_.string_id(trans);
                 if (!serialized_strings_.match(&pos, str, sid)) { // Increment 'pos'
 #ifndef NDEBUG
-                    serialized_strings_.showLabels(sid - 32, sid + 32);
+                    serialized_strings_.ShowLabels(sid - 32, sid + 32);
 #endif
                     return kLookupError;
                 }
@@ -392,7 +392,7 @@ unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string& st
                 if (c == label) {
                     if (isStr && !serialized_strings_.match(&pos, str, checkType)) { // Increment 'pos'
 #ifndef NDEBUG
-                        serialized_strings_.showLabels(checkType - 32, checkType + 32);
+                        serialized_strings_.ShowLabels(checkType - 32, checkType + 32);
 #endif
                         return kLookupError;
                     }
@@ -414,7 +414,7 @@ unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::lookup(const std::string& st
 
 
 template<bool C, bool E, bool I, bool W, bool NA>
-std::string DoubleArrayCFSA<C, E, I, W, NA>::access(size_t key) const {
+std::string DoubleArrayCFSA<C, E, I, W, NA>::Access(size_t key) const {
     assert(NA);
     
     size_t trans = 0;

@@ -15,34 +15,37 @@
 namespace wrapper {
     
 class DartsCloneWrapper {
+    
+    using Trie = Darts::DoubleArray;
+    
 public:
+    
     static std::string name() {
         return "darts-clone";
     }
     
-public:
     DartsCloneWrapper() = default;
     
     // MARK: Build from datasets
     DartsCloneWrapper(const char* fileName) {
-        read(fileName);
+        Read(fileName);
     }
     
-    int build(const char* fileName) {
-        std::ifstream ifs(fileName);
+    int Build(const char* file_name) {
+        std::ifstream ifs(file_name);
         if (!ifs)
-            throw csd_automata::exception::DataNotFound(fileName);
+            throw csd_automata::exception::DataNotFound(file_name);
         
         // Make key lists from data sets
         std::vector<char *> keys;
-        size_t numKeys = 0;
-        for (std::string str; std::getline(ifs, str); numKeys++) {
+        size_t num_keys = 0;
+        for (std::string str; std::getline(ifs, str); num_keys++) {
             keys.push_back(new char[str.size() + 1]);
             strcpy(keys.back(), str.c_str());
             keys.back()[str.size()] = '\0';
         }
 
-        auto result = da_.build(numKeys, keys.data());
+        auto result = da_.build(num_keys, keys.data());
         
         for (auto &key : keys)
             delete key;
@@ -52,21 +55,21 @@ public:
     
     // MARK: Funcionals
     
-    size_t lookup(const char* key) const {
-        return da_.exactMatchSearch<Darts::DoubleArray::result_type>(key);
+    size_t Lookup(const char* key) const {
+        return da_.exactMatchSearch<Trie::result_type>(key);
     }
     
     // MARK: IO
     
-    void read(const char *fileName) {
+    void Read(const char *fileName) {
         da_.open(fileName);
     }
     
-    auto write(const char *fileName) const {
+    auto Write(const char *fileName) const {
         return da_.save(fileName);
     }
     
-    void showStatus(std::ostream &os) const {
+    void ShowStatus(std::ostream &os) const {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
         os << "unit_size:   " << da_.unit_size() << endl;
@@ -75,7 +78,7 @@ public:
     }
     
 private:
-    Darts::DoubleArray da_;
+    Trie da_;
     
 };
     

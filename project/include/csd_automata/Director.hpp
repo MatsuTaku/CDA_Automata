@@ -75,7 +75,7 @@ void CheckHasMember(std::string datasetName, StringDictionaryType& sd) {
         count++;
         length += line.size();
         
-        if (!sd.isMember(line))
+        if (!sd.Accept(line))
             throw exception::DoesntHaveMember(line);
     }
     std::cout << "all queries success!" << std::endl
@@ -90,7 +90,7 @@ int FullyBuild(const std::string& outName, const std::string& datasetName, const
     try {
         // Extract base name of dataset
         std::string baseName = outName;
-        auto daExt = extension::DoubleArrayAutomataExtension;
+        auto daExt = extension::kExtensionDoubleArrayAutomata;
         // If baseName's extension is same as '.dam'...
         if (baseName.size() > daExt.size() &&
             baseName.substr(baseName.size() - daExt.size()) == daExt) {
@@ -98,7 +98,7 @@ int FullyBuild(const std::string& outName, const std::string& datasetName, const
         }
         
         // Union extension of plain FSA to base name
-        auto plainFSAName = std::string(baseName) + extension::PlainFSAExtension;
+        auto plainFSAName = std::string(baseName) + extension::kExtensionPlainFSA;
         // Build plain FSA if needed
         std::ifstream plainFsaStream(plainFSAName);
         PlainFSA pfa;
@@ -154,7 +154,7 @@ int FullyBuild(const std::string& outName, const std::string& datasetName, const
             throw;
         }
         
-        da.ShowStatus(std::cout);
+        da.ShowStats(std::cout);
         
     } catch (std::exception& e) {
         return -1;

@@ -8,17 +8,17 @@
 #include "DartsCloneWrapper.hpp"
 
 int main(int argc, const char* argv[]) {
-    auto datasetName = argv[1];
-    auto outputName = argv[2];
+    auto dataset_name = argv[1];
+    auto output_name = argv[2];
     
 #ifndef NDEBUG
-    datasetName = "../../../data-sets/weiss/wikipedia.dict";
-    outputName = "../../../results/wikipedia/wikipedia.darts";
+    dataset_name = "../../../data-sets/weiss/wikipedia.dict";
+    output_name = "../../../results/wikipedia/wikipedia.darts";
 #endif
     
-    std::cout << "Build darts from: " << datasetName << std::endl;
+    std::cout << "Build darts from: " << dataset_name << std::endl;
     wrapper::DartsCloneWrapper darts;
-    darts.build(datasetName);
-    std::cout << "Output: " << outputName << std::endl;
-    return darts.write(outputName);
+    darts.Build(dataset_name);
+    std::cout << "Output: " << output_name << std::endl;
+    return darts.Write(output_name);
 }

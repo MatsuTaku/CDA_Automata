@@ -22,7 +22,7 @@ struct StrDictData {
     // this label
     std::string label = "";
     // matched with suffix of other label
-    bool isIncluded = false;
+    bool is_included = false;
     // Data id of included owner
     size_t owner = 0;
     // label placed index at array

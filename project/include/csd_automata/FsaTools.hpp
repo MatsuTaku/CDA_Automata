@@ -12,7 +12,7 @@ namespace csd_automata {
     
 namespace KeySet {
     
-std::vector<std::string> getKeySets(const char *queryName) {
+std::vector<std::string> GetKeySets(const char *queryName) {
     std::ifstream ifs(queryName);
     if (!ifs)
         throw exception::DataNotFound(queryName);

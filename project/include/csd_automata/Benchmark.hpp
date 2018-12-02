@@ -29,12 +29,12 @@ template <class T>
 void MeasureBenchmark(const T& fsa, const char* queryName, int runs, bool needsAccess) {
     using std::cout, std::endl;
     
-    const auto &strs = KeySet::getKeySets(queryName);
+    const auto &strs = KeySet::GetKeySets(queryName);
     auto num = strs.size();
     auto ng = 0;
     Stopwatch sw;
     for (const std::string& str : strs) {
-        if (!fsa.isMember(str)) {
+        if (!fsa.Accept(str)) {
             ++ng;
             break;
         }
@@ -49,14 +49,14 @@ void MeasureBenchmark(const T& fsa, const char* queryName, int runs, bool needsA
     
     std::vector<size_t> values(strs.size());
     for (auto i = 0; i < strs.size(); i++) {
-        values[i] = fsa.lookup(strs[i]);
+        values[i] = fsa.Lookup(strs[i]);
     }
     
     sw = Stopwatch();
     for (auto r = 0; r < runs; r++) {
         ng = 0;
         for (auto i = 0; i < strs.size(); i++) {
-            if (fsa.lookup(strs[i]) != values[i])
+            if (fsa.Lookup(strs[i]) != values[i])
                 ng++;
         }
     }
@@ -72,7 +72,7 @@ void MeasureBenchmark(const T& fsa, const char* queryName, int runs, bool needsA
             ng = 0;
             for (auto i = 0; i < strs.size(); i++) {
                 auto& needs = strs[i];
-                const auto& getStr = fsa.access(values[i]);
+                const auto& getStr = fsa.Access(values[i]);
                 if (getStr != needs)
                     ng++;
             }
@@ -86,7 +86,7 @@ void MeasureBenchmark(const T& fsa, const char* queryName, int runs, bool needsA
         cout << "NG: " << ng << endl;
     }
     
-    fsa.ShowStatus(cout);
+    fsa.ShowStats(cout);
 }
     
 };

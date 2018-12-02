@@ -21,11 +21,7 @@ class MorfologikCFSA2 {
     }
     
 public:
-    bool isMember(const std::string& str) const {
-        return accept(str);
-    }
-    
-    bool accept(const std::string &str) const {
+    bool Accept(const std::string& str) const {
         size_t state = get_root_state(), arc = 0;
         
         for (uint8_t c : str) {
@@ -80,7 +76,7 @@ public:
     }
     
     void read(std::istream& is) {
-        if (0x5c667361 != morfologik_FileUtils::read_int(is)) {
+        if (0x5c667361 != MorfologikFileUtils::read_int(is)) {
             std::cerr << "Invalid file header magic bytes." << std::endl;
             return;
         }
@@ -90,12 +86,12 @@ public:
             return;
         }
         
-        morfologik_FileUtils::read_short(is); // flags
+        MorfologikFileUtils::read_short(is); // flags
         
         label_mapping_.resize(read_val<uint8_t>(is));
         is.read(reinterpret_cast<char*>(&label_mapping_[0]), label_mapping_.size());
         
-        bytes_ = morfologik_FileUtils::fully_read(is);
+        bytes_ = MorfologikFileUtils::fully_read(is);
     }
     
     size_t size_in_bytes() const {

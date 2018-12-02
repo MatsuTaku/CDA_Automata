@@ -21,17 +21,8 @@
 namespace csd_automata {
 
 class StringDictBuilder {
-public:
-    static void build(StringDict&, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix);
-    ~StringDictBuilder() = default;
     
-    StringDictBuilder(const StringDictBuilder&) = delete;
-    StringDictBuilder& operator=(const StringDictBuilder&) = delete;
-    
-private:
     const PlainFSA& orig_fsa_;
-    
-    explicit StringDictBuilder(const PlainFSA& fsa, bool binaryMode) : orig_fsa_(fsa), label_array_(binaryMode) {}
     
     std::vector<StrDictData> str_dicts_;
     size_t cur_str_dict_index_;
@@ -40,61 +31,75 @@ private:
     SerializedStringsBuilder label_array_;
     std::unordered_map<size_t, size_t> state_map_;
     
-    std::vector<size_t> idMap;
+    std::vector<size_t> id_map_;
     
-    std::string reverseString(std::string text) const {
+public:
+    static void Build(StringDict&, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix);
+    
+    ~StringDictBuilder() = default;
+    
+    StringDictBuilder(const StringDictBuilder&) = delete;
+    StringDictBuilder& operator=(const StringDictBuilder&) = delete;
+    
+    StringDictBuilder(StringDictBuilder&&) = default;
+    StringDictBuilder& operator=(StringDictBuilder&&) = default;
+    
+private:
+    explicit StringDictBuilder(const PlainFSA& fsa, bool binaryMode) : orig_fsa_(fsa), label_array_(binaryMode) {}
+    
+    std::string string_reverse_(std::string text) const {
         reverse(text.begin(), text.end());
         return text;
     }
     
-    void updateIdMap() {
-        idMap = {};
-        idMap.resize(str_dicts_.size());
+    void UpdateIdMap_() {
+        id_map_ = {};
+        id_map_.resize(str_dicts_.size());
         for (size_t i = 0, size = str_dicts_.size(); i < size; i++)
-            idMap[str_dicts_[i].id] = i;
+            id_map_[str_dicts_[i].id] = i;
     }
     
-    StrDictData & getDictFromId(size_t id) {
-        return str_dicts_[idMap[id]];
+    StrDictData& GetDictFromId_(size_t id) {
+        return str_dicts_[id_map_[id]];
     }
     
-    StrDictData & curStrDict() {
+    StrDictData& CurrentStrDict_() {
         return str_dicts_[cur_str_dict_index_];
     }
     
-    // Recusive function
-    void labelArrange(size_t state);
+    // Recursive function
+    void LabelArrange_(size_t state);
     
-    void appendStrDict();
-    void saveStrDict(size_t index);
+    void AppendStrDict_();
+    void SaveStrDict_(size_t index);
     
-    void makeDict();
-    void setSharings(bool mergeSuffix);
-    void setUpLabelArray();
+    void MakeDict_();
+    void SetSharings_(bool merge_suffix);
+    void SetUpLabelArray_();
     
-    void showMappingOfByteSize();
+    void ShowMappingOfByteSize_();
     
 };
 
 
 // MARK: - Static build function
 
-inline void StringDictBuilder::build(StringDict& dict, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix) {
+inline void StringDictBuilder::Build(StringDict& dict, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix) {
     StringDictBuilder builder(fsa, binaryMode);
     std::cout << "------ StringDict build bench mark ------" << std::endl;
     
     auto inTime = director::MeasureProcessing([&]() {
-        builder.makeDict();
+        builder.MakeDict_();
     });
     std::cout << "makeDict: " << inTime << "ms" << std::endl;
     
     inTime = director::MeasureProcessing([&]() {
-        builder.setSharings(mergeSuffix);
+        builder.SetSharings_(mergeSuffix);
     });
     std::cout << "setSharings: " << inTime << "ms" << std::endl;
     
     inTime = director::MeasureProcessing([&]() {
-        builder.setUpLabelArray();
+        builder.SetUpLabelArray_();
     });
     std::cout << "setUpLabelArray: " << inTime << "ms" << std::endl;
     
@@ -110,7 +115,7 @@ inline void StringDictBuilder::build(StringDict& dict, const PlainFSA& fsa, bool
 // MARK: - Member functions
 
 // Recusive function
-inline void StringDictBuilder::labelArrange(size_t state) {
+inline void StringDictBuilder::LabelArrange_(size_t state) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0 || // last trans
@@ -123,42 +128,42 @@ inline void StringDictBuilder::labelArrange(size_t state) {
     for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
         auto labelTrans = trans;
         if (orig_fsa_.is_straight_state(labelTrans)) {
-            auto index = labelTrans / PlainFSA::kTransSize;
-            appendStrDict();
-            curStrDict().set(orig_fsa_.get_trans_symbol(labelTrans));
+            auto index = labelTrans / PlainFSA::kSizeTrans;
+            AppendStrDict_();
+            CurrentStrDict_().set(orig_fsa_.get_trans_symbol(labelTrans));
             do {
                 labelTrans = orig_fsa_.get_target_state(labelTrans);
-                curStrDict().set(orig_fsa_.get_trans_symbol(labelTrans));
+                CurrentStrDict_().set(orig_fsa_.get_trans_symbol(labelTrans));
             } while (orig_fsa_.is_straight_state(labelTrans));
-            saveStrDict(index);
+            SaveStrDict_(index);
         }
         
-        labelArrange(orig_fsa_.get_target_state(labelTrans));
+        LabelArrange_(orig_fsa_.get_target_state(labelTrans));
     }
     
 }
 
-void StringDictBuilder::appendStrDict() {
+void StringDictBuilder::AppendStrDict_() {
     StrDictData dict;
     dict.id = str_dicts_.size();
     str_dicts_.push_back(dict);
     cur_str_dict_index_ = str_dicts_.size() - 1;
 }
 
-void StringDictBuilder::saveStrDict(size_t index) {
-    auto &dict = curStrDict();
+void StringDictBuilder::SaveStrDict_(size_t index) {
+    auto &dict = CurrentStrDict_();
     has_label_bits_[index] = true;
     dict.node_id = index;
     dict.counter = 1;
 }
 
-void StringDictBuilder::makeDict() {
+void StringDictBuilder::MakeDict_() {
     fsa_target_indexes_.resize(orig_fsa_.get_num_elements());
     has_label_bits_.resize(orig_fsa_.get_num_elements());
-    labelArrange(orig_fsa_.get_root_state());
+    LabelArrange_(orig_fsa_.get_root_state());
 }
 
-void StringDictBuilder::setSharings(bool mergeSuffix) {
+void StringDictBuilder::SetSharings_(bool mergeSuffix) {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
         return std::lexicographical_compare(lhs.label.rbegin(), lhs.label.rend(), rhs.label.rbegin(), rhs.label.rend());
     });
@@ -180,13 +185,13 @@ void StringDictBuilder::setSharings(bool mergeSuffix) {
         }
         if (match > 0 && match == oLen) {
             // sharing
-            cur.isIncluded = true;
+            cur.is_included = true;
             cur.enabled = false;
             cur.owner = owner->id;
             owner->counter++;
         } else if (mergeSuffix && (match > 0 && match == cLen)) {
             // included
-            cur.isIncluded = true;
+            cur.is_included = true;
             cur.owner = owner->id;
             owner->counter++;
         } else {
@@ -196,17 +201,17 @@ void StringDictBuilder::setSharings(bool mergeSuffix) {
     
 }
 
-void StringDictBuilder::setUpLabelArray() {
+void StringDictBuilder::SetUpLabelArray_() {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
-        return lhs.isIncluded != rhs.isIncluded ? lhs.isIncluded < rhs.isIncluded :
+        return lhs.is_included != rhs.is_included ? lhs.is_included < rhs.is_included :
         lhs.entropy() > rhs.entropy();
     });
-    updateIdMap();
+    UpdateIdMap_();
     auto count = 0;
     for (auto &dict : str_dicts_) {
         auto index = label_array_.size();
-        if (dict.isIncluded) {
-            auto ownerDict = getDictFromId(dict.owner);
+        if (dict.is_included) {
+            auto ownerDict = GetDictFromId_(dict.owner);
             if (ownerDict.place == -1) {
                 abort();
             }
@@ -214,17 +219,17 @@ void StringDictBuilder::setUpLabelArray() {
         }
         dict.place = index;
         fsa_target_indexes_[dict.node_id] = count++;
-        if (!dict.isIncluded)
-            label_array_.addString(dict.label);
+        if (!dict.is_included)
+            label_array_.AddString(dict.label);
     }
 }
 
 // MARK: - Log
 
-void StringDictBuilder::showMappingOfByteSize() {
+void StringDictBuilder::ShowMappingOfByteSize_() {
     size_t counts[4] = {0, 0, 0, 0};
     for (auto &dict : str_dicts_) {
-        if (dict.isIncluded)
+        if (dict.is_included)
             continue;
         auto size = sim_ds::calc::SizeFitsInBytes(dict.place);
         if (size == 0) continue;

@@ -13,21 +13,21 @@
 
 namespace csd_automata {
     
-template<bool _Binary = false>
+template<bool IsBinaryMode = false>
 class SerializedStrings : IOInterface {
     
     using char_type = char;
-    using storage = std::vector<char_type>;
-    using bit_vector = sim_ds::BitVector;
+    using Storage = std::vector<char_type>;
+    using BitVector = sim_ds::BitVector;
     
-    static constexpr bool _binary_mode = _Binary;
-    static constexpr char_type _end_label = '\0';
+    static constexpr bool kIsBinaryMode = IsBinaryMode;
+    static constexpr char_type kEndLabel = '\0';
     
     friend class SerializedStringsBuilder;
     
 private:
-    storage bytes_;
-    bit_vector boundary_flags_;
+    Storage bytes_;
+    BitVector boundary_flags_;
     
 public:
     // MARK: Constructor
@@ -42,18 +42,18 @@ public:
         return bytes_[index];
     }
     
-    bool isBackAt(size_t index) const {
-        if constexpr (_binary_mode)
+    bool is_back_at(size_t index) const {
+        if constexpr (kIsBinaryMode)
             return boundary_flags_[index];
         else
-            return bytes_[index + 1] == _end_label;
+            return bytes_[index + 1] == kEndLabel;
     }
     
-    bool match(size_t* pos, const std::string& str, size_t strIndex) const {
-        for (; *pos < str.size(); ++*pos, strIndex++) {
-            if (static_cast<char>(str[*pos]) != bytes_[strIndex])
+    bool match(size_t* pos, const std::string& str, size_t str_index) const {
+        for (; *pos < str.size(); ++*pos, str_index++) {
+            if (static_cast<char>(str[*pos]) != bytes_[str_index])
                 return false;
-            if (isBackAt(strIndex))
+            if (is_back_at(str_index))
                 return true;
         }
         return false;
@@ -61,7 +61,7 @@ public:
     
     std::string string(size_t index) const {
         std::string s;
-        for (char c = bytes_[index]; c != _end_label; c = bytes_[++index]) {
+        for (char c = bytes_[index]; c != kEndLabel; c = bytes_[++index]) {
             s.push_back(c);
         }
         return s;
@@ -69,7 +69,7 @@ public:
     
     std::basic_string_view<char_type> string_view(size_t index) const {
         size_t i;
-        for (i = index; bytes_[i] != _end_label; i++);
+        for (i = index; bytes_[i] != kEndLabel; i++);
         return std::basic_string_view<char_type>(&bytes_[index], i - index);
     }
     
@@ -79,28 +79,28 @@ public:
     
     // MARK: IO
     
-    size_t size_in_Bytes() const override {
+    size_t size_in_bytes() const override {
         auto size = size_vec(bytes_);
-        if constexpr (_binary_mode)
+        if constexpr (kIsBinaryMode)
             size += boundary_flags_.size_in_bytes();
         return size;
     }
     
-    void Write(std::ostream& os) const override {
-        write_vec(bytes_, os);
-        if constexpr (_binary_mode)
-            boundary_flags_.Write(os);
-    }
-    
     void Read(std::istream& is) override {
         bytes_ = read_vec<char>(is);
-        if constexpr (_binary_mode)
+        if constexpr (kIsBinaryMode)
             boundary_flags_.Read(is);
+    }
+    
+    void Write(std::ostream& os) const override {
+        write_vec(bytes_, os);
+        if constexpr (kIsBinaryMode)
+            boundary_flags_.Write(os);
     }
     
     // MARK: Show status
     
-    void showLabels(int from, int to) const {
+    void ShowLabels(int from, int to) const {
         for (auto i = from; i <= to; i++) {
             std::cout << (i == (from + to) / 2 ? '|' : ' ');
         }
