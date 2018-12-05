@@ -17,8 +17,8 @@ class Wrapper {
 public:
     Wrapper(const MultipleVector& base) : base_(base) {}
     
-    auto operator[](size_t index) const {
-        return base_[index];
+    auto block(size_t index) const {
+        return base_.block(index);
     }
     
 };
@@ -46,17 +46,17 @@ TEST(MultipleVectorTest, Convert) {
     fva.resize(size);
     
     for (auto i = 0; i < size; i++) {
-        fva.set<0>(i, next_src[i]);
-        fva.set<1>(i, check_src[i]);
+        fva.set_nested_element<0>(i, next_src[i]);
+        fva.set_nested_element<1>(i, check_src[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto next = fva.get<0>(i);
+        auto next = fva.nested_element<0>(i);
         EXPECT_EQ(next, next_src[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto check = fva.get<1>(i);
+        auto check = fva.nested_element<1>(i);
         EXPECT_EQ(check, check_src[i]);
     }
     
@@ -75,17 +75,17 @@ TEST(MultipleVectorTest, Operator) {
     fva.resize(size);
     
     for (auto i = 0; i < size; i++) {
-        fva[i].set<0>(next_src[i]);
-        fva[i].set<1>(check_src[i]);
+        fva.block(i).template set<0>(next_src[i]);
+        fva.block(i).template set<1>(check_src[i]);
     }
     
     for (auto i = 0; i < size; i++) {
-        auto next = wrapper[i].get<0>();
+        auto next = wrapper.block(i).template get<0>();
         EXPECT_EQ(next, next_src[i]);
     }
 
     for (auto i = 0; i < size; i++) {
-        auto check = wrapper[i].get<1>();
+        auto check = wrapper.block(i).template get<1>();
         EXPECT_EQ(check, check_src[i]);
     }
 }

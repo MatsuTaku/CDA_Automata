@@ -36,30 +36,32 @@ class BlockReference {
 public:
     template <int Id>
     id_type get() const {
-        return get_<Id>(element_sizes_[Id]);
+        return get_<Id, id_type>(element_sizes_[Id]);
     }
     
     template <int Id, typename T>
-    T get() const {
+    T restricted_get() const {
         return get_<Id, T>(std::min(element_sizes_[Id], sizeof(T)));
     }
     
     template <int Id>
     id_type set(id_type value) {
-        return set_<Id>(element_sizes_[Id], value);
+        return set_<Id, id_type>(element_sizes_[Id], value);
     }
     
     template <int Id, typename T>
-    T set(T value) {
+    T restricted_set(T value) {
         return set_<Id, T>(std::min(element_sizes_[Id], sizeof(T)), value);
     }
     
 private:
     explicit BlockReference(storage_pointer pointer, params_reference element_sizes, params_reference element_positions) : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
     
-    template <int Id, typename T = id_type>
+    template <int Id, typename T>
     T get_(size_t width) const {
         assert(Id < element_sizes_.size());
+        assert(width <= element_sizes_[Id]);
+        
         id_type value = 0;
         auto relative_pointer = pointer_ + element_positions_[Id];
         for (size_t i = 0; i < width; i++)
@@ -68,9 +70,11 @@ private:
         return value;
     }
     
-    template <int Id, typename T = id_type>
+    template <int Id, typename T>
     T set_(size_t width, T value) {
         assert(Id < element_sizes_.size());
+        assert(width <= element_sizes_[Id]);
+        
         auto relative_pointer = pointer_ + element_positions_[Id];
         for (size_t i = 0; i < width; i++)
             *(relative_pointer + i) = static_cast<storage_type>(value >> (i * kBitsPerWord));
@@ -98,22 +102,24 @@ class BlockConstReference {
     friend typename SerializedSequence::Self;
     
 public:
-    template <int Id>
-    id_type get() const {
-        return get_<Id>(element_sizes_[Id]);
+    template <int Id, typename T>
+    T restricted_get() const {
+        return get_<Id, T>(std::min(element_sizes_[Id], sizeof(T)));
     }
     
-    template <int Id, typename T>
-    T get() const {
-        return get_<Id, T>(std::min(element_sizes_[Id], sizeof(T)));
+    template <int Id>
+    id_type get() const {
+        return get_<Id, id_type>(element_sizes_[Id]);
     }
     
 private:
     explicit BlockConstReference(storage_pointer pointer, params_reference element_sizes, params_reference element_positions) : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
     
-    template <int Id, typename T = id_type>
+    template <int Id, typename T>
     T get_(size_t width) const {
         assert(Id < element_sizes_.size());
+        assert(width <= element_sizes_[Id]);
+        
         id_type value = 0;
         auto relative_pointer = pointer_ + element_positions_[Id];
         for (size_t i = 0; i < width; i++)
@@ -123,22 +129,21 @@ private:
     }
     
 };
-    
 
 
 class MultipleVector : IOInterface {
     using Self = MultipleVector;
     using storage_type = uint8_t;
-    using storage_pointer = uint8_t*;
-    using const_storage_pointer = const uint8_t*;
+    using storage_pointer = storage_type*;
+    using const_storage_pointer = const storage_type*;
     
     static constexpr size_t kBitsPerWord = sizeof(storage_type) * 8;
     
     using params_type = std::vector<size_t>;
     using Storage = std::vector<storage_type>;
     
-    params_type value_sizes_ = {};
-    params_type value_positions_ = {};
+    params_type element_sizes_ = {};
+    params_type element_positions_ = {};
     Storage bytes_ = {};
     
     using Reference = BlockReference<MultipleVector>;
@@ -150,89 +155,79 @@ class MultipleVector : IOInterface {
 public:
     template <typename T>
     void set_value_sizes(std::vector<T>& sizes) {
-        value_sizes_ = {};
+        element_sizes_ = {};
         for (auto i = 0; i < sizes.size(); i++)
-            value_sizes_.push_back(sizes[i]);
+            element_sizes_.push_back(sizes[i]);
         
-        value_positions_ = {};
+        element_positions_ = {};
         for (auto i = 0, pos = 0; i < sizes.size(); i++) {
-            value_positions_.push_back(pos);
+            element_positions_.push_back(pos);
             pos += sizes[i];
         }
     }
     
-    size_t element_size() const {
-        return value_positions_.back() + value_sizes_.back();
+    size_t block_size() const {
+        return element_positions_.back() + element_sizes_.back();
     }
     
     size_t size() const {
-        return bytes_.size() / element_size();
+        return bytes_.size() / block_size();
     }
     
-    size_t value_size(size_t offset) const {
-        return value_sizes_[offset];
+    size_t element_size(size_t offset) const {
+        return element_sizes_[offset];
     }
     
-    Reference operator[](size_t index) {
-        return Reference(&bytes_[offset_(index)], value_sizes_, value_positions_);
+    Reference block(size_t index) {
+        return Reference(&bytes_[offset_(index)], element_sizes_, element_positions_);
     }
     
-    ConstReference operator[](size_t index) const {
-        return ConstReference(&bytes_[offset_(index)], value_sizes_, value_positions_);
-    }
-    
-    template <int Id>
-    id_type set(size_t index, id_type value) {
-        auto vs = value_size(Id);
-        assert(vs == 8 ||
-               sim_ds::calc::SizeFitsInUnits(value, vs * kBitsPerWord) == 1);
-        return set_<Id>(index, vs, value);
-    }
-    
-    template <int Id, typename T>
-    T set(size_t index, T value) {
-        auto vs = value_size(Id);
-        assert(vs == 8 ||
-               sim_ds::calc::SizeFitsInUnits(value, vs * kBitsPerWord) == 1);
-        return set_<Id, T>(index, std::min(vs, sizeof(T)), value);
+    ConstReference block(size_t index) const {
+        return ConstReference(&bytes_[offset_(index)], element_sizes_, element_positions_);
     }
     
     template <int Id>
-    id_type get(size_t index) const {
-        return get_<Id>(index, value_size(Id));
+    id_type set_nested_element(size_t index, id_type value) {
+        assert(Id < element_sizes_.size());
+        assert(index < size());
+        assert(element_sizes_[Id] == 8 || // 8 Byte element has no problem.
+               sim_ds::calc::SizeFitsInBytes(value) <= element_sizes_[Id]);
+        return set_(offset_(index) + element_positions_[Id], element_sizes_[Id], value);
     }
     
-    template <int Id, typename T>
-    T get(size_t index) const {
-        return get_<Id, T>(index, std::min(value_size(Id), sizeof(T)));
+    template <int Id>
+    id_type nested_element(size_t index) const {
+        assert(Id < element_sizes_.size());
+        assert(index < size());
+        return get_(offset_(index) + element_positions_[Id], element_sizes_[Id]);
     }
     
-    void resize(size_t indexSize) {
-        bytes_.resize(offset_(indexSize));
+    void resize(size_t size) {
+        bytes_.resize(offset_(size));
     }
     
     // MARK: IO
     
     size_t size_in_bytes() const override {
         auto size = size_vec(bytes_);
-        size += size_vec(value_sizes_);
+        size += size_vec(element_sizes_);
         return size;
     }
     
     void Read(std::istream& is) override {
         bytes_ = read_vec<storage_type>(is);
         
-        value_sizes_ = read_vec<size_t>(is);
-        value_positions_ = {};
-        for (auto i = 0, pos = 0; i < value_sizes_.size(); i++) {
-            value_positions_.push_back(pos);
-            pos += value_sizes_[i];
+        element_sizes_ = read_vec<size_t>(is);
+        element_positions_ = {};
+        for (auto i = 0, pos = 0; i < element_sizes_.size(); i++) {
+            element_positions_.push_back(pos);
+            pos += element_sizes_[i];
         }
     }
     
     void Write(std::ostream& os) const override {
         write_vec(bytes_, os);
-        write_vec(value_sizes_, os);
+        write_vec(element_sizes_, os);
     }
     
     // MARK: copy guard
@@ -248,25 +243,20 @@ public:
     
 private:
     size_t offset_(size_t index) const {
-        return index * element_size();
+        return index * block_size();
     }
     
-    template <int Id, typename T = id_type>
-    T set_(size_t index, size_t width, T value) {
-        assert(Id < value_sizes_.size());
-        auto pos = offset_(index) + value_positions_[Id];
+    id_type set_(size_t offset, size_t width, id_type value) {
         for (size_t i = 0; i < width; i++)
-            bytes_[pos + i] = static_cast<storage_type>(value >> (i * kBitsPerWord));
+            bytes_[offset + i] = static_cast<storage_type>(value >> (i * kBitsPerWord));
+        
         return value;
     }
     
-    template <int Id, typename T = id_type>
-    T get_(size_t index, size_t width) const {
-        assert(Id < value_sizes_.size());
-        T value = 0;
-        auto pos = offset_(index) + value_positions_[Id];
+    id_type get_(size_t offset, size_t width) const {
+        id_type value = 0;
         for (size_t i = 0; i < width; i++)
-            value |= static_cast<T>(bytes_[pos + i]) << (i * kBitsPerWord);
+            value |= static_cast<id_type>(bytes_[offset + i]) << (i * kBitsPerWord);
         
         return value;
     }
