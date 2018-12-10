@@ -37,6 +37,11 @@ xcdat() {
 }
 export -f xcdat
 
+fxcdat() {
+  ./software/xcdat/xcdat build 2 $1 $2 >$2.stdout 2>&1
+}
+export -f fxcdat
+
 centrp() {
   ./software/path_decomposed_tries/tries_perftest centroid_repair prepare $1 $2 >$2.stdout 2>&1
 }
@@ -60,6 +65,7 @@ morfologik_fsa5
 morfologik_cfsa2
 darts
 xcdat
+fxcdat
 marisa
 centrp
 "

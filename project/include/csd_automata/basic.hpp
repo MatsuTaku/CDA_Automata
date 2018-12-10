@@ -50,6 +50,16 @@ public:
 private:
     clock::time_point start_;
 };
+    
+template <class Stream>
+Stream GetStreamOrDie(const std::string& file_name) {
+    Stream ifs(file_name);
+    if (!ifs) {
+        std::cout << "ERROR: Not found file: " << file_name << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    return ifs;
+}
 
 template<typename T>
 inline T read_val(std::istream& is) {

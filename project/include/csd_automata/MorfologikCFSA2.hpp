@@ -21,6 +21,10 @@ class MorfologikCFSA2 {
     }
     
 public:
+    MorfologikCFSA2(std::ifstream& ifs) {
+        read(ifs);
+    }
+    
     bool Accept(const std::string& str) const {
         size_t state = get_root_state(), arc = 0;
         

@@ -10,19 +10,21 @@
 
 #include "csd_automata/basic.hpp"
 #include "csd_automata/FsaTools.hpp"
-#include "csd_automata/Exception.hpp"
 
 namespace csd_automata {
     
 namespace benchmark {
     
 template <class T>
-T GetFSAFrom(const char* fsaName) {
-    std::ifstream ifs(fsaName);
-    if (!ifs)
-        throw exception::DataNotFound(fsaName);
+bool SetFSAFromFile(const char* fsa_name, T& fsa) {
+    std::ifstream ifs(fsa_name);
+    if (!ifs) {
+        std::cout << "Not found FSA: " << fsa_name << std::endl;
+        return false;
+    }
     
-    return T(ifs);
+    fsa = T(ifs);
+    return true;
 }
 
 template <class T>
@@ -89,7 +91,7 @@ void MeasureBenchmark(const T& fsa, const char* queryName, int runs, bool needsA
     fsa.ShowStats(cout);
 }
     
-};
+}
     
 }
 

@@ -22,14 +22,14 @@ int main(int argc, const char* argv[]) {
     auto dict_name = argv[2];
     
     int type_index = 0;
-    std::string valuesName = "";
+    std::string values_name = "";
     
     for (int i = 2; i < argc; i++) {
         std::string option(argv[i]);
         if (option == "--access") {
             type_index = 1;
         } else if (option == "--values") {
-            valuesName = argv[i + 1];
+            values_name = argv[i + 1];
             i++;
         }
     }
@@ -40,16 +40,11 @@ int main(int argc, const char* argv[]) {
     type_index = 0;
 #endif
     
-    using types = std::tuple<
-    SdLoDaFsa,
-    SdDaFsa
-    >;
-    
     switch (type_index) {
         case 0:
-            return director::FullyBuild<std::tuple_element_t<0, types>>(dict_name, dataset_name, valuesName);
+            return director::FullyBuild<SdLoDaFsa>(dict_name, dataset_name, values_name);
         case 1:
-            return director::FullyBuild<std::tuple_element_t<1, types>>(dict_name, dataset_name, valuesName);
+            return director::FullyBuild<SdDaFsa>(dict_name, dataset_name, values_name);
         default:
             break;
     }

@@ -11,15 +11,9 @@
 #include "csd_automata/basic.hpp"
 #include "marisa/trie.h"
 
-#include "csd_automata/Exception.hpp"
-
 namespace wrapper {
     
-void SetMarisaKeySet(const char* query_name, marisa::Keyset* keyset) {
-    std::ifstream ifs(query_name);
-    if (!ifs)
-        throw csd_automata::exception::DataNotFound(query_name);
-    
+void SetMarisaKeySet(std::ifstream& ifs, marisa::Keyset* keyset) {
     for (std::string line; std::getline(ifs, line);) {
         std::string::size_type delim_pos = line.find_last_of('\t');
         float weight = 1.0F;

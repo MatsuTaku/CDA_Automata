@@ -10,13 +10,13 @@
 
 #include <darts.h>
 #include <fstream>
-#include "csd_automata/Exception.hpp"
+#include <vector>
 
 namespace wrapper {
     
 class DartsCloneWrapper {
     
-    using Trie = Darts::DoubleArray;
+    Darts::DoubleArray da_;
     
 public:
     
@@ -31,13 +31,9 @@ public:
         Read(fileName);
     }
     
-    int Build(const char* file_name) {
-        std::ifstream ifs(file_name);
-        if (!ifs)
-            throw csd_automata::exception::DataNotFound(file_name);
-        
+    int Build(std::ifstream& ifs) {
         // Make key lists from data sets
-        std::vector<char *> keys;
+        std::vector<char*> keys;
         size_t num_keys = 0;
         for (std::string str; std::getline(ifs, str); num_keys++) {
             keys.push_back(new char[str.size() + 1]);
@@ -56,7 +52,7 @@ public:
     // MARK: Funcionals
     
     size_t Lookup(const char* key) const {
-        return da_.exactMatchSearch<Trie::result_type>(key);
+        return da_.exactMatchSearch<Darts::DoubleArray::result_type>(key);
     }
     
     // MARK: IO
@@ -76,9 +72,6 @@ public:
         os << "size:   " << da_.size() << endl;
         os << "total_size:   " << da_.total_size() << endl;
     }
-    
-private:
-    Trie da_;
     
 };
     

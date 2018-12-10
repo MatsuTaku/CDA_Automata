@@ -6,17 +6,13 @@
 #define ARRAY_FSA_FSATOOLS_HPP
 
 #include "csd_automata.hpp"
-#include "csd_automata/Exception.hpp"
 
 namespace csd_automata {
     
 namespace KeySet {
     
 std::vector<std::string> GetKeySets(const char *queryName) {
-    std::ifstream ifs(queryName);
-    if (!ifs)
-        throw exception::DataNotFound(queryName);
-    
+    auto ifs = GetStreamOrDie<std::ifstream>(queryName);
     std::vector<std::string> strs;
     for (std::string line; std::getline(ifs, line);)
         strs.emplace_back(line);

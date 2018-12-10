@@ -55,7 +55,10 @@ public:
     }
     
 private:
-    explicit BlockReference(storage_pointer pointer, params_reference element_sizes, params_reference element_positions) : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
+    explicit BlockReference(storage_pointer pointer,
+                            params_reference element_sizes,
+                            params_reference element_positions
+                            ) noexcept : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
     
     template <int Id, typename T>
     T get_(size_t width) const {
@@ -113,7 +116,10 @@ public:
     }
     
 private:
-    explicit BlockConstReference(storage_pointer pointer, params_reference element_sizes, params_reference element_positions) : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
+    explicit BlockConstReference(storage_pointer pointer,
+                                 params_reference element_sizes,
+                                 params_reference element_positions
+                                 ) noexcept : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
     
     template <int Id, typename T>
     T get_(size_t width) const {
@@ -230,17 +236,6 @@ public:
         write_vec(element_sizes_, os);
     }
     
-    // MARK: copy guard
-    
-    MultipleVector() = default;
-    ~MultipleVector() = default;
-    
-    MultipleVector(const MultipleVector&) = delete;
-    MultipleVector& operator=(const MultipleVector&) = delete;
-    
-    MultipleVector(MultipleVector &&rhs) noexcept = default;
-    MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
-    
 private:
     size_t offset_(size_t index) const {
         return index * block_size();
@@ -261,6 +256,17 @@ private:
         return value;
     }
     
+public:
+    // MARK: copy guard
+    
+    MultipleVector() = default;
+    ~MultipleVector() = default;
+    
+    MultipleVector(const MultipleVector&) = delete;
+    MultipleVector& operator=(const MultipleVector&) = delete;
+    
+    MultipleVector(MultipleVector &&rhs) noexcept = default;
+    MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
     
 };
     

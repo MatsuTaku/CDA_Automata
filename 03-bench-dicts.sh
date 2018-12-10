@@ -25,6 +25,11 @@ function xcdat {
 }
 export -f xcdat
 
+function fxcdat {
+  ./build/dam_bench $1 $2 13 >$1.bench.stdout 2>&1
+}
+export -f fxcdat
+
 function marisa {
   ./build/dam_bench $1 $2 8 >$1.bench.stdout 2>&1
 }
@@ -48,6 +53,7 @@ damac
 morfologik_fsa5
 morfologik_cfsa2
 xcdat
+fxcdat
 centrp
 marisa
 darts

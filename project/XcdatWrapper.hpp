@@ -14,36 +14,33 @@ namespace wrapper {
     
 template<bool FAST>
 class XcdatWrapper {
+    using Xcdat = xcdat::Trie<FAST>;
+    Xcdat xcdat_;
+    
 public:
-    using xcdat_trie = xcdat::Trie<FAST>;
-    
-    xcdat_trie trie_;
-    
-    XcdatWrapper(std::istream& is) : trie_(is) {}
+    XcdatWrapper(std::istream& is) : xcdat_(is) {}
     
     static std::string name() {
-        return typeid(xcdat_trie).name();
+        return typeid(Xcdat).name();
     }
     
-public:
-    
-    bool Accept(const std::string &str) const {
-        return trie_.Lookup(str) != -1;
+    bool Accept(std::string_view str) const {
+        return xcdat_.lookup(str) != Xcdat::NOT_FOUND;
     }
     
-    size_t Lookup(const std::string &str) const {
-        return trie_.Lookup(str);
+    size_t Lookup(std::string_view str) const {
+        return xcdat_.lookup(str);
     }
     
     std::string Access(size_t value) const {
-        return trie_.access(value);
+        return xcdat_.access(value);
     }
     
     void ShowStats(std::ostream& os) const {
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
-        os << "#nodes:   " << trie_.num_nodes() << endl;
-        os << "size:   " << trie_.size_in_bytes() << endl;
+        os << "#nodes:   " << xcdat_.num_nodes() << endl;
+        os << "size:   " << xcdat_.size_in_bytes() << endl;
     }
     
     void PrintForDebug(std::ostream &os) const {
