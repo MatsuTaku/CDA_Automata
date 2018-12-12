@@ -1,17 +1,17 @@
 #!/bin/bash
 
 dam() {
-  ./build/dam_build $1 $2 >$2.stdout 2>&1
+  ./build/dam_build $1 -o $2 >$2.stdout 2>&1
 }
 export -f dam
 
 damci() {
-  ./build/dam_build $1 $2 --comp-id >$2.stdout 2>&1
+  ./build/dam_build $1 -o $2 --comp-id >$2.stdout 2>&1
 }
 export -f damci
 
 damac() {
-  ./build/dam_build $1 $2 --access >$2.stdout 2>&1
+  ./build/dam_build $1 -o $2 --access >$2.stdout 2>&1
 }
 export -f damac
 
@@ -76,17 +76,17 @@ export -f darts
 
 
 TOOLS="
-morfologik_cfsa2d
-"
-damci
 dam
-damac
+damci
 morfologik_fsa5d
+morfologik_cfsa2d
 darts
 xcdat
 fxcdat
 marisa
 centrp
+"
+#damac
 
 DATASET_DIR=data-sets
 

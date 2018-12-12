@@ -10,6 +10,15 @@
 
 using namespace csd_automata;
 
+namespace {
+
+void ShowUsage() {
+    std::cout << "Usage:"
+    << "\t$ dam_build [DATASET] (-o | --output) [OUTPUT]" << std::endl;
+}
+    
+}
+
 int main(int argc, const char* argv[]) {
 #ifdef NDEBUG
     if (argc < 3) {
@@ -18,21 +27,24 @@ int main(int argc, const char* argv[]) {
     }
 #endif
     
-    auto dataset_name = argv[1];
-    auto dict_name = argv[2];
+    std::string dataset_name = "";
+    std::string dict_name = "";
     
     int type_index = 0;
     std::string values_name = "";
     
-    for (int i = 3; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         std::string option(argv[i]);
-        if (option == "--access") {
+        if (option == "-o" || option == "--output") {
+            dict_name = argv[++i];
+        } else if (option == "--access") {
             type_index = 1;
         } else if (option == "--comp-id") {
             type_index = 2;
         } else if (option == "--values") {
-            values_name = argv[i + 1];
-            i++;
+            values_name = argv[++i];
+        } else {
+            dataset_name = argv[i];
         }
     }
     
@@ -44,6 +56,17 @@ int main(int argc, const char* argv[]) {
 //    dict_name = "../../results/abc/abc.dam";
     type_index = 2;
 #endif
+    
+    if (dataset_name == "") {
+        std::cout << "Dataset target not found!" << std::endl;
+        ShowUsage();
+        return -1;
+    }
+    if (dict_name == "") {
+        std::cout << "option '(-o | --output) [OUTPUT]' is required!" << std::endl;
+        ShowUsage();
+        return -1;
+    }
     
     switch (type_index) {
         case 0:

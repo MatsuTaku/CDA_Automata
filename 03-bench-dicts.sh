@@ -15,15 +15,15 @@ function damac {
 }
 export -f damac
 
-function morfologik_fsa5 {
+function morfologik_fsa5d {
   ./build/dam_bench $1 $2 9 >$1.bench.stdout 2>&1
 }
-export -f morfologik_fsa5
+export -f morfologik_fsa5d
 
-function morfologik_cfsa2 {
+function morfologik_cfsa2d {
   ./build/dam_bench $1 $2 10 >$1.bench.stdout 2>&1
 }
-export -f morfologik_cfsa2
+export -f morfologik_cfsa2d
 
 function xcdat {
   ./build/dam_bench $1 $2 7 >$1.bench.stdout 2>&1
@@ -53,17 +53,17 @@ export -f centrp
 
 
 TOOLS="
-morfologik_cfsa2
-"
-damci
 dam
-damac
-morfologik_fsa5
+damci
+morfologik_fsa5d
+morfologik_cfsa2d
 xcdat
 fxcdat
 centrp
 marisa
 darts
+"
+#damac
 
 DATASET_DIR=data-sets
 DATASETS=`find $DATASET_DIR -name '*.1000000.rnd_dict'`
