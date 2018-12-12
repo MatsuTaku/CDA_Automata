@@ -49,8 +49,8 @@ int main(int argc, const char* argv[]) {
     }
     
 #ifndef NDEBUG
-//    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
-    dataset_name = "../../data-sets/local/jawiki-20181001.1000000.rnd_dict";
+    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
+//    dataset_name = "../../data-sets/local/jawiki-20181001.1000000.rnd_dict";
     dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    dataset_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    dict_name = "../../results/abc/abc.dam";
@@ -69,13 +69,13 @@ int main(int argc, const char* argv[]) {
     }
     
     switch (type_index) {
-        case 0:
+        case 0: // Recomended
             return director::FullyBuild<SdLoDaFsa>(dict_name, dataset_name, values_name);
-        case 2:
-            return director::FullyBuild<SdLoCidDaFsa>(dict_name, dataset_name, values_name);
-        case 1:
+        case 1: // supporting ACCESS
             return director::FullyBuild<SdDaFsa>(dict_name, dataset_name, values_name);
-        case 3: // Rejected
+        case 2: // ! Not recomended
+            return director::FullyBuild<SdLoCidDaFsa>(dict_name, dataset_name, values_name);
+        case 3: // ! Rejected
             return director::FullyBuild<SdLoSiDaFsa>(dict_name, dataset_name, values_name);
         default:
             break;

@@ -21,10 +21,10 @@ namespace csd_automata {
     
 using sim_ds::bit_tools::width_mask;
 
-template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
+template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren>
 class DAFoundation : IOInterface {
 public:
-    using Self = DAFoundation<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords>;
+    using Self = DAFoundation<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren>;
     
     static constexpr bool kCompressNext = CompNext;
     static constexpr bool kUseStrId = UseStrId;
@@ -34,6 +34,7 @@ public:
     static constexpr bool kCompressWords = CompWords;
     static constexpr bool kCumulatesWords = CumuWords;
     static constexpr bool kPlainWords = PlainWords;
+    static constexpr bool kLinkChildren = LinkChildren;
     
     static constexpr id_type kMaskAccept = 0b01;
     static constexpr id_type kMaskIsStrId = 0b10;
@@ -149,6 +150,28 @@ public:
         }
     }
     
+    bool has_brother(size_t index) const {
+        assert(kLinkChildren);
+        return has_brother_bits_[index];
+    }
+    
+    uint8_t brother(size_t index) const {
+        assert(kLinkChildren);
+        assert(has_brother_bits_[index]);
+        return brother_[has_brother_bits_.rank(index)];
+    }
+    
+    bool is_node(size_t index) const {
+        assert(kLinkChildren);
+        return is_node_bits_[index];
+    }
+    
+    uint8_t eldest(size_t index) const {
+        assert(kLinkChildren);
+        assert(is_node_bits_[index]);
+        return eldest_[is_node_bits_.rank(index)];
+    }
+    
     size_t num_elements() const {
         return multiple_base_.size();
     }
@@ -171,12 +194,18 @@ public:
         }
         multiple_base_.set_value_sizes(sizes);
         multiple_base_.resize(size);
-        if (kCompressNext) next_link_bits_.resize(size);
-        if (kUseStrId) check_link_bits_.resize(size);
-        if (kHashing && kCompressWords) {
+        if constexpr (kCompressNext)
+            next_link_bits_.resize(size);
+        if constexpr (kUseStrId)
+            check_link_bits_.resize(size);
+        if constexpr (kHashing && kCompressWords) {
             cum_words_link_bits_.resize(size);
-            if (kPlainWords)
+            if constexpr (kPlainWords)
                 words_link_bits_.resize(size);
+        }
+        if constexpr (kLinkChildren) {
+            has_brother_bits_.resize(size);
+            is_node_bits_.resize(size);
         }
     }
     
@@ -289,6 +318,22 @@ public:
         }
     }
     
+    void set_has_brother(size_t index, bool has) {
+        has_brother_bits_[index] = has;
+    }
+    
+    void set_brother(size_t index, uint8_t bro) {
+        brother_.emplace_back(bro);
+    }
+    
+    void set_is_node(size_t index, bool isNode) {
+        is_node_bits_[index] = isNode;
+    }
+    
+    void set_eldest(size_t index, uint8_t eldest) {
+        eldest_.emplace_back(eldest);
+    }
+    
     // Finaly. Serialize flows.
     void Build() {
         if constexpr (kCompressNext) {
@@ -307,6 +352,10 @@ public:
             }
             cum_words_link_bits_.Build();
             cum_words_flow_ = FitVector(cum_words_flow_src_);
+        }
+        if constexpr (kLinkChildren) {
+            has_brother_bits_.Build();
+            is_node_bits_.Build();
         }
     }
     
@@ -332,7 +381,41 @@ public:
                 size += cum_words_flow_.size_in_bytes();
             }
         }
+        if constexpr (kLinkChildren) {
+            size += has_brother_bits_.size_in_bytes();
+            size += size_vec(brother_);
+            size += is_node_bits_.size_in_bytes();
+            size += size_vec(eldest_);
+        }
         return size;
+    }
+    
+    void LoadFrom(std::istream& is) override {
+        multiple_base_.LoadFrom(is);
+        if constexpr (kCompressNext) {
+            next_link_bits_.Read(is);
+            next_flow_.Read(is);
+        }
+        if constexpr (kUseStrId) {
+            check_link_bits_.Read(is);
+            check_flow_ = FitVector(is);
+        }
+        if constexpr (kHashing && kCompressWords) {
+            if constexpr (kPlainWords) {
+                words_link_bits_.Read(is);
+                words_flow_ = FitVector(is);
+            }
+            if constexpr (kCumulatesWords) {
+                cum_words_link_bits_.Read(is);
+                cum_words_flow_ = FitVector(is);
+            }
+        }
+        if constexpr (kLinkChildren) {
+            has_brother_bits_.Read(is);
+            brother_ = read_vec<uint8_t>(is);
+            is_node_bits_.Read(is);
+            eldest_ = read_vec<uint8_t>(is);
+        }
     }
     
     void StoreTo(std::ostream& os) const override {
@@ -355,27 +438,11 @@ public:
                 cum_words_flow_.Write(os);
             }
         }
-    }
-    
-    void LoadFrom(std::istream& is) override {
-        multiple_base_.LoadFrom(is);
-        if constexpr (kCompressNext) {
-            next_link_bits_.Read(is);
-            next_flow_.Read(is);
-        }
-        if constexpr (kUseStrId) {
-            check_link_bits_.Read(is);
-            check_flow_ = FitVector(is);
-        }
-        if constexpr (kHashing && kCompressWords) {
-            if constexpr (kPlainWords) {
-                words_link_bits_.Read(is);
-                words_flow_ = FitVector(is);
-            }
-            if constexpr (kCumulatesWords) {
-                cum_words_link_bits_.Read(is);
-                cum_words_flow_ = FitVector(is);
-            }
+        if constexpr (kLinkChildren) {
+            has_brother_bits_.Write(os);
+            write_vec(brother_, os);
+            is_node_bits_.Write(os);
+            write_vec(eldest_, os);
         }
     }
     
@@ -407,6 +474,11 @@ private:
     FitVector words_flow_;
     BitVector cum_words_link_bits_;
     FitVector cum_words_flow_;
+    // If use LinkChildren
+    BitVector has_brother_bits_;
+    std::vector<uint8_t> brother_;
+    BitVector is_node_bits_;
+    std::vector<uint8_t> eldest_;
     
     // For build
     using array_type = std::vector<size_t>;
@@ -423,18 +495,18 @@ private:
 };
 
 
-template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
-void DAFoundation<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords>::
+template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren>
+void DAFoundation<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren>::
 ShowStats(std::ostream& os) const {
     using std::endl;
     auto codes_name = [](bool use) {
         return use ? "Comp" : "Plain";
     };
     os << "--- Stat of " << "DAFoundation N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
-    os << "size:   " << size_in_bytes() << endl;
-    os << "size bytes:   " << multiple_base_.size_in_bytes() << endl;
-    os << "size next:   " << num_elements() * multiple_base_.element_size(kENNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
-    os << "size check:   " << num_elements() + check_link_bits_.size_in_bytes() + check_flow_.size_in_bytes() << endl;
+    os << "size:\t" << size_in_bytes() << endl;
+    os << "size bytes:\t" << multiple_base_.size_in_bytes() << endl;
+    os << "size next:\t" << num_elements() * multiple_base_.element_size(kENNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+    os << "size check:\t" << num_elements() + check_link_bits_.size_in_bytes() + check_flow_.size_in_bytes() << endl;
     if constexpr (kHashing) {
         size_t cWordsSize;
         if constexpr (kPlainWords) {
@@ -446,20 +518,25 @@ ShowStats(std::ostream& os) const {
                 wordsSize = num_elements() * multiple_base_.element_size(kENWords);
                 cWordsSize = num_elements() * multiple_base_.element_size(kENCWords);
             }
-            os << "size words:   " << wordsSize << endl;
+            os << "size words:\t" << wordsSize << endl;
         } else {
             cWordsSize = kCumulatesWords ? (num_elements() + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes()) : (num_elements() * multiple_base_.element_size(kENCWords));
         }
-        os << "size cumWords:   " << cWordsSize << endl;
+        os << "size cumWords:\t" << cWordsSize << endl;
         
+        os << "---  ---" << endl;
+    }
+    if constexpr (kLinkChildren) {
+        os << "\tbrother:\t" << has_brother_bits_.size_in_bytes() + size_vec(brother_) << endl;
+        os << "\teldest:\t" << is_node_bits_.size_in_bytes() + size_vec(eldest_) << endl;
         os << "---  ---" << endl;
     }
     //        showSizeMap(os);
 }
 
     
-template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords>
-void DAFoundation<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords>::
+template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren>
+void DAFoundation<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren>::
 ShowSizeMap(std::ostream& os) const {
     auto numElem = num_elements();
     std::vector<size_t> nexts(numElem);

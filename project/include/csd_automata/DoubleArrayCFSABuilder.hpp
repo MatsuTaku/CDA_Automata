@@ -126,8 +126,8 @@ private:
 template <class Product>
 void DoubleArrayCFSABuilder::Release(Product& da) {
     const auto numElems = num_elements_();
-    da.resize(numElems, get_num_words());
-    GetSerializedStringsBuilder(str_dict_).Release(&da.serialized_strings_);
+    da.base_.resize(numElems, get_num_words());
+    GetSerializedStringsBuilder(str_dict_).Release(&da.strings_map_);
     
     auto numTrans = 0;
     for (auto i = 0; i < numElems; i++) {
@@ -135,42 +135,42 @@ void DoubleArrayCFSABuilder::Release(Product& da) {
             numTrans++;
             
             auto is_str_trans = has_label_(i);
-            da.set_next(i, get_next_(i));
-            da.set_is_string_trans(i, is_str_trans);
-            da.set_is_final(i, is_final_(i));
+            da.base_.set_next(i, get_next_(i));
+            da.base_.set_is_string(i, is_str_trans);
+            da.base_.set_is_final(i, is_final_(i));
             if (Product::kUnionCheckAndId) {
                 if (is_str_trans)
-                    da.set_string_id(i, get_label_number_(i));
+                    da.base_.set_string_id(i, get_label_number_(i));
                 else
-                    da.set_check(i, get_check_(i));
+                    da.base_.set_check(i, get_check_(i));
             } else {
-                da.set_check(i, get_check_(i));
+                da.base_.set_check(i, get_check_(i));
                 if (is_str_trans)
-                    da.set_string_id(i, get_label_number_(i));
+                    da.base_.set_string_id(i, get_label_number_(i));
             }
             
             if constexpr (Product::kSupportAccess)
-                da.set_words(i, get_words_(i));
+                da.base_.set_words(i, get_words_(i));
             if constexpr (Product::kUseCumulativeWords)
-                da.set_cum_words(i, get_cum_words_(i));
+                da.base_.set_cum_words(i, get_cum_words_(i));
             
             if constexpr (Product::kLinkChildren) {
                 bool hasBro = has_brother_(i);
-                da.set_has_brother(i, hasBro);
+                da.base_.set_has_brother(i, hasBro);
                 if (hasBro)
-                    da.set_brother(i, get_brother_(i));
+                    da.base_.set_brother(i, get_brother_(i));
             }
         }
         
         if constexpr (Product::kLinkChildren) {
             bool isNode = is_used_next_(i);
-            da.set_is_node(i, isNode);
+            da.base_.set_is_node(i, isNode);
             if (isNode)
-                da.set_eldest(i, get_eldest_(i));
+                da.base_.set_eldest(i, get_eldest_(i));
         }
     }
-    da.BuildBitVector();
-    da.set_num_trans(numTrans);
+    da.base_.Build();
+    da.num_trans_ = numTrans;
     
     CheckEquivalence(da);
 }
@@ -257,11 +257,8 @@ inline void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
             set_has_label_(child_index);
             set_label_index_(child_index, str_dict_.start_pos(trans_index));
             
-//            str_dict_.TraceOnLabel(trans_index);
-//            while (!str_dict_.is_end_label() && src_fsa_.is_straight_state(label_trans)) {
             while (src_fsa_.is_straight_state(label_trans)) {
                 label_trans = src_fsa_.get_target_state(label_trans);
-//                str_dict_.pos_to_next();
             }
         }
         // set is_final

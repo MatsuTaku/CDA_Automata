@@ -15,8 +15,6 @@
 #include "DoubleArrayFSABuilder.hpp"
 
 namespace csd_automata {
-    
-class PlainFSA;
 
 template<bool CompressNext>
 class DoubleArrayFSA : IOInterface {
@@ -27,7 +25,7 @@ public:
     }
     
     static constexpr bool kCompressNext = CompressNext;
-    using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false>;
+    using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false, false>;
     using BitVector = sim_ds::BitVector;
     
 private:
@@ -36,15 +34,15 @@ private:
     size_t num_trans_ = 0;
     
 public:
-    DoubleArrayFSA(const PlainFSA& fsa) {
-        Build(fsa);
+    DoubleArrayFSA(const DoubleArrayFSABuilder& builder) {
+        Build(builder);
     }
     
     DoubleArrayFSA(std::istream &is) {
         LoadFrom(is);
     }
     
-    void Build(const PlainFSA& fsa);
+    void Build(DoubleArrayFSABuilder& builder);
     
     // MARK: - getter
     
@@ -63,7 +61,7 @@ public:
     }
     
     std::string Access(size_t key) const {
-        return std::string("");
+        return "";
     }
     
     auto target(size_t index) const {
@@ -183,9 +181,8 @@ private:
 };
 
 
-template<bool N>
-inline void DoubleArrayFSA<N>::Build(const PlainFSA& fsa) {
-    DoubleArrayFSABuilder builder(fsa);
+template<bool CompressNext>
+inline void DoubleArrayFSA<CompressNext>::Build(DoubleArrayFSABuilder& builder) {
     builder.Build();
     
     const auto numElem = builder.num_elements_();
@@ -206,7 +203,7 @@ inline void DoubleArrayFSA<N>::Build(const PlainFSA& fsa) {
     
     builder.CheckEquivalence(*this);
 }
-    
+
 }
 
 #endif /* DoubleArrayFSA_hpp */

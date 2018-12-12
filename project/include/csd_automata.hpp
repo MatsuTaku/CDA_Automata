@@ -17,6 +17,10 @@ namespace csd_automata {
 using DaFsa = DoubleArrayFSA<false>;
 using DaFsaDac = DoubleArrayFSA<true>;
 
+// Recomended
+using Dam = DoubleArrayCFSA<true, true, false, false, true, false>;
+
+// For Expression
 using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true>;
 using SdLoDaFsa = DoubleArrayCFSA<true, true, false, false, true, false>;
 using SdLoCidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false>;
