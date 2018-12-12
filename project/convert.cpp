@@ -12,10 +12,11 @@ using namespace csd_automata;
 namespace {
     
     template<class Dictionary>
-    void buildMorfologikFSADictionary(const char *setName, const char *dictName) {
+    void BuildMorfologikFSADictionary(const char *setName, const char *dictName) {
         std::ifstream ifs(setName);
         if (!ifs) {
             std::cerr << "Error! File not found: " << setName << std::endl;
+            std::exit(EXIT_FAILURE);
         }
         typename Dictionary::Foundation::FsaSource fsa;
         fsa.read(ifs);
@@ -33,17 +34,17 @@ int main(int argc, const char* argv[]) {
     int setType = atoi(argv[3]);
     
 #ifndef NDEBUG
-    setName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
-    dictName = "../../../results/enwiki-20150205/enwiki-20150205.morfologik_cfsa2";
+    setName = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2";
+    dictName = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
     setType = 1;
 #endif
     
     switch (setType) {
         case 0:
-            buildMorfologikFSADictionary<SdMrfFsa5>(setName, dictName);
+            BuildMorfologikFSADictionary<SdMrfFsa5>(setName, dictName);
             break;
         case 1:
-            buildMorfologikFSADictionary<SdMrfCfsa2>(setName, dictName);
+            BuildMorfologikFSADictionary<SdMrfCFsa2>(setName, dictName);
             break;
         default:
             std::cerr << "Error setType: " << setType << std::endl;

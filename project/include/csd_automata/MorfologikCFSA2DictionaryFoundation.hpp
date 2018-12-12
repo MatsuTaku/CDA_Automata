@@ -17,7 +17,7 @@ class MorfologikCFSA2DictionaryFoundation {
     
     const size_t kNumFlags_ = 4;
     const size_t kSizeNodeSymbol_ = 1;
-    const size_t kSizeNodeWordsUpperBits_ = 4;
+    const size_t kBitsUpperNodeWords_ = 4;
     
     size_t element_words_lower_size_ = 4;
     std::vector<uint8_t> bytes_;
@@ -105,7 +105,7 @@ public:
     
     size_t get_trans(size_t state, uint8_t symbol) const {
         for (auto t = get_first_trans(state); t != 0; t = get_next_trans(t)) {
-            if (get_trans_words(t) == symbol)
+            if (get_trans_symbol(t) == symbol)
                 return t;
         }
         return 0;
@@ -130,11 +130,11 @@ public:
     
     void PrintForDebug(std::ostream& os) const {
         using std::endl;
-        os << "\tLB\tF\tL\tN\tLW\tWO\tAD" << endl;
+        os << "\tLb\tFi\tLa\tNe\tLW\tWo\tAd" << endl;
         
         size_t i = 0;
         while (i < bytes_.size()) {
-            char c = get_trans_words(i);
+            char c = get_trans_symbol(i);
             if (c == '\r') {
                 c = '?';
             }
@@ -218,24 +218,24 @@ private:
 };
 
 
-MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const MorfologikCFSA2 &set) {
-    struct Node {
+MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const MorfologikCFSA2DictionaryFoundation::FsaSource& origin) {
+    struct Trans {
         size_t words = 0;
         size_t offset = 0;
     };
-    std::unordered_map<size_t, Node> nodes;
+    std::unordered_map<size_t, Trans> transes;
     
-    const std::function<size_t(size_t)> dfs = [&set, &dfs, &nodes](size_t state) {
+    const std::function<size_t(size_t)> dfs = [&origin, &dfs, &transes](size_t state) {
         size_t count_words = 0;
-        for (auto t = set.get_first_trans(state); t != 0; t = set.get_next_trans(t)) {
-            auto it = nodes.find(t);
-            if (it != nodes.end()) {
+        for (auto t = origin.get_first_trans(state); t != 0; t = origin.get_next_trans(t)) {
+            auto it = transes.find(t);
+            if (it != transes.end()) {
                 count_words += it->second.words;
             } else {
-                size_t word = dfs(set.get_target_state(t));
-                if (set.is_final_trans(t))
+                size_t word = dfs(origin.get_target_state(t));
+                if (origin.is_final_trans(t))
                     word++;
-                nodes[t].words = word;
+                transes[t].words = word;
                 count_words += word;
             }
         }
@@ -243,11 +243,11 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
         return count_words;
     };
     
-    auto totalWords = dfs(set.get_root_state());
-    element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(totalWords >> kSizeNodeWordsUpperBits_);
+    auto total_words = dfs(origin.get_root_state());
+    element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(total_words >> kBitsUpperNodeWords_);
     
-    for (size_t s = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
-        nodes[s].offset = std::numeric_limits<size_t>::max();
+    for (size_t s = 0; s < origin.bytes_.size(); s = origin.skip_trans_(s)) {
+        transes[s].offset = std::numeric_limits<size_t>::max();
     }
     
     // Transpose fsa
@@ -256,37 +256,37 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
         is_value_changed = false;
         
         bytes_.resize(0);
-        for (size_t s = 0, offset = 0; s < set.bytes_.size(); s = set.skip_trans_(s)) {
-            auto& node = nodes[s];
+        for (size_t s = 0, offset = 0; s < origin.bytes_.size(); s = origin.skip_trans_(s)) {
+            auto& trans = transes[s];
             
-            assert(node.offset >= offset); // Every time target offset is decreasing repeats.
-            if (node.offset != offset) {
+            assert(trans.offset >= offset); // Every time target offset is decreasing repeats.
+            if (trans.offset != offset) {
                 is_value_changed = true;
-                node.offset = offset;
+                trans.offset = offset;
             }
             
             // Enumerate parameters
-            size_t flags_and_words = set.is_final_trans(s) | (set.is_last_trans(s) << 1) | (set.is_next_set_(s) << 2);
-            size_t words = node.words;
+            size_t flags_and_words = origin.is_final_trans(s) | (origin.is_last_trans(s) << 1) | (origin.is_next_set_(s) << 2);
+            size_t words = trans.words;
             flags_and_words |= (words << kNumFlags_);
             auto sizePW = 1;
-            bool isLargeWords = words >= (1ULL << kSizeNodeWordsUpperBits_);
-            if (isLargeWords) {
+            bool is_large_words = words >> kBitsUpperNodeWords_;
+            if (is_large_words) {
                 flags_and_words |= 0x08;
                 sizePW += element_words_lower_size_;
             }
             
             auto node_size = kSizeNodeSymbol_ + sizePW;
             bytes_.resize(offset + node_size);
-            uint8_t symbol = set.get_trans_symbol(s);
+            uint8_t symbol = origin.get_trans_symbol(s);
             // Transfer symbol
             bytes_[offset] = symbol;
             // Transfer flags
             std::memcpy(&bytes_[offset + kSizeNodeSymbol_], &flags_and_words, sizePW);
             
             // Transfer address
-            if (!set.is_next_set_(s)) {
-                size_t value = nodes[set.get_target_state(s)].offset;
+            if (!origin.is_next_set_(s)) {
+                size_t value = transes[origin.get_target_state(s)].offset;
                 while (value > 0x7F) {
                     bytes_.emplace_back(0x80 | (value & 0x7F));
                     node_size++;
@@ -299,11 +299,10 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
             offset += node_size;
             
         }
-        std::cerr << nodes[set.get_dest_state_offset_(0)].offset << std::endl;
+        std::cerr << transes[origin.get_dest_state_offset_(0)].offset << std::endl;
     }
     
-//        printForDebug(std::cout);
-    
+//    PrintForDebug(std::cout);
 }
     
 }

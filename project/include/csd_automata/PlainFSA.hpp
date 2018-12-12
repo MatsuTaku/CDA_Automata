@@ -38,7 +38,7 @@ public:
         return static_cast<bool>(bytes_[trans] & 2);
     }
     
-    size_t get_store_trans(size_t trans) const {
+    size_t get_words_trans(size_t trans) const {
         size_t store = 0;
         std::memcpy(&store, &bytes_[trans + 2 + kSizeAddr], kSizeAddr);
         return store;
@@ -87,6 +87,18 @@ public:
         auto is_final = is_final_trans(state);
         auto is_single_node = is_single_src && is_less_single_child && !is_final;
         return is_single_node;
+    }
+    
+    template <class Work>
+    void ForAllSymbolInFollowsTrans(size_t trans, bool* break_flag, Work& work) const {
+        for (size_t t = trans; !*break_flag && t != 0; t = get_next_trans(t)) {
+            work(get_trans_symbol(t));
+        }
+    }
+    
+    template <class Work>
+    void ForAllSymbolInState(size_t state, bool* break_flag, Work work) const {
+        ForAllSymbolInFollowsTrans(get_first_trans(state), break_flag, work);
     }
     
     void print_for_debug(std::ostream& os, size_t startIndex = 0) const {

@@ -38,11 +38,9 @@ public:
      @param str String to check
      @return Boolean that a string is stored or not
      */
-    template<typename S>
-    bool Accept(const S &str) const;
+    bool Accept(std::string_view str) const;
     
-    template<typename S>
-    size_t Lookup(const S &str) const;
+    size_t Lookup(std::string_view str) const;
     
     std::string Access(size_t id) const;
     
@@ -84,9 +82,8 @@ public:
 };
 
 
-template<class FoundationType>
-template<typename S>
-inline bool MorfologikFsaDictionary<FoundationType>::Accept(const S& str) const {
+template <class FoundationType>
+inline bool MorfologikFsaDictionary<FoundationType>::Accept(std::string_view str) const {
     size_t state = fd_.get_root_state(), trans = 0;
     for (uint8_t c : str) {
         trans = fd_.get_trans(state, c);
@@ -101,9 +98,8 @@ inline bool MorfologikFsaDictionary<FoundationType>::Accept(const S& str) const 
     return fd_.is_final_trans(trans);
 }
 
-template<class FoundationType>
-template<typename S>
-inline size_t MorfologikFsaDictionary<FoundationType>::Lookup(const S& str) const {
+template <class FoundationType>
+inline size_t MorfologikFsaDictionary<FoundationType>::Lookup(std::string_view str) const {
     size_t words = 0;
     
     size_t state = fd_.get_root_state(), trans = 0;
@@ -125,7 +121,7 @@ inline size_t MorfologikFsaDictionary<FoundationType>::Lookup(const S& str) cons
     return fd_.is_final_trans(trans) ? words : -1;
 }
 
-template<class FoundationType>
+template <class FoundationType>
 inline std::string MorfologikFsaDictionary<FoundationType>::Access(size_t id) const {
     std::string str = "";
     
@@ -154,7 +150,7 @@ inline std::string MorfologikFsaDictionary<FoundationType>::Access(size_t id) co
 
 
 using SdMrfFsa5 = MorfologikFsaDictionary<MorfologikFSA5DictionaryFoundation>;
-using SdMrfCfsa2 = MorfologikFsaDictionary<MorfologikCFSA2DictionaryFoundation>;
+using SdMrfCFsa2 = MorfologikFsaDictionary<MorfologikCFSA2DictionaryFoundation>;
     
 }
 

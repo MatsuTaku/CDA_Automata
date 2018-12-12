@@ -9,7 +9,7 @@
 #define ArrayFSA_TailBuilder_hpp
 
 #include "DoubleArrayFSABuilder.hpp"
-#include "StringDictBuilder.hpp"
+#include "TailDictBuilder.hpp"
 #include "sim_ds/log.hpp"
 
 #include "DoubleArrayCFSA.hpp"
@@ -17,56 +17,59 @@
 namespace csd_automata {
     
 class DoubleArrayCFSABuilder : public DoubleArrayFSABuilder {
-private:
-    StringDict str_dict_;
-    
 public:
+    using Super = DoubleArrayFSABuilder;
+    
     explicit DoubleArrayCFSABuilder(const PlainFSA &srcFsa) : DoubleArrayFSABuilder(srcFsa) {}
     
-    void build(bool binaryMode, bool mergeSuffix = false) {
-        StringDictBuilder::Build(str_dict_, src_fsa_, binaryMode, mergeSuffix);
-        DoubleArrayFSABuilder::build();
+    void Build(bool binaryMode, bool merge_suffix, bool divide_front) {
+        TailDictBuilder::Build(str_dict_, src_fsa_, binaryMode, merge_suffix, divide_front);
+        DoubleArrayFSABuilder::Build();
     }
     
-    template <class DAM_TYPE>
-    void release(DAM_TYPE& da);
+    template <class Product>
+    void Release(Product& da);
     
     // MARK: - getter
     
-    bool hasLabel_(size_t index) const {
+    bool has_label_(size_t index) const {
         return static_cast<bool>(bytes_[offset_(index)] & 8);
     }
     
-    size_t getLabelNumber_(size_t index) const {
-        return getAddress_(offset_(index) + 1 + kAddrSize);
+    size_t get_label_number_(size_t index) const {
+        return get_address_(offset_(index) + 1 + kAddrSize);
     }
     
-    size_t getNumWords() const {
+    size_t get_num_words() const {
         return src_fsa_.get_num_words();
     }
     
-    size_t getStore_(size_t index) const {
-        return getAddress_(offset_(index) + 1 + kAddrSize * 2);
+    size_t get_words_(size_t index) const {
+        return get_address_(offset_(index) + 1 + kAddrSize * 2);
     }
     
-    size_t getAccStore_(size_t index) const {
-        return getAddress_(offset_(index) + 1 + kAddrSize * 3);
+    size_t get_cum_words_(size_t index) const {
+        return get_address_(offset_(index) + 1 + kAddrSize * 3);
     }
     
-    bool hasBrother_(size_t index) const {
+    bool has_brother_(size_t index) const {
         return static_cast<bool>(bytes_[offset_(index)] & 16);
     }
     
-    uint8_t getBrother_(size_t index) const {
+    uint8_t get_brother_(size_t index) const {
         return bytes_[offset_(index) + 1 + kAddrSize * 4];
     }
     
-    uint8_t getEldest_(size_t index) const {
+    uint8_t get_eldest_(size_t index) const {
         return bytes_[offset_(index) + 2 + kAddrSize * 4];
     }
     
+    uint8_t get_check_(size_t index) const override {
+        return bytes_[offset_(index) + 3 + kAddrSize * 4];
+    }
+    
     template <class T>
-    void showCompareWith(T &fsa);
+    void CheckEquivalence(T &fsa);
     
     // MARK: Copy guard
     
@@ -79,97 +82,108 @@ public:
     DoubleArrayCFSABuilder& operator=(DoubleArrayCFSABuilder&&) = default;
     
 private:
+    TailDict str_dict_;
+    
     // MARK: Setter
     
-    void setHasLabel_(size_t index) {
+    void set_has_label_(size_t index) {
         bytes_[offset_(index)] |= 8;
     }
     
-    void setLabelIndex_(size_t index, size_t labelIndex) {
+    void set_label_index_(size_t index, size_t labelIndex) {
         std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &labelIndex, 4);
     }
     
-    void setWords_(size_t index, size_t words) {
+    void set_words_(size_t index, size_t words) {
         std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 2], &words, 4);
     }
     
-    void setCumWords_(size_t index, size_t cw) {
+    void set_cum_words_(size_t index, size_t cw) {
         std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize * 3], &cw, 4);
     }
     
-    void setHasBrother_(size_t index) {
+    void set_has_brother_(size_t index) {
         bytes_[offset_(index)] |= 16;
     }
     
-    void setBrother_(size_t index, uint8_t bro) {
+    void set_brother_(size_t index, uint8_t bro) {
         bytes_[offset_(index) + 1 + kAddrSize * 4] = bro;
     }
     
-    void setEldest_(size_t index, uint8_t eldest) {
+    void set_eldest_(size_t index, uint8_t eldest) {
         bytes_[offset_(index) + 2 + kAddrSize * 4] = eldest;
     }
     
-    void arrange_(size_t state, size_t index) override;
+    void set_check_(size_t index, uint8_t check) override {
+        bytes_[offset_(index) + 3 + kAddrSize * 4] = check;
+    }
+    
+    void Arrange_(size_t state, size_t index) override;
     
 };
 
 
 template <class Product>
-void DoubleArrayCFSABuilder::release(Product& da) {
-    const auto numElems = numElems_();
-    da.resize(numElems, getNumWords());
-    GetSerializedStringsBuilder(str_dict_).Release(da.serialized_strings_);
+void DoubleArrayCFSABuilder::Release(Product& da) {
+    const auto numElems = num_elements_();
+    da.resize(numElems, get_num_words());
+    GetSerializedStringsBuilder(str_dict_).Release(&da.serialized_strings_);
     
     auto numTrans = 0;
     for (auto i = 0; i < numElems; i++) {
-        if (isFrozen_(i)) {
+        if (is_frozen_(i)) {
             numTrans++;
             
-            auto isStrTrans = hasLabel_(i);
-            da.set_next(i, getNext_(i));
-            da.set_is_string_trans(i, isStrTrans);
-            da.set_is_final(i, isFinal_(i));
-            da.set_check(i, getCheck_(i));
-            if (isStrTrans)
-                da.set_string_id(i, getLabelNumber_(i));
-            else
-                da.set_check(i, getCheck_(i));
+            auto is_str_trans = has_label_(i);
+            da.set_next(i, get_next_(i));
+            da.set_is_string_trans(i, is_str_trans);
+            da.set_is_final(i, is_final_(i));
+            if (Product::kUnionCheckAndId) {
+                if (is_str_trans)
+                    da.set_string_id(i, get_label_number_(i));
+                else
+                    da.set_check(i, get_check_(i));
+            } else {
+                da.set_check(i, get_check_(i));
+                if (is_str_trans)
+                    da.set_string_id(i, get_label_number_(i));
+            }
             
             if constexpr (Product::kSupportAccess)
-                da.set_words(i, getStore_(i));
+                da.set_words(i, get_words_(i));
             if constexpr (Product::kUseCumulativeWords)
-                da.set_cum_words(i, getAccStore_(i));
+                da.set_cum_words(i, get_cum_words_(i));
             
             if constexpr (Product::kLinkChildren) {
-                bool hasBro = hasBrother_(i);
+                bool hasBro = has_brother_(i);
                 da.set_has_brother(i, hasBro);
                 if (hasBro)
-                    da.set_brother(i, getBrother_(i));
+                    da.set_brother(i, get_brother_(i));
             }
         }
         
         if constexpr (Product::kLinkChildren) {
-            bool isNode = isUsedNext_(i);
+            bool isNode = is_used_next_(i);
             da.set_is_node(i, isNode);
             if (isNode)
-                da.set_eldest(i, getEldest_(i));
+                da.set_eldest(i, get_eldest_(i));
         }
     }
     da.BuildBitVector();
     da.set_num_trans(numTrans);
     
-    showCompareWith(da);
+    CheckEquivalence(da);
 }
 
 
 template <class T>
-inline void DoubleArrayCFSABuilder::showCompareWith(T &fsa) {
+inline void DoubleArrayCFSABuilder::CheckEquivalence(T &fsa) {
     auto tab = "\t";
-    for (auto i = 0; i < numElems_(); i++) {
-        if (!isFrozen_(i)) continue;
-        auto bn = getNext_(i);
-        auto bi = hasLabel_(i);
-        auto bc = !bi ? getCheck_(i) : getLabelNumber_(i);
+    for (auto i = 0; i < num_elements_(); i++) {
+        if (!is_frozen_(i)) continue;
+        auto bn = get_next_(i);
+        auto bi = has_label_(i);
+        auto bc = !bi ? get_check_(i) : get_label_number_(i);
         auto fn = fsa.base_.next(i);
         auto fi = fsa.base_.is_string(i);
         auto fc = !fi ? fsa.base_.check(i) : fsa.base_.string_id(i);
@@ -181,7 +195,7 @@ inline void DoubleArrayCFSABuilder::showCompareWith(T &fsa) {
         cout << "next: " << bn << tab << fn << endl;
         cout << "check: " << bc << tab << fc << endl;
         cout << "is-str: " << bi << tab << fi << endl;
-        cout << "accept: " << isFinal_(i) << tab << fsa.base_.is_final(i) << endl;
+        cout << "accept: " << is_final_(i) << tab << fsa.base_.is_final(i) << endl;
         if (bi || fi) {
             sim_ds::log::ShowAsBinary(bc, 4);
             sim_ds::log::ShowAsBinary(fc, 4);
@@ -195,11 +209,11 @@ inline void DoubleArrayCFSABuilder::showCompareWith(T &fsa) {
 // MARK: - private
 
 // Recursive function
-inline void DoubleArrayCFSABuilder::arrange_(size_t state, size_t index) {
+inline void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
     const auto first_trans = src_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
-        setNext_(index, index); // to the terminal state
+        set_next_(index, index); // to the terminal state
         return;
     }
     
@@ -207,69 +221,71 @@ inline void DoubleArrayCFSABuilder::arrange_(size_t state, size_t index) {
         auto it = state_map_.find(state);
         if (it != state_map_.end()) {
             // already visited state
-            setNext_(index, it->second);
+            set_next_(index, it->second);
             return;
         }
     }
     
-    const auto next = findNext_(first_trans);
+    const auto next = FindNext_(first_trans);
+    assert(!is_used_next_(next));
     if (offset_(next) >= bytes_.size()) {
-        expandBlock_();
+        ExpandBlock_();
     }
     
-    setNext_(index, next);
+    set_next_(index, next);
     state_map_.insert(std::make_pair(state, next));
-    setUsedNext_(next, true);
+    set_used_next_(next, true);
     
     // Contain <symbol, trans>
-    std::vector<std::pair<uint8_t, size_t>> nextTranses;
+    std::vector<std::pair<uint8_t, size_t>> next_transes;
     
-    auto storesCounter = 0;
+    auto words_counter = 0;
     for (auto trans = first_trans; trans != 0; trans = src_fsa_.get_next_trans(trans)) {
         const auto symbol = src_fsa_.get_trans_symbol(trans);
         const auto child_index = next ^ symbol;
         
-        freezeState_(child_index);
-        
-        // Set: hasLabel, check or stringId
-        auto transIndex = trans / PlainFSA::kSizeTrans;
-        auto labelTrans = trans;
-        if (str_dict_.is_label_source(transIndex)) {
-            setHasLabel_(child_index);
-            setLabelIndex_(child_index, str_dict_.start_pos(transIndex));
+        assert(!is_frozen_(child_index));
+        FreezeTrans_(child_index);
+        assert(is_frozen_(child_index));
+        // set check
+        set_check_(child_index, symbol);
+        assert(get_check_(child_index) == symbol);
+        // Set: hasLabel, stringId
+        auto trans_index = trans / PlainFSA::kSizeTrans;
+        auto label_trans = trans;
+        if (str_dict_.is_label_source(trans_index)) {
+            set_has_label_(child_index);
+            set_label_index_(child_index, str_dict_.start_pos(trans_index));
             
-            str_dict_.TraceOnLabel(transIndex);
-            while (!str_dict_.is_end_label() && src_fsa_.is_straight_state(labelTrans)) {
-                labelTrans = src_fsa_.get_target_state(labelTrans);
-                str_dict_.pos_to_next();
+//            str_dict_.TraceOnLabel(trans_index);
+//            while (!str_dict_.is_end_label() && src_fsa_.is_straight_state(label_trans)) {
+            while (src_fsa_.is_straight_state(label_trans)) {
+                label_trans = src_fsa_.get_target_state(label_trans);
+//                str_dict_.pos_to_next();
             }
-        } else {
-            setCheck_(child_index, symbol);
         }
-        
-        // set isFinal
-        setFinal_(child_index, src_fsa_.is_final_trans(labelTrans));
-        
-        // set store
-        const auto store = src_fsa_.get_store_trans(labelTrans);
-        setWords_(child_index, store);
-        setCumWords_(child_index, storesCounter);
-        storesCounter += store;
+        // set is_final
+        set_final_(child_index, src_fsa_.is_final_trans(label_trans));
+        // set word
+        const auto words = src_fsa_.get_words_trans(label_trans);
+        set_words_(child_index, words);
+        set_cum_words_(child_index, words_counter);
+        words_counter += words;
         
         // Prepare to transition next node
-        nextTranses.push_back(std::make_pair(symbol, labelTrans));
+        next_transes.push_back(std::make_pair(symbol, label_trans));
     }
     
-    setEldest_(next, nextTranses.front().first);
-    for (auto i = 0; i < nextTranses.size() - 1; i++) {
-        auto childIndex = next ^ nextTranses[i].first;
-        setHasBrother_(childIndex);
-        setBrother_(childIndex, nextTranses[i + 1].first);
+    set_eldest_(next, next_transes.front().first);
+    for (auto i = 0; i < next_transes.size() - 1; i++) {
+        auto childIndex = next ^ next_transes[i].first;
+        set_has_brother_(childIndex);
+        set_brother_(childIndex, next_transes[i + 1].first);
     }
     
     // Transition next node
-    for (auto &nextTrans : nextTranses) {
-        arrange_(src_fsa_.get_target_state(nextTrans.second), next ^ nextTrans.first);
+    for (auto& next_trans : next_transes) {
+        Arrange_(src_fsa_.get_target_state(next_trans.second), next ^ next_trans.first);
     }
 }
     

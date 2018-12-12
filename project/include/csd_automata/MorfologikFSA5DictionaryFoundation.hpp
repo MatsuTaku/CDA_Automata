@@ -14,17 +14,6 @@
 namespace csd_automata {
     
 class MorfologikFSA5DictionaryFoundation {
-    
-    size_t node_data_length_ = 0;
-    
-    const size_t kNumParams_ = 4;
-    const size_t kSizeElementSymbol_ = 1;
-    const size_t kSizeElementWordsUpperBits_ = 4;
-    size_t element_words_lower_size_ = 4;
-    size_t element_address_size_ = 4;
-    
-    std::vector<uint8_t> bytes_;
-    
 public:
     using FsaSource = MorfologikFSA5;
     
@@ -32,9 +21,9 @@ public:
         return FsaSource::name();
     }
     
-    MorfologikFSA5DictionaryFoundation(const FsaSource &set);
+    MorfologikFSA5DictionaryFoundation(const FsaSource& set);
     
-    MorfologikFSA5DictionaryFoundation(std::istream &is) {
+    MorfologikFSA5DictionaryFoundation(std::istream& is) {
         Read(is);
     }
     
@@ -175,6 +164,16 @@ public:
     MorfologikFSA5DictionaryFoundation &operator=(MorfologikFSA5DictionaryFoundation &&) = default;
     
 private:
+    size_t node_data_length_ = 0;
+    
+    const size_t kNumParams_ = 4;
+    const size_t kSizeElementSymbol_ = 1;
+    const size_t kSizeElementWordsUpperBits_ = 4;
+    size_t element_words_lower_size_ = 4;
+    size_t element_address_size_ = 4;
+    
+    std::vector<uint8_t> bytes_;
+    
     // MARK: Offsets
     
     size_t offset_symbol_(size_t trans) const {
@@ -272,7 +271,9 @@ MorfologikFSA5DictionaryFoundation::MorfologikFSA5DictionaryFoundation(const Mor
             if (set.is_next_set_(parent))
                 continue;
             // Copy target
-            std::memcpy(&bytes_[offset_address_(nodes[parent].destination)], &nodes[state].destination, element_address_size_);
+            std::memcpy(&bytes_[offset_address_(nodes[parent].destination)],
+                        &nodes[state].destination,
+                        element_address_size_);
         }
         
         while (!set.is_last_trans(state))

@@ -25,15 +25,11 @@ class SerializedStrings : IOInterface {
     
     friend class SerializedStringsBuilder;
     
-private:
-    Storage bytes_;
-    BitVector boundary_flags_;
-    
 public:
     // MARK: Constructor
     
     explicit SerializedStrings(std::istream& is) {
-        Read(is);
+        LoadFrom(is);
     }
     
     // MARK: Property
@@ -49,7 +45,7 @@ public:
             return bytes_[index + 1] == kEndLabel;
     }
     
-    bool match(size_t* pos, const std::string& str, size_t str_index) const {
+    bool match(size_t* pos, std::string_view str, size_t str_index) const {
         for (; *pos < str.size(); ++*pos, str_index++) {
             if (static_cast<char>(str[*pos]) != bytes_[str_index])
                 return false;
@@ -86,13 +82,13 @@ public:
         return size;
     }
     
-    void Read(std::istream& is) override {
+    void LoadFrom(std::istream& is) override {
         bytes_ = read_vec<char>(is);
         if constexpr (kIsBinaryMode)
             boundary_flags_.Read(is);
     }
     
-    void Write(std::ostream& os) const override {
+    void StoreTo(std::ostream& os) const override {
         write_vec(bytes_, os);
         if constexpr (kIsBinaryMode)
             boundary_flags_.Write(os);
@@ -101,6 +97,8 @@ public:
     // MARK: Show status
     
     void ShowLabels(int from, int to) const {
+        auto id = (from + to) / 2;
+        std::cout << std::endl << "\tindex: " << (from + to) / 2 << ", text: " << string_view(id) << std::endl;
         for (auto i = from; i <= to; i++) {
             std::cout << (i == (from + to) / 2 ? '|' : ' ');
         }
@@ -127,6 +125,10 @@ public:
     
     SerializedStrings(SerializedStrings&&) noexcept = default;
     SerializedStrings& operator=(SerializedStrings&&) noexcept = default;
+    
+private:
+    Storage bytes_;
+    BitVector boundary_flags_;
     
 };
     

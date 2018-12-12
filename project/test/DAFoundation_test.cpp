@@ -30,7 +30,7 @@ TEST(DAFoundationTest, UseDac) {
     auto nextSrc = randVector(size);
     auto checkSrc = randVector(size);
 
-    DAFoundation<true, true, true, false, false, false, false> fd(size);
+    DAFoundation<true, true, true, true, false, false, false, false> fd(size);
 
     std::vector<bool> isStrIds(size);
 
@@ -66,7 +66,7 @@ TEST(DAFoundationTest, LookupDict) {
     auto checkSrc = randVector(size);
     auto cwordsSrc = randVector(size);
     
-    DAFoundation<false, true, false, true, true, true, false> fd(size);
+    DAFoundation<false, true, true, false, true, true, true, false> fd(size);
     
     std::vector<bool> isStrIds(size);
     

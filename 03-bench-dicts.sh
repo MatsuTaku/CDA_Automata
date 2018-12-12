@@ -5,6 +5,11 @@ function dam {
 }
 export -f dam
 
+function damci {
+  ./build/dam_bench $1 $2 15 >$1.bench.stdout 2>&1
+}
+export -f damci
+
 function damac {
   ./build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
 }
@@ -48,16 +53,17 @@ export -f centrp
 
 
 TOOLS="
+morfologik_cfsa2
+"
+damci
 dam
 damac
 morfologik_fsa5
-morfologik_cfsa2
 xcdat
 fxcdat
 centrp
 marisa
 darts
-"
 
 DATASET_DIR=data-sets
 DATASETS=`find $DATASET_DIR -name '*.1000000.rnd_dict'`
@@ -84,8 +90,9 @@ echo '------'
 python $DATASET_DIR/create-test-datasets.py
 
 THREADS=1
-if [ $# >= 1 ] ; then
+if [ $# -ge 1 ] ; then
 	THREADS=$1
 fi
+echo 'Threads: '$THREADS
 parallel -j $THREADS bench {1} {2} ::: $TOOLS ::: $DATASETS
 

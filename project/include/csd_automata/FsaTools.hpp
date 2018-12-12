@@ -8,8 +8,18 @@
 #include "csd_automata.hpp"
 
 namespace csd_automata {
+
+template <class Fsa>
+bool SetFSAFromFile(const char* fsa_name, Fsa& fsa) {
+    std::ifstream ifs(fsa_name);
+    if (!ifs) {
+        std::cout << "Not found FSA: " << fsa_name << std::endl;
+        return false;
+    }
     
-namespace KeySet {
+    fsa = Fsa(ifs);
+    return true;
+}
     
 std::vector<std::string> GetKeySets(const char *queryName) {
     auto ifs = GetStreamOrDie<std::ifstream>(queryName);
@@ -18,8 +28,6 @@ std::vector<std::string> GetKeySets(const char *queryName) {
         strs.emplace_back(line);
     return strs;
 }
-    
-};
     
 }
 

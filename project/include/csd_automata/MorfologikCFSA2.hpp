@@ -25,7 +25,7 @@ public:
         read(ifs);
     }
     
-    bool Accept(const std::string& str) const {
+    bool Accept(std::string_view str) const {
         size_t state = get_root_state(), arc = 0;
         
         for (uint8_t c : str) {
@@ -42,6 +42,7 @@ public:
     size_t get_root_state() const {
         return get_dest_state_offset_(get_first_trans(0));
     }
+    
     size_t get_trans(size_t state, uint8_t symbol) const {
         for (auto t = get_first_trans(state); t != 0; t = get_next_trans(t)) {
             if (symbol == get_trans_symbol(t)) {
@@ -50,9 +51,11 @@ public:
         }
         return 0;
     }
+    
     size_t get_target_state(size_t trans) const {
         return get_dest_state_offset_(trans);
     }
+    
     bool is_final_trans(size_t trans) const {
         return static_cast<bool>(bytes_[trans] & 0x20);
     }
@@ -60,12 +63,15 @@ public:
     size_t get_first_trans(size_t state) const {
         return state;
     }
+    
     size_t get_next_trans(size_t trans) const {
         return is_last_trans(trans) ? 0 : skip_trans_(trans);
     }
+    
     bool is_last_trans(size_t trans) const {
         return static_cast<bool>(bytes_[trans] & 0x40);
     }
+    
     uint8_t get_trans_symbol(size_t trans) const {
         auto index = bytes_[trans] & 0x1F;
         return index > 0 ? label_mapping_[index] : bytes_[trans + 1];

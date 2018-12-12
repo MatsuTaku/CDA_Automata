@@ -26,7 +26,7 @@ public:
         read(ifs);
     }
     
-    bool Accept(const std::string &str) const {
+    bool Accept(std::string_view str) const {
         size_t state = get_root_state(), arc = 0;
         
         for (uint8_t c : str) {

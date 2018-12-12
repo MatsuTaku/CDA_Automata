@@ -220,7 +220,7 @@ public:
         return size;
     }
     
-    void Read(std::istream& is) override {
+    void LoadFrom(std::istream& is) override {
         bytes_ = read_vec<storage_type>(is);
         
         element_sizes_ = read_vec<size_t>(is);
@@ -231,7 +231,7 @@ public:
         }
     }
     
-    void Write(std::ostream& os) const override {
+    void StoreTo(std::ostream& os) const override {
         write_vec(bytes_, os);
         write_vec(element_sizes_, os);
     }

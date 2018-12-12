@@ -20,18 +20,11 @@ public:
     
     static constexpr char_type kEndLabel = '\0';
     
-private:
-    bool binary_mode_;
-    
-    std::vector<char_type> bytes_;
-    BitVector boundary_flags_;
-    
-public:
     SerializedStringsBuilder(bool binaryMode) : binary_mode_(binaryMode) {}
     
     // MARK: For build
     
-    void AddString(const std::string& str) {
+    void AddString(std::string_view str) {
         assert(str.size() > 0);
         for (auto c : str) {
             bytes_.emplace_back(static_cast<char_type>(c));
@@ -44,15 +37,15 @@ public:
     }
     
     template<class Product>
-    void Release(Product& product) {
+    void Release(Product* product) {
         assert(Product::kIsBinaryMode == binary_mode_);
         if (Product::kIsBinaryMode != binary_mode_) {
             std::cout << "StringArray error type of binary mode!!" << std::endl;
             abort();
         }
-        product.bytes_ = move(bytes_);
+        product->bytes_ = move(bytes_);
         if (Product::kIsBinaryMode) {
-            product.boundary_flags_ = boundary_flags_;
+            product->boundary_flags_ = boundary_flags_;
         }
     }
     
@@ -84,6 +77,12 @@ public:
     
     SerializedStringsBuilder(SerializedStringsBuilder&&) noexcept = default;
     SerializedStringsBuilder& operator=(SerializedStringsBuilder&&) noexcept = default;
+    
+private:
+    bool binary_mode_;
+    
+    std::vector<char_type> bytes_;
+    BitVector boundary_flags_;
     
 };
 

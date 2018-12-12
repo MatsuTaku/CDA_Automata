@@ -21,17 +21,18 @@ namespace csd_automata {
 namespace director {
     
 /**
- Measurement iput process as milli sec
+ Measurement input process as milli sec
  */
-double MeasureProcessing(std::function<void(void)> prc) {
+template <class Process>
+double MeasureProcessing(Process process) {
     Stopwatch sw;
-    prc();
+    process();
     return sw.get_milli_sec();
 }
 
 // Might throw DataNotFoundException
-PlainFSA BuildPlainFSA(const std::string& dataName) {
-    auto ifs = GetStreamOrDie<std::ifstream>(dataName);
+PlainFSA BuildPlainFSA(const std::string& data_name) {
+    auto ifs = GetStreamOrDie<std::ifstream>(data_name);
     
     PlainFSABuilder builder;
     for (std::string line; getline(ifs, line);)
@@ -40,25 +41,25 @@ PlainFSA BuildPlainFSA(const std::string& dataName) {
     return builder.release();
 }
 
-PlainFSA ReadPlainFSA(const std::string& plainFsaName) {
-    auto ifs = GetStreamOrDie<std::ifstream>(plainFsaName);
+PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
+    auto ifs = GetStreamOrDie<std::ifstream>(plain_fsa_name);
     PlainFSA plainFsa;
     plainFsa.read(ifs);
     return plainFsa;
 }
 
-void Generate(const std::string& dataName, const std::string& plainFsaName) {
-    auto plainFsa = BuildPlainFSA(dataName);
-    auto ofs = GetStreamOrDie<std::ofstream>(dataName);
-    std::cout << "Write PlainFSA into " << plainFsaName << std::endl;
+void Generate(const std::string& data_name, const std::string& plain_fsa_name) {
+    auto plainFsa = BuildPlainFSA(data_name);
+    auto ofs = GetStreamOrDie<std::ofstream>(data_name);
+    std::cout << "Write PlainFSA into " << plain_fsa_name << std::endl;
     plainFsa.write(ofs);
 }
 
 // May throw Exceptions
 template <class StringDictionaryType>
-int CheckHasMember(const std::string& datasetName, StringDictionaryType& sd) {
-    std::cout << "Check membering ... ";
-    auto ifs = GetStreamOrDie<std::ifstream>(datasetName);
+int CheckHasMember(const std::string& dataset_name, StringDictionaryType& sd) {
+    std::cout << std::endl << "Check membering ... ";
+    auto ifs = GetStreamOrDie<std::ifstream>(dataset_name);
     
     auto length = 0;
     auto count = 0;
@@ -67,73 +68,75 @@ int CheckHasMember(const std::string& datasetName, StringDictionaryType& sd) {
         length += line.size();
         
         if (!sd.Accept(line)) {
-            std::cout << "Doesn't member string: " << line << std::endl;
+            std::cerr << "Doesn't stored string: " << line << std::endl;
+            sd.PrintForDebug(std::cerr);
             return -1;
         }
     }
-    std::cout << "all queries success!" << std::endl
+    std::cout << "SUCCESS for all queries!" << std::endl
     << "Num of queries: " << count << std::endl
     << "Average query length: " << float(length) / count << std::endl;
     return 0;
 }
 
 template <class DoubleArrayType>
-int FullyBuild(const std::string& outName, const std::string& datasetName, const std::string& valuesName = "") {
-    std::cout << "Input dataset: " << datasetName << std::endl;
+int FullyBuild(const std::string& out_name, const std::string& dataset_name, const std::string& values_name = "") {
+    std::cout << "Input dataset: " << dataset_name << std::endl;
 
     // Extract base name of dataset
-    std::string baseName = outName;
-    auto daExt = extension::kExtensionDoubleArrayAutomata;
+    std::string base_name = out_name;
+    auto da_ext = extension::kExtensionDoubleArrayAutomata;
     // If baseName's extension is same as '.dam'...
-    if (baseName.size() > daExt.size() &&
-        baseName.substr(baseName.size() - daExt.size()) == daExt) {
-        baseName.erase(baseName.end() - daExt.size(), baseName.end());
+    if (base_name.size() > da_ext.size() &&
+        base_name.substr(base_name.size() - da_ext.size()) == da_ext) {
+        base_name.erase(base_name.end() - da_ext.size(), base_name.end());
     }
     
     // Union extension of plain FSA to base name
-    auto plainFSAName = std::string(baseName) + extension::kExtensionPlainFSA;
+    auto plain_fsa_name = std::string(base_name) + extension::kExtensionPlainFSA;
     // Build plain FSA if needed
-    std::ifstream plainFsaStream(plainFSAName);
+    std::ifstream plain_fsa_stream(plain_fsa_name);
     PlainFSA pfa;
-    if (plainFsaStream) {
-        std::cout << "Found pfsa file: " << plainFSAName << std::endl;
-        pfa.read(plainFsaStream);
+    if (plain_fsa_stream) {
+        std::cout << "Found pfsa file: " << plain_fsa_name << std::endl;
+        pfa.read(plain_fsa_stream);
     } else {
-        std::cout << "Build pfa to: " << plainFSAName << std::endl;
-        auto timeBuildPFA = MeasureProcessing([&]() {
-            pfa = BuildPlainFSA(datasetName);
-            std::ofstream pfaOut(plainFSAName);
-            pfa.write(pfaOut);
+        std::cout << "Build pfa to: " << plain_fsa_name << std::endl;
+        auto time_build_pfa = MeasureProcessing([&]() {
+            pfa = BuildPlainFSA(dataset_name);
+            std::ofstream pfa_out(plain_fsa_name);
+            pfa.write(pfa_out);
         });
-        std::cout << "\tptime is... " << timeBuildPFA << " ms"  << std::endl;
+        std::cout << "\tptime is... " << time_build_pfa << " ms"  << std::endl;
     }
     
     // Build DoubleArrayAutomata
-    std::cout << "Build dam to: " << outName << std::endl;
+    std::cout << "Build dam to: " << out_name << std::endl;
     
     DoubleArrayType da;
-    auto timeBuildDAM = MeasureProcessing([&]() {
-        if (valuesName == "") {
+    auto time_build_dam = MeasureProcessing([&]() {
+        if (values_name == "") {
             da = DoubleArrayType(pfa);
         } else {
-            auto valuesStream = GetStreamOrDie<std::ifstream>(valuesName);
+            auto values_stream = GetStreamOrDie<std::ifstream>(values_name);
             std::vector<size_t> values;
-            for (std::string v; std::getline(valuesStream, v);) {
+            for (std::string v; std::getline(values_stream, v);) {
                 size_t vi = stoi(v);
                 values.emplace_back(vi);
             }
             da = DoubleArrayType(pfa, ValueSet(values));
         }
-        std::ofstream outStream(outName);
-        da.Write(outStream);
+        std::ofstream out_stream(out_name);
+        da.StoreTo(out_stream);
     });
-    std::cout << "Build in: " << timeBuildDAM << " ms" << std::endl;
+    std::cout << "Build in: " << time_build_dam << " ms" << std::endl;
     
     // Check membered all sets
-    if (CheckHasMember(datasetName, da) == -1) {
-        std::cout << "Failure to build String Dictionary." << std::endl;
+    if (CheckHasMember(dataset_name, da) == -1) {
+        std::cerr << "Failure to build String Dictionary!" << std::endl;
     }
     
+    std::cout << std::endl;
     da.ShowStats(std::cout);
 
     return 0;

@@ -52,11 +52,11 @@ public:
     
     // MARK: IO
     
-    void Read(std::istream& is) override {
+    void LoadFrom(std::istream& is) override {
         values_ = list_type(is);
     }
     
-    void Write(std::ostream& os) const override {
+    void StoreTo(std::ostream& os) const override {
         values_.Write(os);
     }
     

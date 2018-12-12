@@ -5,6 +5,11 @@ dam() {
 }
 export -f dam
 
+damci() {
+  ./build/dam_build $1 $2 --comp-id >$2.stdout 2>&1
+}
+export -f damci
+
 damac() {
   ./build/dam_build $1 $2 --access >$2.stdout 2>&1
 }
@@ -17,9 +22,15 @@ morfologik_fsa5() {
        --progress \
        --sorted -i $1 \
        -o $2 >$2.stdout 2>&1
-  ./build/convert $2 $2 0 >> $2.stdout 2>&1
 }
 export -f morfologik_fsa5
+
+morfologik_fsa5d() {
+    orig=${2%d}
+    morfologik_fsa5 $1 $orig
+    ./build/convert $orig $2 0 >> $2.stdout 2>&1
+}
+export -f morfologik_fsa5d
 
 morfologik_cfsa2() {
   java -server -Xms50m -jar software/cfsa2.nx/morfologik*.jar \
@@ -28,9 +39,15 @@ morfologik_cfsa2() {
        --progress \
        --sorted -i $1 \
        -o $2 >$2.stdout 2>&1
-  ./build/convert $2 $2 1 >> $2.stdout 2>&1
 }
 export -f morfologik_cfsa2
+
+morfologik_cfsa2d() {
+    orig=${2%d}
+    morfologik_cfsa2 $1 $orig
+    ./build/convert $orig $2 1 >> $2.stdout 2>&1
+}
+export -f morfologik_cfsa2d
 
 xcdat() {
   ./software/xcdat/xcdat build 1 $1 $2 >$2.stdout 2>&1
@@ -59,16 +76,17 @@ export -f darts
 
 
 TOOLS="
-damac
+morfologik_cfsa2d
+"
+damci
 dam
-morfologik_fsa5
-morfologik_cfsa2
+damac
+morfologik_fsa5d
 darts
 xcdat
 fxcdat
 marisa
 centrp
-"
 
 DATASET_DIR=data-sets
 
@@ -102,6 +120,6 @@ THREADS=1
 if [ $# -ge 1 ] ; then
 	THREADS=$1
 fi
-
+echo 'Threads: '$THREADS
 parallel -j $THREADS build {1} {2} ::: $TOOLS ::: $DATASETS 
 

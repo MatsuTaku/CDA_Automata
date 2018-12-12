@@ -1,27 +1,39 @@
 //
-//  StringDictBuilder.hpp
+//  TailDictBuilder.hpp
 //  array_fsa
 //
 //  Created by 松本拓真 on 2017/11/07.
 //
 
-#ifndef StringDictBuilder_hpp
-#define StringDictBuilder_hpp
+#ifndef TailDictBuilder_hpp
+#define TailDictBuilder_hpp
 
 #include <unordered_map>
 
 #include "basic.hpp"
 #include "SerializedStringsBuilder.hpp"
 
-#include "StringDict.hpp"
+#include "TailDict.hpp"
 #include "PlainFSA.hpp"
 
 #include "Director.hpp"
 
 namespace csd_automata {
 
-class StringDictBuilder {
+class TailDictBuilder {
+public:
+    static void Build(TailDict&, const PlainFSA& fsa, bool binary_mode, bool merge_suffix, bool divide_front);
     
+    TailDictBuilder() = default;
+    ~TailDictBuilder() = default;
+    
+    TailDictBuilder(const TailDictBuilder&) = delete;
+    TailDictBuilder& operator=(const TailDictBuilder&) = delete;
+    
+    TailDictBuilder(TailDictBuilder&&) = default;
+    TailDictBuilder& operator=(TailDictBuilder&&) = default;
+    
+private:
     const PlainFSA& orig_fsa_;
     
     std::vector<StrDictData> str_dicts_;
@@ -33,19 +45,7 @@ class StringDictBuilder {
     
     std::vector<size_t> id_map_;
     
-public:
-    static void Build(StringDict&, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix);
-    
-    ~StringDictBuilder() = default;
-    
-    StringDictBuilder(const StringDictBuilder&) = delete;
-    StringDictBuilder& operator=(const StringDictBuilder&) = delete;
-    
-    StringDictBuilder(StringDictBuilder&&) = default;
-    StringDictBuilder& operator=(StringDictBuilder&&) = default;
-    
-private:
-    explicit StringDictBuilder(const PlainFSA& fsa, bool binaryMode) : orig_fsa_(fsa), label_array_(binaryMode) {}
+    explicit TailDictBuilder(const PlainFSA& fsa, bool binary_mode) : orig_fsa_(fsa), label_array_(binary_mode) {}
     
     std::string string_reverse_(std::string text) const {
         reverse(text.begin(), text.end());
@@ -63,19 +63,19 @@ private:
         return str_dicts_[id_map_[id]];
     }
     
-    StrDictData& CurrentStrDict_() {
+    StrDictData& current_dict_() {
         return str_dicts_[cur_str_dict_index_];
     }
     
     // Recursive function
     void LabelArrange_(size_t state);
     
-    void AppendStrDict_();
+    void NewFace_();
     void SaveStrDict_(size_t index);
     
     void MakeDict_();
-    void SetSharings_(bool merge_suffix);
-    void SetUpLabelArray_();
+    void SetSharing_(bool merge_suffix);
+    void SetUpLabelArray_(bool divide_front);
     
     void ShowMappingOfByteSize_();
     
@@ -84,22 +84,22 @@ private:
 
 // MARK: - Static build function
 
-inline void StringDictBuilder::Build(StringDict& dict, const PlainFSA& fsa, bool binaryMode, bool mergeSuffix) {
-    StringDictBuilder builder(fsa, binaryMode);
-    std::cout << "------ StringDict build bench mark ------" << std::endl;
+inline void TailDictBuilder::Build(TailDict& dict, const PlainFSA& fsa, bool binary_mode, bool merge_suffix, bool divide_front) {
+    TailDictBuilder builder(fsa, binary_mode);
+    std::cout << "------ TailDict build bench mark ------" << std::endl;
     
-    auto inTime = director::MeasureProcessing([&]() {
+    auto inTime = director::MeasureProcessing([&builder]() {
         builder.MakeDict_();
     });
     std::cout << "makeDict: " << inTime << "ms" << std::endl;
     
-    inTime = director::MeasureProcessing([&]() {
-        builder.SetSharings_(mergeSuffix);
+    inTime = director::MeasureProcessing([&builder, merge_suffix]() {
+        builder.SetSharing_(merge_suffix);
     });
     std::cout << "setSharings: " << inTime << "ms" << std::endl;
     
-    inTime = director::MeasureProcessing([&]() {
-        builder.SetUpLabelArray_();
+    inTime = director::MeasureProcessing([&builder, divide_front]() {
+        builder.SetUpLabelArray_(divide_front);
     });
     std::cout << "setUpLabelArray: " << inTime << "ms" << std::endl;
     
@@ -115,7 +115,7 @@ inline void StringDictBuilder::Build(StringDict& dict, const PlainFSA& fsa, bool
 // MARK: - Member functions
 
 // Recusive function
-inline void StringDictBuilder::LabelArrange_(size_t state) {
+inline void TailDictBuilder::LabelArrange_(size_t state) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0 || // last trans
@@ -129,11 +129,11 @@ inline void StringDictBuilder::LabelArrange_(size_t state) {
         auto labelTrans = trans;
         if (orig_fsa_.is_straight_state(labelTrans)) {
             auto index = labelTrans / PlainFSA::kSizeTrans;
-            AppendStrDict_();
-            CurrentStrDict_().set(orig_fsa_.get_trans_symbol(labelTrans));
+            NewFace_();
+            current_dict_().set(orig_fsa_.get_trans_symbol(labelTrans));
             do {
                 labelTrans = orig_fsa_.get_target_state(labelTrans);
-                CurrentStrDict_().set(orig_fsa_.get_trans_symbol(labelTrans));
+                current_dict_().set(orig_fsa_.get_trans_symbol(labelTrans));
             } while (orig_fsa_.is_straight_state(labelTrans));
             SaveStrDict_(index);
         }
@@ -143,27 +143,27 @@ inline void StringDictBuilder::LabelArrange_(size_t state) {
     
 }
 
-void StringDictBuilder::AppendStrDict_() {
+void TailDictBuilder::NewFace_() {
     StrDictData dict;
     dict.id = str_dicts_.size();
     str_dicts_.push_back(dict);
     cur_str_dict_index_ = str_dicts_.size() - 1;
 }
 
-void StringDictBuilder::SaveStrDict_(size_t index) {
-    auto &dict = CurrentStrDict_();
+void TailDictBuilder::SaveStrDict_(size_t index) {
+    auto &dict = current_dict_();
     has_label_bits_[index] = true;
     dict.node_id = index;
     dict.counter = 1;
 }
 
-void StringDictBuilder::MakeDict_() {
+void TailDictBuilder::MakeDict_() {
     fsa_target_indexes_.resize(orig_fsa_.get_num_elements());
     has_label_bits_.resize(orig_fsa_.get_num_elements());
     LabelArrange_(orig_fsa_.get_root_state());
 }
 
-void StringDictBuilder::SetSharings_(bool mergeSuffix) {
+void TailDictBuilder::SetSharing_(bool merge_suffix) {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
         return std::lexicographical_compare(lhs.label.rbegin(), lhs.label.rend(), rhs.label.rbegin(), rhs.label.rend());
     });
@@ -189,7 +189,7 @@ void StringDictBuilder::SetSharings_(bool mergeSuffix) {
             cur.enabled = false;
             cur.owner = owner->id;
             owner->counter++;
-        } else if (mergeSuffix && (match > 0 && match == cLen)) {
+        } else if (merge_suffix && (match > 0 && match == cLen)) {
             // included
             cur.is_included = true;
             cur.owner = owner->id;
@@ -201,14 +201,14 @@ void StringDictBuilder::SetSharings_(bool mergeSuffix) {
     
 }
 
-void StringDictBuilder::SetUpLabelArray_() {
+void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
         return lhs.is_included != rhs.is_included ? lhs.is_included < rhs.is_included :
         lhs.entropy() > rhs.entropy();
     });
     UpdateIdMap_();
     auto count = 0;
-    for (auto &dict : str_dicts_) {
+    for (auto& dict : str_dicts_) {
         auto index = label_array_.size();
         if (dict.is_included) {
             auto ownerDict = GetDictFromId_(dict.owner);
@@ -219,16 +219,17 @@ void StringDictBuilder::SetUpLabelArray_() {
         }
         dict.place = index;
         fsa_target_indexes_[dict.node_id] = count++;
-        if (!dict.is_included)
-            label_array_.AddString(dict.label);
+        if (!dict.is_included) {
+            label_array_.AddString(divide_front ? dict.follows() : dict.label);
+        }
     }
 }
 
 // MARK: - Log
 
-void StringDictBuilder::ShowMappingOfByteSize_() {
+void TailDictBuilder::ShowMappingOfByteSize_() {
     size_t counts[4] = {0, 0, 0, 0};
-    for (auto &dict : str_dicts_) {
+    for (auto& dict : str_dicts_) {
         if (dict.is_included)
             continue;
         auto size = sim_ds::calc::SizeFitsInBytes(dict.place);
@@ -251,4 +252,4 @@ void StringDictBuilder::ShowMappingOfByteSize_() {
 
 }
 
-#endif /* StringDictBuilder_hpp */
+#endif /* TailDictBuilder_hpp */

@@ -18,47 +18,47 @@ namespace csd_automata {
     
 class PlainFSA;
 
-template<bool N>
+template<bool CompressNext>
 class DoubleArrayFSA : IOInterface {
 public:
     static std::string name() {
-        std::string name = (!useCodes ? "Original" : "Dac");
+        std::string name = (!kCompressNext ? "Original" : "Dac");
         return name + "DoubleArrayFSA";
     }
     
-    static constexpr bool useCodes = N;
-    using foundation_type = DAFoundation<N, false, false, false, false, false, false>;
-    using bit_vector = sim_ds::BitVector;
+    static constexpr bool kCompressNext = CompressNext;
+    using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false>;
+    using BitVector = sim_ds::BitVector;
     
 private:
     foundation_type fd_;
-    bit_vector is_final_bits_;
+    BitVector is_final_bits_;
     size_t num_trans_ = 0;
     
 public:
     DoubleArrayFSA(const PlainFSA& fsa) {
-        build(fsa);
+        Build(fsa);
     }
     
     DoubleArrayFSA(std::istream &is) {
-        Read(is);
+        LoadFrom(is);
     }
     
-    void build(const PlainFSA &fsa);
+    void Build(const PlainFSA& fsa);
     
     // MARK: - getter
     
-    bool Accept(const std::string &str) const {
+    bool Accept(std::string_view str) const {
         size_t trans = 0;
         for (uint8_t c : str) {
             trans = target(trans) ^ c;
             if (check(trans) != c)
                 return false;
         }
-        return isFinal(trans);
+        return is_final(trans);
     }
     
-    size_t Lookup(const std::string &str) const {
+    size_t Lookup(std::string_view str) const {
         return -1;
     }
     
@@ -71,7 +71,7 @@ public:
     }
     
     auto next(size_t index) const {
-        if constexpr (N)
+        if constexpr (CompressNext)
             return fd_.next(index);
         else
             return fd_.next(index) >> 1;
@@ -81,31 +81,31 @@ public:
         return fd_.check(index);
     }
     
-    auto isFinal(size_t index) const {
-        if constexpr (N)
+    auto is_final(size_t index) const {
+        if constexpr (CompressNext)
             return is_final_bits_[index];
         else
             return static_cast<bool>(fd_.next(index) & 1);
     }
     
-    size_t store(size_t index) const {
+    size_t words(size_t index) const {
         return -1;
     }
     
-    size_t accStore(size_t index) const {
+    size_t cum_words(size_t index) const {
         return -1;
     }
     
     // MARK: - Protocol setting
     
-    void setNumElement(size_t num) {
+    void set_num_elements(size_t num) {
         fd_.resize(num);
-        if (useCodes) {
+        if (kCompressNext) {
             is_final_bits_.resize(num);
         }
     }
     
-    void setNumTrans(size_t num) {
+    void set_num_trans(size_t num) {
         num_trans_ = num;
     }
     
@@ -113,24 +113,24 @@ public:
     
     size_t size_in_bytes() const override {
         auto size = fd_.size_in_bytes();
-        if constexpr (N)
+        if constexpr (CompressNext)
             size += is_final_bits_.size_in_bytes();
         size += sizeof(num_trans_);
         return size;
     }
     
-    void Write(std::ostream& os) const override {
-        fd_.Write(os);
-        if constexpr (N)
-            is_final_bits_.Write(os);
-        write_val(num_trans_, os);
-    }
-    
-    void Read(std::istream& is) override {
-        fd_.Read(is);
-        if constexpr (N)
+    void LoadFrom(std::istream& is) override {
+        fd_.LoadFrom(is);
+        if constexpr (CompressNext)
             is_final_bits_.Read(is);
         num_trans_ = read_val<size_t>(is);
+    }
+    
+    void StoreTo(std::ostream& os) const override {
+        fd_.StoreTo(os);
+        if constexpr (CompressNext)
+            is_final_bits_.Write(os);
+        write_val(num_trans_, os);
     }
     
     void ShowStats(std::ostream& os) const override {
@@ -143,7 +143,7 @@ public:
         fd_.ShowStats(os);
     }
     
-    void PrintForDebug(std::ostream &os) const {
+    void PrintForDebug(std::ostream& os) const {
         
     }
     
@@ -162,12 +162,12 @@ private:
     
     // MARK: - build
     
-    void setCheck(size_t index, uint8_t check) {
+    void set_check(size_t index, uint8_t check) {
         fd_.set_check(index, check);
     }
     
-    void setNextAndIsFinal(size_t index, size_t next, bool isFinal) {
-        if (N) {
+    void set_next_and_is_final(size_t index, size_t next, bool isFinal) {
+        if (CompressNext) {
             fd_.set_next(index, next);
             is_final_bits_[index] = isFinal;
         } else {
@@ -175,8 +175,8 @@ private:
         }
     }
     
-    void buildBitArray() {
-        if constexpr (!N) return;
+    void BuildBitArray() {
+        if constexpr (!CompressNext) return;
         fd_.Build();
     }
     
@@ -184,27 +184,27 @@ private:
 
 
 template<bool N>
-inline void DoubleArrayFSA<N>::build(const PlainFSA &fsa) {
+inline void DoubleArrayFSA<N>::Build(const PlainFSA& fsa) {
     DoubleArrayFSABuilder builder(fsa);
-    builder.build();
+    builder.Build();
     
-    const auto numElem = builder.numElems_();
-    setNumElement(numElem);
+    const auto numElem = builder.num_elements_();
+    set_num_elements(numElem);
     
     auto numTrans = 0;
     for (auto i = 0; i < numElem; i++) {
-        if (!builder.isFrozen_(i))
+        if (!builder.is_frozen_(i))
             continue;
         
-        setCheck(i, builder.getCheck_(i));
-        setNextAndIsFinal(i, builder.getNext_(i), builder.isFinal_(i));
+        set_check(i, builder.get_check_(i));
+        set_next_and_is_final(i, builder.get_next_(i), builder.is_final_(i));
         
         numTrans++;
     }
-    setNumTrans(numTrans);
-    buildBitArray();
+    set_num_trans(numTrans);
+    BuildBitArray();
     
-    builder.showCompareWith(*this);
+    builder.CheckEquivalence(*this);
 }
     
 }

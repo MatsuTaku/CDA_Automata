@@ -21,52 +21,84 @@
 
 namespace csd_automata {
     
-template<bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
-class DoubleArrayCFSA : IOInterface {
+class AutomataExplorer {
+public:
+    AutomataExplorer(std::string_view text) : trans_(0), text_(text), pos_on_text_(0) {}
     
+    void set_trans(size_t new_value) {
+        trans_ = new_value;
+    }
+    
+    size_t trans() const {
+        return trans_;
+    }
+    
+    std::string_view text() const {
+        return text_;
+    }
+    
+    void set_pos(size_t new_value) {
+        pos_on_text_ = new_value;
+    }
+    
+    size_t pos() const {
+        return pos_on_text_;
+    }
+    
+    template <typename T>
+    void observe(T new_value) {
+        observed_ = new_value;
+    }
+    
+    template <typename T = id_type>
+    T observed() const {
+        return T(observed_);
+    }
+    
+private:
+    size_t trans_;
+    std::string_view text_;
+    size_t pos_on_text_;
+    id_type observed_ = 0;
+};
+
+
+template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
+class DoubleArrayCFSA : IOInterface {
+public:
+    using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>;
+    
+    static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kUseCumulativeWords = UseCumulativeWords;
     static constexpr bool kLinkChildren = LinkChildren;
     static constexpr bool kCompressStrID = CompressStrId;
     static constexpr bool kCompressWords = CompressWords;
     static constexpr bool kSupportAccess = SupportAccess;
     
-    static constexpr size_t kLookupError = 0;
+    static constexpr size_t kSearchError = 0;
     
     static constexpr bool kCompressNext = false;
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Foundation = DAFoundation<kCompressNext, kUseStrId, kCompressStrID, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess>;
+    using Foundation = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrID, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
-    using StringsStorage = SerializedStrings<kUseBinaryLabel>;
+    using StringsMap = SerializedStrings<kUseBinaryLabel>;
     
     using BitVector = sim_ds::BitVector;
     
-    size_t num_trans_ = 0;
-    Foundation base_;
-    StringsStorage serialized_strings_;
-    // If use EDGE_LINK
-    BitVector has_brother_bits_;
-    std::vector<uint8_t> brother_;
-    BitVector is_node_bits_;
-    std::vector<uint8_t> eldest_;
-    
-    // If set values
-    ValueSet values_;
-    
     friend class DoubleArrayCFSABuilder;
-    
     using Builder = DoubleArrayCFSABuilder;
     
-public:
+    using Explorer = AutomataExplorer;
     
     static std::string name() {
         return "DoubleArrayCFSA";
     }
     
     explicit DoubleArrayCFSA(const Builder& builder) {
-        builder.release(*this);
+        builder.Release(*this);
     }
     
     explicit DoubleArrayCFSA(const Builder& builder, ValueSet&& values) : DoubleArrayCFSA(builder) {
@@ -75,8 +107,8 @@ public:
     
     explicit DoubleArrayCFSA(const PlainFSA& fsa) {
         Builder builder(fsa);
-        builder.build(kUseBinaryLabel, kMergeSuffixOfSerializedStrings);
-        builder.release(*this);
+        builder.Build(kUseBinaryLabel, kMergeSuffixOfSerializedStrings, !kUnionCheckAndId);
+        builder.Release(*this);
     }
     
     explicit DoubleArrayCFSA(const PlainFSA& fsa, ValueSet&& values) : DoubleArrayCFSA(fsa) {
@@ -84,16 +116,32 @@ public:
     }
     
     explicit DoubleArrayCFSA(std::istream& is) {
-        Read(is);
+        LoadFrom(is);
     }
     
-    bool Accept(const std::string& str) const;
+    bool Accept(std::string_view text) const {
+        Explorer explorer(text);
+        return Traverse_(explorer) && base_.is_final(explorer.trans());
+    }
     
-    CommonPrefixSet CommonPrefixSearch(const std::string& str) const;
+    id_type Lookup(std::string_view text) const;
     
-    unsigned long long Lookup(const std::string& str) const;
+    std::string Access(id_type key) const;
     
-    std::string Access(size_t key) const;
+    CommonPrefixSet CommonPrefixSearch(std::string_view text) const {
+        Explorer explorer(text);
+        CommonPrefixSet prefixSet(text);
+        size_t counter = 0;
+        Traverse_(explorer, [&](auto exp) {
+            auto trans = exp.trans();
+            counter += base_.cum_words(trans);
+            if (base_.is_final(trans)) { // Found prefix match one
+                ++counter;
+                prefixSet.AppendPrefixAndId(exp.pos() + 1, counter);
+            }
+        });
+        return prefixSet;
+    }
     
     bool has_brother(size_t index) const {
         assert(kLinkChildren);
@@ -133,30 +181,30 @@ public:
         return size;
     }
     
-    void Read(std::istream& is) override {
+    void LoadFrom(std::istream& is) override {
         num_trans_ = read_val<size_t>(is);
-        base_.Read(is);
-        serialized_strings_.Read(is);
+        base_.LoadFrom(is);
+        serialized_strings_.LoadFrom(is);
         if constexpr (kLinkChildren) {
             has_brother_bits_.Read(is);
             brother_ = read_vec<uint8_t>(is);
             is_node_bits_.Read(is);
             eldest_ = read_vec<uint8_t>(is);
         }
-        values_.Read(is);
+        values_.LoadFrom(is);
     }
     
-    void Write(std::ostream& os) const override {
+    void StoreTo(std::ostream& os) const override {
         write_val(num_trans_, os);
-        base_.Write(os);
-        serialized_strings_.Write(os);
+        base_.StoreTo(os);
+        serialized_strings_.StoreTo(os);
         if constexpr (kLinkChildren) {
             has_brother_bits_.Write(os);
             write_vec(brother_, os);
             is_node_bits_.Write(os);
             write_vec(eldest_, os);
         }
-        values_.Write(os);
+        values_.StoreTo(os);
     }
     
     void ShowStats(std::ostream& os) const override {
@@ -177,14 +225,17 @@ public:
     void PrintForDebug(std::ostream& os) const {
         using std::cout, std::endl;
         cout << "id\tT\tN\tC/S\tCW" << endl;
-        for (auto i = 0; i < num_trans_; i++) {
+        for (auto i = 0; i < 0x100; i++) {
             cout << i << '\t' << base_.is_final(i) << '\t' << base_.next(i) << '\t';
             if (!base_.is_string(i)) {
                 cout << base_.check(i);
             } else {
                 cout << serialized_strings_.string_view(base_.string_id(i));
             }
-            cout << '\t' << base_.words(i) << endl;
+            if constexpr (kSupportAccess) {
+                cout << '\t' << base_.words(i);
+            }
+            cout << endl;
         }
     }
     
@@ -200,15 +251,82 @@ public:
     DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
     
 private:
+    size_t num_trans_ = 0;
+    Foundation base_;
+    StringsMap serialized_strings_;
+    // If use EDGE_LINK
+    BitVector has_brother_bits_;
+    std::vector<uint8_t> brother_;
+    BitVector is_node_bits_;
+    std::vector<uint8_t> eldest_;
+    
+    // If set values
+    ValueSet values_;
     
     // MARK: Getter
     
-    size_t target_(size_t index) const {
-        return base_.next(index) ^ index;
+    size_t target_state_(size_t index) const {
+        return base_.next(index);
     }
     
-    size_t transition_(size_t prevTrans, uint8_t label) const {
-        return target_(prevTrans) ^ label;
+    size_t transition_(size_t prev_trans, uint8_t label) const {
+        auto state = target_state_(prev_trans);
+        auto trans = state ^ label;
+        assert(trans != prev_trans);
+        return trans;
+    }
+    
+    bool Traverse_(Explorer& explorer) const {
+        return Traverse_(explorer, [](auto){});
+    }
+    
+    template <class TransWork>
+    bool Traverse_(Explorer& exp, TransWork trans_work) const {
+        for (; exp.pos() < exp.text().size(); exp.set_pos(exp.pos() + 1)) {
+            size_t i_text = exp.pos();
+            uint8_t c = exp.text()[i_text];
+            size_t trans = transition_(exp.trans(), c);
+            if constexpr (kUnionCheckAndId) {
+                if (!base_.is_string(trans)) {
+                    // Check label that is character
+                    uint8_t checkE = base_.check(trans);
+                    if (checkE != c)
+                        return false;
+                } else {
+                    // Check label that is indexed string
+                    auto str_id = base_.string_id(trans);
+                    if (!serialized_strings_.match(&i_text, exp.text(), str_id)) {
+#ifndef NDEBUG
+                        serialized_strings_.ShowLabels(str_id - 32, str_id + 32);
+#endif
+                        return false;
+                    }
+                }
+            } else {
+                uint8_t checkE = base_.check(trans);
+                bool success_trans = checkE == c;
+                if (base_.is_string(trans)) {
+                    // Check label has indexed string
+                    auto str_id = base_.string_id(trans);
+                    bool success_trans_string = serialized_strings_.match(&(++i_text), exp.text(), str_id);
+#ifndef NDEBUG
+                    if (!success_trans_string) {
+                        serialized_strings_.ShowLabels(str_id - 32, str_id + 32);
+                    }
+#endif
+                    success_trans &= success_trans_string;
+                }
+                if (!success_trans)
+                    return false;
+            }
+            
+            exp.set_trans(trans);
+            exp.set_pos(i_text);
+            
+            trans_work(exp);
+        }
+        
+        return true;
     }
     
     // MARK: Protocol setting
@@ -247,8 +365,8 @@ private:
         base_.set_string_id(index, strIndex);
     }
     
-    void set_serialized_strings(StringsStorage &&sArr) {
-        serialized_strings_ = std::move(sArr);
+    void transport_serialized_strings(StringsMap&& serizlized) {
+        serialized_strings_ = std::move(serizlized);
     }
     
     void set_words(size_t index, size_t store) {
@@ -286,159 +404,179 @@ private:
 };
 
 
-template<bool C, bool E, bool I, bool W, bool NA>
-bool DoubleArrayCFSA<C, E, I, W, NA>::Accept(const std::string& str) const {
-    size_t trans = 0;
-    for (size_t pos = 0, size = str.size(); pos < size; pos++) {
-        uint8_t c = str[pos];
-        trans = transition_(trans, c);
-        if (!base_.is_string(trans)) {
-            // Check label that is character
-            uint8_t checkE = base_.check(trans);
-            if (checkE != c)
-                return false;
-        } else {
-            // Check label that is indexed string
-            auto sid = base_.string_id(trans);
-            if (!serialized_strings_.match(&pos, str, sid)) {
-#ifndef NDEBUG
-                serialized_strings_.ShowLabels(sid - 32, sid + 32);
-#endif
-                return false;
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
+id_type DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>::
+Lookup(std::string_view text) const {
+    // Separate algorithm from template parameters, that is to use cumulative-words.
+    if constexpr (kUseCumulativeWords) {
+        Explorer explorer(text);
+        size_t counter = 0;
+        bool traversed = Traverse_(explorer, [&](auto exp) {
+            auto trans = exp.trans();
+            counter += base_.cum_words(exp.trans());
+            bool is_final_trans = base_.is_final(trans);
+            if (is_final_trans) {
+                counter++;
             }
+            exp.observe(is_final_trans);
+        });
+        if (!traversed ||
+            !(explorer.observed<bool>()) // Last translation doesn't arrive final state.
+            ) {
+            return kSearchError;
         }
-    }
-    return base_.is_final(trans);
-}
-
-
-template<bool C, bool E, bool I, bool W, bool NA>
-CommonPrefixSet DoubleArrayCFSA<C, E, I, W, NA>::CommonPrefixSearch(const std::string& str) const {
-    CommonPrefixSet prefixSet(str);
-    size_t counter = 0;
-    
-    size_t trans = 0;
-    for (size_t pos = 0, size = str.size(); pos < size; pos++) {
-        uint8_t c = str[pos];
-        trans = transition_(trans, c);
-        if (!base_.is_string(trans)) {
-            auto checkE = base_.check(trans);
-            if (checkE != c)
-                break;
-        } else {
-            auto sid = base_.string_id(trans);
-            if (!serialized_strings_.match(&pos, str, sid)) {
-#ifndef NDEBUG
-                serialized_strings_.ShowLabels(sid - 32, sid + 32);
-#endif
-                break;
-            }
-        }
-        counter += base_.cum_words(trans);
-        if (base_.is_final(trans)) {
-            counter++;
-            prefixSet.AppendPrefix(pos + 1, counter);
-        }
-    }
-    return prefixSet;
-}
-
-
-template<bool C, bool E, bool I, bool W, bool NA>
-unsigned long long DoubleArrayCFSA<C, E, I, W, NA>::Lookup(const std::string& str) const {
-    size_t trans = 0;
-    size_t counter = 0;
-    for (size_t pos = 0, size = str.size(); pos < size; pos++) {
-        if (trans > 0 && base_.is_final(trans))
-            counter++;
         
-        uint8_t c = str[pos];
+        return counter;
         
-        // Separate algorithm from template parameters, that is to use cumulative-words.
-        if constexpr (C) {
-            trans = transition_(trans, c);
+    } else {
+        size_t trans = 0;
+        size_t counter = 0;
+        for (size_t pos = 0, size = text.size(); pos < size; pos++) {
+            if (trans > 0 && base_.is_final(trans))
+                counter++;
             
-            if (!base_.is_string(trans)) {
-                const uint8_t checkE = base_.check(trans);
-                if (checkE != c)
-                    return kLookupError;
-            } else {
-                const auto sid = base_.string_id(trans);
-                if (!serialized_strings_.match(&pos, str, sid)) { // Increment 'pos'
-#ifndef NDEBUG
-                    serialized_strings_.ShowLabels(sid - 32, sid + 32);
-#endif
-                    return kLookupError;
-                }
-            }
+            uint8_t c = text[pos];
             
-            counter += base_.cum_words(trans);
-        } else {
-            size_t nextTrans = -1;
-            for (size_t label = 1; label <= 0xFF; label++) {
-                size_t nt = transition_(trans, label);
-                size_t checkType;
+            /*
+            // Separate algorithm from template parameters, that is to use cumulative-words.
+            if constexpr (C) {
+                trans = transition_(trans, c);
                 
-                bool isStr = base_.is_string(nt);
-                if (!isStr) {
-                    checkType = base_.check(nt);
-                    if (checkType != label)
-                        continue;
-                } else {
-                    checkType = base_.string_id(nt);
-                    if (serialized_strings_[checkType] != label)
-                        continue;
-                }
-                if (c == label) {
-                    if (isStr && !serialized_strings_.match(&pos, str, checkType)) { // Increment 'pos'
+                if constexpr (U) {
+                    if (!base_.is_string(trans)) {
+                        const uint8_t checkE = base_.check(trans);
+                        if (checkE != c)
+                            return kSearchError;
+                    } else {
+                        const auto sid = base_.string_id(trans);
+                        if (!serialized_strings_.match(&pos, str, sid)) { // Increment 'pos'
 #ifndef NDEBUG
-                        serialized_strings_.ShowLabels(checkType - 32, checkType + 32);
+                            serialized_strings_.ShowLabels(sid - 32, sid + 32);
 #endif
-                        return kLookupError;
+                            return kSearchError;
+                        }
                     }
-                    
-                    nextTrans = nt;
-                    break;
+                } else {
+                    const uint8_t checkE = base_.check(trans);
+                    bool success_trans = checkE == c;
+                    if (base_.is_string(trans)) {
+                        const auto sid = base_.string_id(trans);
+                        bool success_trans_string = serialized_strings_.match(&(++pos), str, sid);
+#ifndef NDEBUG
+                        if (!success_trans_string) { // Increment 'pos'
+                            serialized_strings_.ShowLabels(sid - 32, sid + 32);
+                            return kSearchError;
+                        }
+#endif
+                        success_trans &= success_trans_string;
+                    }
+                    if (!success_trans)
+                        return kSearchError;
+                }
+                
+                counter += base_.cum_words(trans);
+            } else {
+            */
+            
+            // Add counter to words at trans for each which has label at front is less than 'c'.
+            for (uint8_t label = 1; label < c; label++) {
+                size_t nt = transition_(trans, label);
+                size_t check_type;
+                
+                if constexpr (kUnionCheckAndId) {
+                    if (!base_.is_string(nt)) {
+                        check_type = base_.check(nt);
+                        if (check_type != label)
+                            continue;
+                    } else {
+                        check_type = base_.string_id(nt);
+                        if (serialized_strings_[check_type] != label)
+                            continue;
+                    }
+                } else {
+                    check_type = base_.check(nt);
+                    if (check_type != label)
+                        continue;
                 }
                 
                 counter += base_.words(nt);
             }
-            if (nextTrans == -1)
-                return kLookupError;
-            trans = nextTrans;
+            
+            trans = transition_(trans, c);
+            if constexpr (kUnionCheckAndId) {
+                if (!base_.is_string(trans)) {
+                    uint8_t checkE = base_.check(trans);
+                    if (checkE != c)
+                        return kSearchError;
+                } else {
+                    size_t str_id = base_.string_id(trans);
+                    if (!serialized_strings_.match(&pos, text, str_id)) {
+#ifndef NDEBUG
+                        serialized_strings_.ShowLabels(str_id - 32, str_id + 32);
+#endif
+                        return kSearchError;
+                    }
+                }
+            } else {
+                uint8_t checkE = base_.check(trans);
+                bool success_trans = checkE == c;
+                
+                if (base_.is_string(trans)) {
+                    auto str_id = base_.string_id(trans);
+                    if constexpr (!kUnionCheckAndId) {
+                        pos++;
+                    }
+                    bool success_trans_string = serialized_strings_.match(&pos, text, str_id);
+                    if (!success_trans_string) { // Increment 'pos'
+#ifndef NDEBUG
+                        serialized_strings_.ShowLabels(str_id - 32, str_id + 32);
+#endif
+                    }
+                    success_trans &= success_trans_string;
+                }
+                if (!success_trans)
+                    return kSearchError;
+            }
+            //            }
         }
+        
+        return base_.is_final(trans) ? ++counter : kSearchError;
     }
-    
-    return base_.is_final(trans) ? ++counter : kLookupError;
 }
 
 
-template<bool C, bool E, bool I, bool W, bool NA>
-std::string DoubleArrayCFSA<C, E, I, W, NA>::Access(size_t key) const {
-    assert(NA);
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
+std::string DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>::
+Access(id_type key) const {
+    assert(kSupportAccess);
     
     size_t trans = 0;
     size_t counter = key;
     std::string str = "";
     while (counter > 0) {
-        auto targetNode = target_(trans);
-        size_t nextTrans = kLookupError;
-        uint8_t c = (E ? eldest(targetNode) : 1);
+        auto target_state = target_state_(trans);
+        size_t next_trans = kSearchError;
+        uint8_t c = (kLinkChildren ? eldest(target_state) : 1);
         while (true) {
-            size_t nt = targetNode ^ c;
-            size_t checkType;
+            size_t nt = target_state ^ c;
+            size_t check_type;
             
+            bool success_trans;
             bool isStr = base_.is_string(nt);
-            bool checkClear;
-            if (!isStr) {
-                checkType = base_.check(nt);
-                checkClear = checkType == c;
+            if constexpr (kUnionCheckAndId) {
+                if (!isStr) {
+                    check_type = base_.check(nt);
+                    success_trans = check_type == c;
+                } else {
+                    check_type = base_.string_id(nt);
+                    success_trans = uint8_t(serialized_strings_[check_type]) == c;
+                }
             } else {
-                checkType = base_.string_id(nt);
-                checkClear = uint8_t(serialized_strings_[checkType]) == c;
+                uint8_t check_type = base_.check(nt);
+                success_trans = check_type == c;
             }
-            if (!checkClear) {
-                if constexpr (E) {
+            if (!success_trans) {
+                if constexpr (kLinkChildren) {
                     return "";
                 } else {
                     c++;
@@ -449,7 +587,7 @@ std::string DoubleArrayCFSA<C, E, I, W, NA>::Access(size_t key) const {
             auto curStore = base_.words(nt);
             if (curStore < counter) {
                 counter -= curStore;
-                if constexpr (E) {
+                if constexpr (kLinkChildren) {
                     if (!has_brother(nt))
                         return "";
                     c = brother(nt);
@@ -461,26 +599,35 @@ std::string DoubleArrayCFSA<C, E, I, W, NA>::Access(size_t key) const {
             } else {
                 if (base_.is_final(nt))
                     counter--;
-                if (!isStr)
-                    str += checkType;
-                else
-                    str += serialized_strings_.string_view(checkType);
+                if constexpr (kUnionCheckAndId) {
+                    if (!isStr)
+                        str += check_type;
+                    else
+                        str += serialized_strings_.string_view(check_type);
+                } else {
+                    str += check_type;
+                    if (isStr) {
+                        size_t str_id = base_.string_id(nt);
+                        str += serialized_strings_.string_view(str_id);
+                    }
+                }
                 
-                nextTrans = nt;
+                next_trans = nt;
                 break;
             }
         }
         
-        if (nextTrans == kLookupError)
+        if (next_trans == kSearchError)
             return "";
         
-        trans = nextTrans;
+        trans = next_trans;
     }
     
     return str;
     
 }
-    
+
+
 }
 
 #endif /* DoubleArrayCFSA_hpp */

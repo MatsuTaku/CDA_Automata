@@ -17,8 +17,8 @@ public:
     // MARK: Protocol methods
     
     virtual size_t size_in_bytes() const = 0;
-    virtual void Read(std::istream&) = 0;
-    virtual void Write(std::ostream&) const = 0;
+    virtual void LoadFrom(std::istream&) = 0;
+    virtual void StoreTo(std::ostream&) const = 0;
     
     // MARK: Optional methods
     

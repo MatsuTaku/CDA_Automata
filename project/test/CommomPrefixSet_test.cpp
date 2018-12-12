@@ -14,10 +14,10 @@ TEST(CommonPrefixSetTest, Sequential) {
     std::string text = "Test text of here!!!";
     CommonPrefixSet cps(text);
     
-    cps.AppendPrefix(4, 1);
-    cps.AppendPrefix(9, 2);
-    cps.AppendPrefix(12, 3);
-    cps.AppendPrefix(20, 4);
+    cps.AppendPrefixAndId(4, 1);
+    cps.AppendPrefixAndId(9, 2);
+    cps.AppendPrefixAndId(12, 3);
+    cps.AppendPrefixAndId(20, 4);
     
     EXPECT_EQ(cps[0], "Test");
     EXPECT_EQ(cps[1], "Test text");
