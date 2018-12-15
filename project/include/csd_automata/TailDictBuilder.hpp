@@ -11,32 +11,24 @@
 #include <unordered_map>
 
 #include "basic.hpp"
-#include "SerializedStringsBuilder.hpp"
-
-#include "TailDict.hpp"
 #include "PlainFSA.hpp"
+#include "TailDictContainer.hpp"
+#include "SerializedStringsBuilder.hpp"
+#include "TailDict.hpp"
 
 #include "Director.hpp"
+
 
 namespace csd_automata {
 
 class TailDictBuilder {
-public:
-    static void Build(TailDict&, const PlainFSA& fsa, bool binary_mode, bool merge_suffix, bool divide_front);
+    using Container = TailDictContainer;
     
-    TailDictBuilder() = default;
-    ~TailDictBuilder() = default;
+    friend class TailDict;
     
-    TailDictBuilder(const TailDictBuilder&) = delete;
-    TailDictBuilder& operator=(const TailDictBuilder&) = delete;
-    
-    TailDictBuilder(TailDictBuilder&&) = default;
-    TailDictBuilder& operator=(TailDictBuilder&&) = default;
-    
-private:
     const PlainFSA& orig_fsa_;
     
-    std::vector<StrDictData> str_dicts_;
+    std::vector<Container> str_dicts_;
     size_t cur_str_dict_index_;
     std::vector<size_t> fsa_target_indexes_;
     std::vector<bool> has_label_bits_;
@@ -45,7 +37,17 @@ private:
     
     std::vector<size_t> id_map_;
     
+public:
+    TailDictBuilder(const TailDictBuilder&) = delete;
+    TailDictBuilder& operator=(const TailDictBuilder&) = delete;
+    
+private:
     explicit TailDictBuilder(const PlainFSA& fsa, bool binary_mode) : orig_fsa_(fsa), label_array_(binary_mode) {}
+    
+    void Build(bool merge_suffix, bool divide_front);
+    
+    template <class Product>
+    void Release(Product& dict);
     
     std::string string_reverse_(std::string text) const {
         reverse(text.begin(), text.end());
@@ -59,11 +61,11 @@ private:
             id_map_[str_dicts_[i].id] = i;
     }
     
-    StrDictData& GetDictFromId_(size_t id) {
+    Container& dict_from_id_(size_t id) {
         return str_dicts_[id_map_[id]];
     }
     
-    StrDictData& current_dict_() {
+    Container& dict_current_() {
         return str_dicts_[cur_str_dict_index_];
     }
     
@@ -84,38 +86,38 @@ private:
 
 // MARK: - Static build function
 
-inline void TailDictBuilder::Build(TailDict& dict, const PlainFSA& fsa, bool binary_mode, bool merge_suffix, bool divide_front) {
-    TailDictBuilder builder(fsa, binary_mode);
+void TailDictBuilder::Build(bool merge_suffix, bool divide_front) {
     std::cout << "------ TailDict build bench mark ------" << std::endl;
     
-    auto inTime = director::MeasureProcessing([&builder]() {
-        builder.MakeDict_();
-    });
-    std::cout << "makeDict: " << inTime << "ms" << std::endl;
+    std::cout << "makeDict: " << MeasureProcessing([&]() {
+        MakeDict_();
+    }) << "ms" << std::endl;
     
-    inTime = director::MeasureProcessing([&builder, merge_suffix]() {
-        builder.SetSharing_(merge_suffix);
-    });
-    std::cout << "setSharings: " << inTime << "ms" << std::endl;
+    std::cout << "setSharings: " <<  MeasureProcessing([&, merge_suffix]() {
+        SetSharing_(merge_suffix);
+    }) << "ms" << std::endl;
     
-    inTime = director::MeasureProcessing([&builder, divide_front]() {
-        builder.SetUpLabelArray_(divide_front);
-    });
-    std::cout << "setUpLabelArray: " << inTime << "ms" << std::endl;
+    std::cout << "setUpLabelArray: " << MeasureProcessing([&, divide_front]() {
+        SetUpLabelArray_(divide_front);
+    }) << "ms" << std::endl;
     
 //        builder.showMappingOfByteSize();
+}
     
-    dict.str_dicts_ = builder.str_dicts_;
-    dict.fsa_target_indexes_ = builder.fsa_target_indexes_;
-    dict.has_label_bits_ = builder.has_label_bits_;
-    dict.label_array_ = std::move(builder.label_array_);
+    
+template <class Product>
+void TailDictBuilder::Release(Product& dict) {
+    dict.str_dicts_ = str_dicts_;
+    dict.fsa_target_indexes_ = fsa_target_indexes_;
+    dict.has_label_bits_ = has_label_bits_;
+    dict.label_array_ = std::move(label_array_);
 }
 
 
 // MARK: - Member functions
 
 // Recusive function
-inline void TailDictBuilder::LabelArrange_(size_t state) {
+void TailDictBuilder::LabelArrange_(size_t state) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
     if (first_trans == 0 || // last trans
@@ -130,10 +132,10 @@ inline void TailDictBuilder::LabelArrange_(size_t state) {
         if (orig_fsa_.is_straight_state(labelTrans)) {
             auto index = labelTrans / PlainFSA::kSizeTrans;
             NewFace_();
-            current_dict_().set(orig_fsa_.get_trans_symbol(labelTrans));
+            dict_current_().set(orig_fsa_.get_trans_symbol(labelTrans));
             do {
                 labelTrans = orig_fsa_.get_target_state(labelTrans);
-                current_dict_().set(orig_fsa_.get_trans_symbol(labelTrans));
+                dict_current_().set(orig_fsa_.get_trans_symbol(labelTrans));
             } while (orig_fsa_.is_straight_state(labelTrans));
             SaveStrDict_(index);
         }
@@ -144,14 +146,14 @@ inline void TailDictBuilder::LabelArrange_(size_t state) {
 }
 
 void TailDictBuilder::NewFace_() {
-    StrDictData dict;
+    Container dict;
     dict.id = str_dicts_.size();
     str_dicts_.push_back(dict);
     cur_str_dict_index_ = str_dicts_.size() - 1;
 }
 
 void TailDictBuilder::SaveStrDict_(size_t index) {
-    auto &dict = current_dict_();
+    auto& dict = dict_current_();
     has_label_bits_[index] = true;
     dict.node_id = index;
     dict.counter = 1;
@@ -164,12 +166,12 @@ void TailDictBuilder::MakeDict_() {
 }
 
 void TailDictBuilder::SetSharing_(bool merge_suffix) {
-    std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
+    std::sort(str_dicts_.begin(), str_dicts_.end(), [](Container& lhs, Container& rhs) {
         return std::lexicographical_compare(lhs.label.rbegin(), lhs.label.rend(), rhs.label.rbegin(), rhs.label.rend());
     });
     
-    auto dummy = StrDictData();
-    StrDictData *owner = &dummy;
+    auto dummy = Container();
+    Container *owner = &dummy;
     for (auto i = str_dicts_.size(); i > 0; --i) {
         auto &cur = str_dicts_[i - 1];
         if (cur.label.size() == 0) {
@@ -185,13 +187,13 @@ void TailDictBuilder::SetSharing_(bool merge_suffix) {
         }
         if (match > 0 && match == oLen) {
             // sharing
-            cur.is_included = true;
+            cur.is_merged = true;
             cur.enabled = false;
             cur.owner = owner->id;
             owner->counter++;
         } else if (merge_suffix && (match > 0 && match == cLen)) {
-            // included
-            cur.is_included = true;
+            // merge
+            cur.is_merged = true;
             cur.owner = owner->id;
             owner->counter++;
         } else {
@@ -202,16 +204,16 @@ void TailDictBuilder::SetSharing_(bool merge_suffix) {
 }
 
 void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
-    std::sort(str_dicts_.begin(), str_dicts_.end(), [](StrDictData &lhs, StrDictData &rhs) {
-        return lhs.is_included != rhs.is_included ? lhs.is_included < rhs.is_included :
+    std::sort(str_dicts_.begin(), str_dicts_.end(), [](Container lhs, Container rhs) {
+        return lhs.is_merged != rhs.is_merged ? lhs.is_merged < rhs.is_merged :
         lhs.entropy() > rhs.entropy();
     });
     UpdateIdMap_();
     auto count = 0;
     for (auto& dict : str_dicts_) {
         auto index = label_array_.size();
-        if (dict.is_included) {
-            auto ownerDict = GetDictFromId_(dict.owner);
+        if (dict.is_merged) {
+            auto ownerDict = dict_from_id_(dict.owner);
             if (ownerDict.place == -1) {
                 abort();
             }
@@ -219,7 +221,7 @@ void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
         }
         dict.place = index;
         fsa_target_indexes_[dict.node_id] = count++;
-        if (!dict.is_included) {
+        if (!dict.is_merged) {
             label_array_.AddString(divide_front ? dict.follows() : dict.label);
         }
     }
@@ -230,7 +232,7 @@ void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
 void TailDictBuilder::ShowMappingOfByteSize_() {
     size_t counts[4] = {0, 0, 0, 0};
     for (auto& dict : str_dicts_) {
-        if (dict.is_included)
+        if (dict.is_merged)
             continue;
         auto size = sim_ds::calc::SizeFitsInBytes(dict.place);
         if (size == 0) continue;

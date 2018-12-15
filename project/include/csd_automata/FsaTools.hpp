@@ -6,6 +6,7 @@
 #define ARRAY_FSA_FSATOOLS_HPP
 
 #include "csd_automata.hpp"
+#include "Director.hpp"
 
 namespace csd_automata {
 

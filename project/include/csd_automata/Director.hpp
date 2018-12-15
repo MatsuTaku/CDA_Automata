@@ -19,19 +19,9 @@
 namespace csd_automata {
     
 namespace director {
-    
-/**
- Measurement input process as milli sec
- */
-template <class Process>
-double MeasureProcessing(Process process) {
-    Stopwatch sw;
-    process();
-    return sw.get_milli_sec();
-}
 
 // Might throw DataNotFoundException
-PlainFSA BuildPlainFSA(const std::string& data_name) {
+inline PlainFSA BuildPlainFSA(const std::string& data_name) {
     auto ifs = GetStreamOrDie<std::ifstream>(data_name);
     
     PlainFSABuilder builder;
@@ -41,14 +31,14 @@ PlainFSA BuildPlainFSA(const std::string& data_name) {
     return builder.release();
 }
 
-PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
+inline PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
     auto ifs = GetStreamOrDie<std::ifstream>(plain_fsa_name);
     PlainFSA plainFsa;
     plainFsa.read(ifs);
     return plainFsa;
 }
 
-void Generate(const std::string& data_name, const std::string& plain_fsa_name) {
+inline void Generate(const std::string& data_name, const std::string& plain_fsa_name) {
     auto plainFsa = BuildPlainFSA(data_name);
     auto ofs = GetStreamOrDie<std::ofstream>(data_name);
     std::cout << "Write PlainFSA into " << plain_fsa_name << std::endl;
@@ -126,8 +116,7 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
             }
             da = DoubleArrayType(pfa, ValueSet(values));
         }
-        std::ofstream out_stream(out_name);
-        da.StoreTo(out_stream);
+        StoreToFile(da, out_name);
     });
     std::cout << "Build in: " << time_build_dam << " ms" << std::endl;
     

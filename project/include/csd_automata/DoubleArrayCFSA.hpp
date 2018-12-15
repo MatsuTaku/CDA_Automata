@@ -69,23 +69,30 @@ private:
 
 
 template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
-class DoubleArrayCFSA : IOInterface {
+class DoubleArrayCFSA : public IOInterface {
 public:
     using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>;
     
     static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kUseCumulativeWords = UseCumulativeWords;
     static constexpr bool kLinkChildren = LinkChildren;
-    static constexpr bool kCompressStrID = CompressStrId;
+    static constexpr bool kCompressStrId = CompressStrId;
     static constexpr bool kCompressWords = CompressWords;
     static constexpr bool kSupportAccess = SupportAccess;
+    
+    static constexpr uint8_t kHeader = (kUnionCheckAndId |
+                                        kUseCumulativeWords << 1 |
+                                        kLinkChildren << 2 |
+                                        kCompressStrId << 3 |
+                                        kCompressWords << 4 |
+                                        kSupportAccess << 5);
     
     static constexpr size_t kSearchError = 0;
     
     static constexpr bool kCompressNext = false;
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Foundation = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrID, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren>;
+    using Foundation = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
@@ -93,8 +100,8 @@ public:
     
     using BitVector = sim_ds::BitVector;
     
-    friend class DoubleArrayCFSABuilder;
-    using Builder = DoubleArrayCFSABuilder;
+    friend class DoubleArrayCFSABuilder<Self>;
+    using Builder = DoubleArrayCFSABuilder<Self>;
     
     using Explorer = AutomataExplorer;
     
@@ -159,6 +166,11 @@ public:
     }
     
     void LoadFrom(std::istream& is) override {
+        auto header = read_val<uint8_t>(is);
+        if (header != kHeader) {
+            std::cerr << "ERROR: Class type isn't match to stream! header: " << header << std::endl;
+            exit(EXIT_FAILURE);
+        }
         num_trans_ = read_val<size_t>(is);
         base_.LoadFrom(is);
         strings_map_.LoadFrom(is);
@@ -166,6 +178,7 @@ public:
     }
     
     void StoreTo(std::ostream& os) const override {
+        write_val(kHeader, os);
         write_val(num_trans_, os);
         base_.StoreTo(os);
         strings_map_.StoreTo(os);

@@ -5,6 +5,7 @@
 #include "csd_automata.hpp"
 #include "csd_automata/basic.hpp"
 #include "csd_automata/FsaTools.hpp"
+#include "csd_automata/FsaTools.hpp"
 #include "XcdatWrapper.hpp"
 #include "MarisaWrapper.hpp"
 #include "DartsCloneWrapper.hpp"
@@ -199,14 +200,14 @@ int main(int argc, const char* argv[]) {
     auto type = atoi(argv[3]);
     
 #ifndef NDEBUG
-//    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_fsa5";
-    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
+//    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
     query_name = "../../data-sets/local/jawiki-20181001.dict";
 //    fsa_name = "../../results/abc/abc.dam";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.1000000.rnd_dict";
-    type = 10;
+    type = 11;
 #endif
     
     switch (type) {

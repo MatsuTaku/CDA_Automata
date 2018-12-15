@@ -161,15 +161,15 @@ public:
         return brother_[has_brother_bits_.rank(index)];
     }
     
-    bool is_node(size_t index) const {
+    bool is_state(size_t index) const {
         assert(kLinkChildren);
-        return is_node_bits_[index];
+        return is_state_bits_[index];
     }
     
     uint8_t eldest(size_t index) const {
         assert(kLinkChildren);
-        assert(is_node_bits_[index]);
-        return eldest_[is_node_bits_.rank(index)];
+        assert(is_state_bits_[index]);
+        return eldest_[is_state_bits_.rank(index)];
     }
     
     size_t num_elements() const {
@@ -205,7 +205,7 @@ public:
         }
         if constexpr (kLinkChildren) {
             has_brother_bits_.resize(size);
-            is_node_bits_.resize(size);
+            is_state_bits_.resize(size);
         }
     }
     
@@ -326,8 +326,8 @@ public:
         brother_.emplace_back(bro);
     }
     
-    void set_is_node(size_t index, bool isNode) {
-        is_node_bits_[index] = isNode;
+    void set_is_state(size_t index, bool is_state) {
+        is_state_bits_[index] = is_state;
     }
     
     void set_eldest(size_t index, uint8_t eldest) {
@@ -355,7 +355,7 @@ public:
         }
         if constexpr (kLinkChildren) {
             has_brother_bits_.Build();
-            is_node_bits_.Build();
+            is_state_bits_.Build();
         }
     }
     
@@ -384,7 +384,7 @@ public:
         if constexpr (kLinkChildren) {
             size += has_brother_bits_.size_in_bytes();
             size += size_vec(brother_);
-            size += is_node_bits_.size_in_bytes();
+            size += is_state_bits_.size_in_bytes();
             size += size_vec(eldest_);
         }
         return size;
@@ -413,7 +413,7 @@ public:
         if constexpr (kLinkChildren) {
             has_brother_bits_.Read(is);
             brother_ = read_vec<uint8_t>(is);
-            is_node_bits_.Read(is);
+            is_state_bits_.Read(is);
             eldest_ = read_vec<uint8_t>(is);
         }
     }
@@ -441,7 +441,7 @@ public:
         if constexpr (kLinkChildren) {
             has_brother_bits_.Write(os);
             write_vec(brother_, os);
-            is_node_bits_.Write(os);
+            is_state_bits_.Write(os);
             write_vec(eldest_, os);
         }
     }
@@ -477,7 +477,7 @@ private:
     // If use LinkChildren
     BitVector has_brother_bits_;
     std::vector<uint8_t> brother_;
-    BitVector is_node_bits_;
+    BitVector is_state_bits_;
     std::vector<uint8_t> eldest_;
     
     // For build
@@ -504,9 +504,9 @@ ShowStats(std::ostream& os) const {
     };
     os << "--- Stat of " << "DAFoundation N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
     os << "size:\t" << size_in_bytes() << endl;
-    os << "size bytes:\t" << multiple_base_.size_in_bytes() << endl;
-    os << "size next:\t" << num_elements() * multiple_base_.element_size(kENNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
-    os << "size check:\t" << num_elements() + check_link_bits_.size_in_bytes() + check_flow_.size_in_bytes() << endl;
+    os << "\tbytes:\t" << multiple_base_.size_in_bytes() << endl;
+    os << "\tnext:\t" << num_elements() * multiple_base_.element_size(kENNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+    os << "\tcheck:\t" << num_elements() + check_link_bits_.size_in_bytes() + check_flow_.size_in_bytes() << endl;
     if constexpr (kHashing) {
         size_t cWordsSize;
         if constexpr (kPlainWords) {
@@ -518,17 +518,17 @@ ShowStats(std::ostream& os) const {
                 wordsSize = num_elements() * multiple_base_.element_size(kENWords);
                 cWordsSize = num_elements() * multiple_base_.element_size(kENCWords);
             }
-            os << "size words:\t" << wordsSize << endl;
+            os << "\twords:\t" << wordsSize << endl;
         } else {
             cWordsSize = kCumulatesWords ? (num_elements() + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes()) : (num_elements() * multiple_base_.element_size(kENCWords));
         }
-        os << "size cumWords:\t" << cWordsSize << endl;
+        os << "\tcum_words:\t" << cWordsSize << endl;
         
         os << "---  ---" << endl;
     }
     if constexpr (kLinkChildren) {
         os << "\tbrother:\t" << has_brother_bits_.size_in_bytes() + size_vec(brother_) << endl;
-        os << "\teldest:\t" << is_node_bits_.size_in_bytes() + size_vec(eldest_) << endl;
+        os << "\teldest:\t" << is_state_bits_.size_in_bytes() + size_vec(eldest_) << endl;
         os << "---  ---" << endl;
     }
     //        showSizeMap(os);

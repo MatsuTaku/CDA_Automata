@@ -54,7 +54,7 @@ int main(int argc, const char* argv[]) {
     dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    dataset_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    dict_name = "../../results/abc/abc.dam";
-    type_index = 2;
+    type_index = 0;
 #endif
     
     if (dataset_name == "") {

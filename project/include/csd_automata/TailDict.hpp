@@ -9,51 +9,22 @@
 #define TailDict_hpp
 
 #include "basic.hpp"
+#include "TailDictContainer.hpp"
 #include "SerializedStringsBuilder.hpp"
+#include "TailDictBuilder.hpp"
 
 namespace csd_automata {
-    
-    
-struct StrDictData {
-    // Elabled
-    bool enabled = true;
-    // This data id
-    size_t id = 0;
-    // place at node
-    size_t node_id = 0;
-    // this label
-    std::string label = "";
-    // matched with suffix of other label
-    bool is_included = false;
-    // Data id of included owner
-    size_t owner = 0;
-    // label placed index at array
-    int place = -1;
-    // matched counter
-    size_t counter = 0;
-    
-    void set(char c) {
-        label += c;
-    }
-    
-    char front() const {
-        return label.front();
-    }
-    
-    std::string_view follows() const {
-        return std::string_view(label).substr(1);
-    }
-    
-    float entropy() const {
-        return float(counter) / label.size();
-    }
-    
-};
-    
 
 class TailDict {
 public:
     friend class TailDictBuilder;
+    using Builder = TailDictBuilder;
+    
+    void Build(const PlainFSA& src_fsa_, bool binary_mode, bool merge_suffix, bool divide_front) {
+        Builder builder(src_fsa_, binary_mode);
+        builder.Build(merge_suffix, divide_front);
+        builder.Release(*this);
+    }
     
     bool has_label(size_t index) const {
         return has_label_bits_[index];
@@ -68,7 +39,7 @@ public:
         return fsa_target_indexes_[index];
     }
     
-    const StrDictData& dict(size_t index) const {
+    const TailDictContainer& dict(size_t index) const {
         return str_dicts_[index];
     }
     
@@ -102,14 +73,14 @@ public:
     TailDict& operator=(TailDict &&) noexcept = default;
     
 private:
-    std::vector<StrDictData> str_dicts_;
+    std::vector<TailDictContainer> str_dicts_;
     std::vector<size_t> fsa_target_indexes_;
     std::vector<bool> has_label_bits_;
     SerializedStringsBuilder label_array_;
     
 //    size_t pos_on_label_ = 0;
     
-    const StrDictData& data_(size_t trans) const {
+    const TailDictContainer& data_(size_t trans) const {
         return str_dicts_[dict_trans(trans)];
     }
     

@@ -20,10 +20,6 @@ class ValueSet : IOInterface {
 public:
     using list_type = sim_ds::FitVector;
     
-private:
-    list_type values_;
-    
-public:
     // MARK: Constructors
     
     template <class Sequence>
@@ -74,6 +70,9 @@ public:
     
     ValueSet(ValueSet&&) noexcept = default;
     ValueSet& operator=(ValueSet&&) noexcept = default;
+    
+private:
+    list_type values_;
     
     
 };

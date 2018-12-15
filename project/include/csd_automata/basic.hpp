@@ -27,7 +27,9 @@
 
 namespace csd_automata {
 
+
 using id_type = sim_ds::id_type;
+
 
 class Stopwatch {
     using clock = std::chrono::high_resolution_clock;
@@ -51,24 +53,36 @@ private:
     clock::time_point start_;
 };
     
+/**
+ Measurement input process as milli sec
+ */
+template <class Process>
+inline double MeasureProcessing(Process process) {
+    Stopwatch sw;
+    process();
+    return sw.get_milli_sec();
+}
+
+
 template <class Stream>
-Stream GetStreamOrDie(const std::string& file_name) {
-    Stream ifs(file_name);
-    if (!ifs) {
+inline Stream GetStreamOrDie(const std::string& file_name) {
+    Stream stream(file_name);
+    if (!stream) {
         std::cout << "ERROR: Not found file: " << file_name << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    return ifs;
+    return stream;
 }
 
-template<typename T>
+
+template <typename T>
 inline T read_val(std::istream& is) {
     T val;
     is.read(reinterpret_cast<char*>(&val), sizeof(val));
     return val;
 }
 
-template<typename T>
+template <typename T>
 inline std::vector<T> read_vec(std::istream& is) {
     auto size = read_val<size_t>(is);
     std::vector<T> vec(size);
@@ -80,12 +94,12 @@ inline bool read_bit(std::istream& is) {
     return static_cast<bool>(read_val<uint8_t>(is));
 }
 
-template<typename T>
+template <typename T>
 inline void write_val(const T& val, std::ostream& os) {
     os.write(reinterpret_cast<const char*>(&val), sizeof(val));
 }
 
-template<typename T>
+template <typename T>
 inline void write_vec(const std::vector<T>& vec, std::ostream& os) {
     write_val(vec.size(), os);
     os.write(reinterpret_cast<const char*>(&vec[0]), sizeof(T) * vec.size());
@@ -95,7 +109,7 @@ inline void write_bit(const bool bit, std::ostream& os) {
     write_val(static_cast<uint8_t>(bit), os);
 }
 
-template<typename T>
+template <typename T>
 inline size_t size_vec(const std::vector<T>& vec) {
     return sizeof(T) * vec.size() + sizeof(vec.size());
 }
