@@ -49,12 +49,14 @@ int main(int argc, const char* argv[]) {
     }
     
 #ifndef NDEBUG
-    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
+    dataset_name = "../../data-sets/weiss/wikipedia2.dict";
+    dict_name = "../../results/wikipedia2/wikipedia2.dam";
+//    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
 //    dataset_name = "../../data-sets/local/jawiki-20181001.1000000.rnd_dict";
-    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+//    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    dataset_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    dict_name = "../../results/abc/abc.dam";
-    type_index = 2;
+    type_index = 0;
 #endif
     
     if (dataset_name == "") {

@@ -32,7 +32,7 @@ struct StrDictData {
     // matched counter
     size_t counter = 0;
     
-    void set(char c) {
+    void push_label(char c) {
         label += c;
     }
     
