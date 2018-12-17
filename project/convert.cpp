@@ -18,12 +18,9 @@ namespace {
             std::cerr << "Error! File not found: " << setName << std::endl;
             std::exit(EXIT_FAILURE);
         }
-        typename Dictionary::Foundation::FsaSource fsa;
-        fsa.read(ifs);
-        typename Dictionary::Foundation foundation(fsa);
-        Dictionary mf5d(std::move(foundation));
-        std::ofstream ofs(dictName);
-        mf5d.Write(ofs);
+        typename Dictionary::FsaSource fsa(ifs);
+        Dictionary mf5d(fsa);
+        StoreToFile(mf5d, dictName);
     }
     
 }

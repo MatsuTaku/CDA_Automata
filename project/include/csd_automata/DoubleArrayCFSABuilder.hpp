@@ -18,7 +18,6 @@
 namespace csd_automata {
     
 
-template <class Product>
 class DoubleArrayCFSABuilder {
     static constexpr size_t kAddrSize = 4;
     static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 3;
@@ -31,39 +30,28 @@ class DoubleArrayCFSABuilder {
     std::vector<uint8_t> bytes_;
     std::unordered_map<size_t, size_t> state_map_;
     size_t unfrozen_head_ = 0;
-    TailDict str_dict_;
-    
-    friend typename Product::Self;
+    TailDict tail_dict_;
     
 public:
+    explicit DoubleArrayCFSABuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
+    
+    void Build(bool binary_mode, bool merge_suffix, bool divide_front);
+    
+    template <class Product>
+    void Release(Product& da);
+    
     DoubleArrayCFSABuilder(const DoubleArrayCFSABuilder&) = delete;
     DoubleArrayCFSABuilder& operator=(const DoubleArrayCFSABuilder&) = delete;
     
 private:
-    explicit DoubleArrayCFSABuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
-    
-    void Build(bool binary_mode, bool merge_suffix, bool divide_front) {
-        ExpandBlock_();
-        FreezeTrans_(0);
-        set_final_(0, true);
-        set_used_next_(0, true);
-        
-        str_dict_.Build(src_fsa_, binary_mode, merge_suffix, divide_front);
-        Arrange_(src_fsa_.get_root_state(), 0);
-        
-        // reset
-        state_map_ = std::unordered_map<size_t, size_t>();
-    }
-    
-    void Release(Product& da);
+    template <class Fsa>
+    void CheckEquivalence(Fsa& fsa);
     
     // MARK: - getter
     
     size_t num_elements_() const {
         return bytes_.size() / kElemSize;
     }
-    
-    void CheckEquivalence(Product& fsa);
     
     void ShowMapping(bool show_density);
     
@@ -235,71 +223,88 @@ private:
     
 };
 
+    
+void DoubleArrayCFSABuilder::Build(bool binary_mode, bool merge_suffix, bool divide_front) {
+    ExpandBlock_();
+    FreezeTrans_(0);
+    set_final_(0, true);
+    set_used_next_(0, true);
+    
+    tail_dict_.Build(src_fsa_, binary_mode, merge_suffix, divide_front);
+    Arrange_(src_fsa_.get_root_state(), 0);
+    
+    // reset
+    state_map_ = std::unordered_map<size_t, size_t>();
+}
 
 template <class Product>
-void DoubleArrayCFSABuilder<Product>::Release(Product& da) {
-    const auto numElems = num_elements_();
-    da.base_.resize(numElems, get_num_words());
-    GetSerializedStringsBuilder(str_dict_).Release(&da.strings_map_);
+void DoubleArrayCFSABuilder::Release(Product& da) {
+//    typename Product::Base fd;
+    const auto num_elems = num_elements_();
+    da.Base::resize(num_elems, get_num_words());
     
-    auto numTrans = 0;
-    for (auto i = 0; i < numElems; i++) {
+    auto num_trans = 0;
+    for (auto i = 0; i < num_elems; i++) {
         if (is_frozen_(i)) {
-            numTrans++;
+            num_trans++;
             
             auto is_str_trans = has_label_(i);
-            da.base_.set_next(i, get_next_(i));
-            da.base_.set_is_string(i, is_str_trans);
-            da.base_.set_is_final(i, is_final_(i));
+            da.Base::set_next(i, get_next_(i));
+            da.Base::set_is_string(i, is_str_trans);
+            da.Base::set_is_final(i, is_final_(i));
             if (Product::kUnionCheckAndId) {
                 if (is_str_trans)
-                    da.base_.set_string_id(i, get_label_number_(i));
+                    da.Base::set_string_id(i, get_label_number_(i));
                 else
-                    da.base_.set_check(i, get_check_(i));
+                    da.Base::set_check(i, get_check_(i));
             } else {
-                da.base_.set_check(i, get_check_(i));
+                da.Base::set_check(i, get_check_(i));
                 if (is_str_trans)
-                    da.base_.set_string_id(i, get_label_number_(i));
+                    da.Base::set_string_id(i, get_label_number_(i));
             }
             
             if constexpr (Product::kSupportAccess)
-                da.base_.set_words(i, get_words_(i));
+                da.Base::set_words(i, get_words_(i));
             if constexpr (Product::kUseCumulativeWords)
-                da.base_.set_cum_words(i, get_cum_words_(i));
+                da.Base::set_cum_words(i, get_cum_words_(i));
             
             if constexpr (Product::kLinkChildren) {
                 bool hasBro = has_brother_(i);
-                da.base_.set_has_brother(i, hasBro);
+                da.Base::set_has_brother(i, hasBro);
                 if (hasBro)
-                    da.base_.set_brother(i, get_brother_(i));
+                    da.Base::set_brother(i, get_brother_(i));
             }
         }
         
         if constexpr (Product::kLinkChildren) {
             bool is_state = is_used_next_(i);
-            da.base_.set_is_state(i, is_state);
+            da.Base::set_is_state(i, is_state);
             if (is_state)
-                da.base_.set_eldest(i, get_eldest_(i));
+                da.Base::set_eldest(i, get_eldest_(i));
         }
     }
-    da.base_.Build();
-    da.num_trans_ = numTrans;
+    da.Base::Build();
+    
+//    da = Product(fd);
+//    da.base_ = std::move(fd);
+    da.num_trans_ = num_trans;
+    GetSerializedStringsBuilder(tail_dict_).Release(&da.strings_map_);
     
     CheckEquivalence(da);
 }
 
 
 template <class Product>
-inline void DoubleArrayCFSABuilder<Product>::CheckEquivalence(Product& fsa) {
+inline void DoubleArrayCFSABuilder::CheckEquivalence(Product& fsa) {
     auto tab = "\t";
     for (auto i = 0; i < num_elements_(); i++) {
         if (!is_frozen_(i)) continue;
         auto bn = get_next_(i);
         auto bi = has_label_(i);
         auto bc = !bi ? get_check_(i) : get_label_number_(i);
-        auto fn = fsa.base_.next(i);
-        auto fi = fsa.base_.is_string(i);
-        auto fc = !fi ? fsa.base_.check(i) : fsa.base_.string_id(i);
+        auto fn = fsa.Base::next(i);
+        auto fi = fsa.Base::is_string(i);
+        auto fc = !fi ? fsa.Base::check(i) : fsa.Base::string_id(i);
         if (bn == fn && bc == fc && bi == fi)
             continue;
         
@@ -308,7 +313,7 @@ inline void DoubleArrayCFSABuilder<Product>::CheckEquivalence(Product& fsa) {
         cout << "next: " << bn << tab << fn << endl;
         cout << "check: " << bc << tab << fc << endl;
         cout << "is-str: " << bi << tab << fi << endl;
-        cout << "accept: " << is_final_(i) << tab << fsa.base_.is_final(i) << endl;
+        cout << "accept: " << is_final_(i) << tab << fsa.Base::is_final(i) << endl;
         if (bi || fi) {
             sim_ds::log::ShowAsBinary(bc, 4);
             sim_ds::log::ShowAsBinary(fc, 4);
@@ -319,8 +324,7 @@ inline void DoubleArrayCFSABuilder<Product>::CheckEquivalence(Product& fsa) {
 }
     
 
-template <class Product>
-inline void DoubleArrayCFSABuilder<Product>::ShowMapping(bool show_density) {
+inline void DoubleArrayCFSABuilder::ShowMapping(bool show_density) {
     auto tab = "\t";
     
     std::vector<size_t> next_map;
@@ -369,8 +373,7 @@ inline void DoubleArrayCFSABuilder<Product>::ShowMapping(bool show_density) {
 
 // MARK: - private
 
-template <class Product>
-void DoubleArrayCFSABuilder<Product>::ExpandBlock_() {
+void DoubleArrayCFSABuilder::ExpandBlock_() {
     const auto begin = index_(bytes_.size());
     const auto end = begin + kBlockSize;
     
@@ -400,8 +403,7 @@ void DoubleArrayCFSABuilder<Product>::ExpandBlock_() {
 }
 
 
-template <class Product>
-void DoubleArrayCFSABuilder<Product>::FreezeTrans_(size_t index) {
+void DoubleArrayCFSABuilder::FreezeTrans_(size_t index) {
     assert(!is_frozen_(index));
     
     set_frozen_(index, true);
@@ -423,8 +425,7 @@ void DoubleArrayCFSABuilder<Product>::FreezeTrans_(size_t index) {
 }
 
 
-template <class Product>
-void DoubleArrayCFSABuilder<Product>::CloseBlock_(size_t begin) {
+void DoubleArrayCFSABuilder::CloseBlock_(size_t begin) {
     const auto end = begin + kBlockSize;
     
     if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
@@ -441,8 +442,7 @@ void DoubleArrayCFSABuilder<Product>::CloseBlock_(size_t begin) {
 
 
 // so-called XCHECK
-template <class Product>
-size_t DoubleArrayCFSABuilder<Product>::FindNext_(size_t first_trans) const {
+size_t DoubleArrayCFSABuilder::FindNext_(size_t first_trans) const {
     const auto symbol = src_fsa_.get_trans_symbol(first_trans);
     
     if (unfrozen_head_ != 0) {
@@ -461,8 +461,7 @@ size_t DoubleArrayCFSABuilder<Product>::FindNext_(size_t first_trans) const {
 }
 
 
-template <class Product>
-bool DoubleArrayCFSABuilder<Product>::CheckNext_(size_t next, size_t trans) const {
+bool DoubleArrayCFSABuilder::CheckNext_(size_t next, size_t trans) const {
     if (is_used_next_(next)) {
         return false;
     }
@@ -480,8 +479,7 @@ bool DoubleArrayCFSABuilder<Product>::CheckNext_(size_t next, size_t trans) cons
 }
 
 // Recursive function
-template <class Product>
-inline void DoubleArrayCFSABuilder<Product>::Arrange_(size_t state, size_t index) {
+inline void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
     const auto first_trans = src_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
@@ -524,9 +522,9 @@ inline void DoubleArrayCFSABuilder<Product>::Arrange_(size_t state, size_t index
         // Set: hasLabel, stringId
         auto trans_index = trans / PlainFSA::kSizeTrans;
         auto label_trans = trans;
-        if (str_dict_.is_label_source(trans_index)) {
+        if (tail_dict_.is_label_source(trans_index)) {
             set_has_label_(child_index);
-            set_label_index_(child_index, str_dict_.start_pos(trans_index));
+            set_label_index_(child_index, tail_dict_.start_pos(trans_index));
             
             while (src_fsa_.is_straight_state(label_trans)) {
                 label_trans = src_fsa_.get_target_state(label_trans);

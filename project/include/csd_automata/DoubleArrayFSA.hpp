@@ -8,6 +8,7 @@
 #ifndef DoubleArrayFSA_hpp
 #define DoubleArrayFSA_hpp
 
+#include "StringDictionaryInterface.hpp"
 #include "IOInterface.hpp"
 #include "DAFoundation.hpp"
 #include "sim_ds/BitVector.hpp"
@@ -17,7 +18,7 @@
 namespace csd_automata {
 
 template<bool CompressNext>
-class DoubleArrayFSA : IOInterface {
+class DoubleArrayFSA : public StringDictionaryInterface, public IOInterface {
 public:
     static constexpr bool kCompressNext = CompressNext;
     using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false, false>;
@@ -40,7 +41,7 @@ public:
     
     // MARK: - getter
     
-    bool Accept(std::string_view str) const {
+    bool Accept(std::string_view str) const override {
         size_t trans = 0;
         for (uint8_t c : str) {
             trans = target_(trans) ^ c;
@@ -50,11 +51,11 @@ public:
         return is_final_(trans);
     }
     
-    size_t Lookup(std::string_view str) const {
+    id_type Lookup(std::string_view str) const override {
         return -1;
     }
     
-    std::string Access(size_t key) const {
+    std::string Access(id_type key) const override {
         return "";
     }
     

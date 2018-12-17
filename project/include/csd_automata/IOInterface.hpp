@@ -30,12 +30,14 @@ public:
     
 };
 
-inline void LoadFromFile(IOInterface& product, const std::string& file_name) {
+template <class Product>
+inline void LoadFromFile(Product& product, const std::string& file_name) {
     auto ifs = GetStreamOrDie<std::ifstream>(file_name);
     product.LoadFrom(ifs);
 }
 
-inline void StoreToFile(IOInterface& product, const std::string& file_name) {
+template <class Product>
+inline void StoreToFile(Product& product, const std::string& file_name) {
     auto ofs = GetStreamOrDie<std::ofstream>(file_name);
     product.StoreTo(ofs);
 }

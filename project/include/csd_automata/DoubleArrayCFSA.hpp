@@ -8,6 +8,7 @@
 #ifndef DoubleArrayCFSA_hpp
 #define DoubleArrayCFSA_hpp
 
+#include "StringDictionaryInterface.hpp"
 #include "IOInterface.hpp"
 
 #include "DAFoundation.hpp"
@@ -69,7 +70,7 @@ private:
 
 
 template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
-class DoubleArrayCFSA : public IOInterface {
+class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<false, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren> {
 public:
     using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>;
     
@@ -92,7 +93,7 @@ public:
     static constexpr bool kCompressNext = false;
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Foundation = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren>;
+    using Base = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
@@ -100,8 +101,8 @@ public:
     
     using BitVector = sim_ds::BitVector;
     
-    friend class DoubleArrayCFSABuilder<Self>;
-    using Builder = DoubleArrayCFSABuilder<Self>;
+    friend class DoubleArrayCFSABuilder;
+    using Builder = DoubleArrayCFSABuilder;
     
     using Explorer = AutomataExplorer;
     
@@ -131,14 +132,14 @@ public:
         LoadFrom(is);
     }
     
-    bool Accept(std::string_view text) const {
+    bool Accept(std::string_view text) const override {
         Explorer explorer(text);
-        return Traverse_(explorer) && base_.is_final(explorer.trans());
+        return Traverse_(explorer) && Base::is_final(explorer.trans());
     }
     
-    id_type Lookup(std::string_view text) const;
+    id_type Lookup(std::string_view text) const override;
     
-    std::string Access(id_type key) const;
+    std::string Access(id_type key) const override;
     
     CommonPrefixSet CommonPrefixSearch(std::string_view text) const {
         Explorer explorer(text);
@@ -146,8 +147,8 @@ public:
         size_t counter = 0;
         Traverse_(explorer, [&](auto exp) {
             auto trans = exp.trans();
-            counter += base_.cum_words(trans);
-            if (base_.is_final(trans)) { // Found prefix match one
+            counter += Base::cum_words(trans);
+            if (Base::is_final(trans)) { // Found prefix match one
                 ++counter;
                 prefixSet.AppendPrefixAndId(exp.pos() + 1, counter);
             }
@@ -158,8 +159,8 @@ public:
     // MARK: - ByteData method
     
     size_t size_in_bytes() const override {
-        auto size = sizeof(num_trans_);
-        size += base_.size_in_bytes();
+        auto size = Base::size_in_bytes();
+        size += sizeof(num_trans_);
         size += strings_map_.size_in_bytes();
         size += values_.size_in_bytes();
         return size;
@@ -168,19 +169,21 @@ public:
     void LoadFrom(std::istream& is) override {
         auto header = read_val<uint8_t>(is);
         if (header != kHeader) {
-            std::cerr << "ERROR: Class type isn't match to stream! header: " << header << std::endl;
+            std::cerr << "ERROR: Class type is not match to stream! header: " << header << std::endl;
             exit(EXIT_FAILURE);
         }
+        
+        Base::LoadFrom(is);
         num_trans_ = read_val<size_t>(is);
-        base_.LoadFrom(is);
         strings_map_.LoadFrom(is);
         values_.LoadFrom(is);
     }
     
     void StoreTo(std::ostream& os) const override {
         write_val(kHeader, os);
+        
+        Base::StoreTo(os);
         write_val(num_trans_, os);
-        base_.StoreTo(os);
         strings_map_.StoreTo(os);
         values_.StoreTo(os);
     }
@@ -189,9 +192,9 @@ public:
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl
         << "#trans:\t" << num_trans_ << endl
-        << "#elems:\t" << base_.num_elements() << endl
+        << "#elems:\t" << Base::num_elements() << endl
         << "size:\t" << size_in_bytes() << endl;
-        base_.ShowStats(os);
+        Base::ShowStats(os);
         os << "\tstrings:\t" << strings_map_.size_in_bytes() << endl;
         os << "\tsize values:\t" << values_.size_in_bytes() << endl;
     }
@@ -200,14 +203,14 @@ public:
         using std::cout, std::endl;
         cout << "id\tT\tN\tC/S\tCW" << endl;
         for (auto i = 0; i < 0x100; i++) {
-            cout << i << '\t' << base_.is_final(i) << '\t' << base_.next(i) << '\t';
-            if (!base_.is_string(i)) {
-                cout << base_.check(i);
+            cout << i << '\t' << Base::is_final(i) << '\t' << Base::next(i) << '\t';
+            if (!Base::is_string(i)) {
+                cout << Base::check(i);
             } else {
-                cout << strings_map_.string_view(base_.string_id(i));
+                cout << strings_map_.string_view(Base::string_id(i));
             }
             if constexpr (kSupportAccess) {
-                cout << '\t' << base_.words(i);
+                cout << '\t' << Base::words(i);
             }
             cout << endl;
         }
@@ -226,7 +229,7 @@ public:
     
 private:
     size_t num_trans_ = 0;
-    Foundation base_;
+//    Foundation Base::;
     StringsMap strings_map_;
     // If set values in extended storage
     ValueSet values_;
@@ -234,7 +237,7 @@ private:
     // MARK: Getter
     
     size_t target_state_(size_t index) const {
-        return base_.next(index);
+        return Base::next(index);
     }
     
     size_t transition_(size_t prev_trans, uint8_t label) const {
@@ -244,8 +247,8 @@ private:
         return trans;
     }
     
-    bool Traverse_(Explorer& explorer) const {
-        return Traverse_(explorer, [](auto){});
+    bool Traverse_(Explorer& exp) const {
+        return Traverse_(exp, [](auto){});
     }
     
     template <class TransWork>
@@ -254,14 +257,14 @@ private:
             uint8_t c = exp.text()[exp.pos()];
             exp.set_trans(transition_(exp.trans(), c));
             if constexpr (kUnionCheckAndId) {
-                if (!base_.is_string(exp.trans())) {
+                if (!Base::is_string(exp.trans())) {
                     // Check label that is character
-                    uint8_t checkE = base_.check(exp.trans());
+                    uint8_t checkE = Base::check(exp.trans());
                     if (checkE != c)
                         return false;
                 } else {
                     // Check label that is indexed string
-                    auto str_id = base_.string_id(exp.trans());
+                    auto str_id = Base::string_id(exp.trans());
                     if (!strings_map_.match(exp.pos_ptr(), exp.text(), str_id)) {
 #ifndef NDEBUG
                         strings_map_.ShowLabels(str_id - 32, str_id + 32);
@@ -270,11 +273,11 @@ private:
                     }
                 }
             } else {
-                uint8_t checkE = base_.check(exp.trans());
+                uint8_t checkE = Base::check(exp.trans());
                 bool success_trans = checkE == c;
-                if (base_.is_string(exp.trans())) {
+                if (Base::is_string(exp.trans())) {
                     // Check label has indexed string
-                    auto str_id = base_.string_id(exp.trans());
+                    auto str_id = Base::string_id(exp.trans());
                     exp.set_pos(exp.pos() + 1);
                     bool success_trans_string = strings_map_.match(exp.pos_ptr(), exp.text(), str_id);
 #ifndef NDEBUG
@@ -305,8 +308,8 @@ Lookup(std::string_view text) const {
         Explorer explorer(text);
         size_t counter = 0;
         bool traversed = Traverse_(explorer, [&](auto exp) {
-            counter += base_.cum_words(exp.trans());
-            bool is_final_trans = base_.is_final(exp.trans());
+            counter += Base::cum_words(exp.trans());
+            bool is_final_trans = Base::is_final(exp.trans());
             if (is_final_trans)
                 counter++;
             exp.observe(is_final_trans);
@@ -318,7 +321,7 @@ Lookup(std::string_view text) const {
         size_t trans = 0;
         size_t counter = 0;
         for (size_t pos = 0, size = text.size(); pos < size; pos++) {
-            if (trans > 0 && base_.is_final(trans))
+            if (trans > 0 && Base::is_final(trans))
                 counter++;
             
             uint8_t c = text[pos];
@@ -329,32 +332,32 @@ Lookup(std::string_view text) const {
                 size_t check_type;
                 
                 if constexpr (kUnionCheckAndId) {
-                    if (!base_.is_string(nt)) {
-                        check_type = base_.check(nt);
+                    if (!Base::is_string(nt)) {
+                        check_type = Base::check(nt);
                         if (check_type != label)
                             continue;
                     } else {
-                        check_type = base_.string_id(nt);
+                        check_type = Base::string_id(nt);
                         if (strings_map_[check_type] != label)
                             continue;
                     }
                 } else {
-                    check_type = base_.check(nt);
+                    check_type = Base::check(nt);
                     if (check_type != label)
                         continue;
                 }
                 
-                counter += base_.words(nt);
+                counter += Base::words(nt);
             }
             
             trans = transition_(trans, c);
             if constexpr (kUnionCheckAndId) {
-                if (!base_.is_string(trans)) {
-                    uint8_t checkE = base_.check(trans);
+                if (!Base::is_string(trans)) {
+                    uint8_t checkE = Base::check(trans);
                     if (checkE != c)
                         return kSearchError;
                 } else {
-                    size_t str_id = base_.string_id(trans);
+                    size_t str_id = Base::string_id(trans);
                     if (!strings_map_.match(&pos, text, str_id)) {
 #ifndef NDEBUG
                         strings_map_.ShowLabels(str_id - 32, str_id + 32);
@@ -363,11 +366,11 @@ Lookup(std::string_view text) const {
                     }
                 }
             } else {
-                uint8_t checkE = base_.check(trans);
+                uint8_t checkE = Base::check(trans);
                 bool success_trans = checkE == c;
                 
-                if (base_.is_string(trans)) {
-                    auto str_id = base_.string_id(trans);
+                if (Base::is_string(trans)) {
+                    auto str_id = Base::string_id(trans);
                     if constexpr (!kUnionCheckAndId) {
                         pos++;
                     }
@@ -384,7 +387,7 @@ Lookup(std::string_view text) const {
             }
         }
         
-        return base_.is_final(trans) ? ++counter : kSearchError;
+        return Base::is_final(trans) ? ++counter : kSearchError;
     }
 }
 
@@ -400,23 +403,23 @@ Access(id_type key) const {
     while (counter > 0) {
         auto target_state = target_state_(trans);
         size_t next_trans = kSearchError;
-        uint8_t c = (kLinkChildren ? base_.eldest(target_state) : 1);
+        uint8_t c = (kLinkChildren ? Base::eldest(target_state) : 1);
         while (true) {
             size_t nt = target_state ^ c;
             size_t check_type;
             
             bool success_trans;
-            bool isStr = base_.is_string(nt);
+            bool is_str_label = Base::is_string(nt);
             if constexpr (kUnionCheckAndId) {
-                if (!isStr) {
-                    check_type = base_.check(nt);
+                if (!is_str_label) {
+                    check_type = Base::check(nt);
                     success_trans = check_type == c;
                 } else {
-                    check_type = base_.string_id(nt);
+                    check_type = Base::string_id(nt);
                     success_trans = uint8_t(strings_map_[check_type]) == c;
                 }
             } else {
-                uint8_t check_type = base_.check(nt);
+                uint8_t check_type = Base::check(nt);
                 success_trans = check_type == c;
             }
             if (!success_trans) {
@@ -428,30 +431,30 @@ Access(id_type key) const {
                 }
             }
             
-            auto curStore = base_.words(nt);
+            auto curStore = Base::words(nt);
             if (curStore < counter) {
                 counter -= curStore;
                 if constexpr (kLinkChildren) {
-                    if (!base_.has_brother(nt))
+                    if (!Base::has_brother(nt))
                         return "";
-                    c = base_.brother(nt);
+                    c = Base::brother(nt);
                 } else {
                     if (c == 0xff)
                         break;
                     c++;
                 }
             } else {
-                if (base_.is_final(nt))
+                if (Base::is_final(nt))
                     counter--;
                 if constexpr (kUnionCheckAndId) {
-                    if (!isStr)
+                    if (!is_str_label)
                         route += check_type;
                     else
                         route += strings_map_.string_view(check_type);
                 } else {
                     route += check_type;
-                    if (isStr) {
-                        size_t str_id = base_.string_id(nt);
+                    if (is_str_label) {
+                        size_t str_id = Base::string_id(nt);
                         route += strings_map_.string_view(str_id);
                     }
                 }

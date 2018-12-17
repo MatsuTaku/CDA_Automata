@@ -54,6 +54,7 @@ export -f centrp
 
 TOOLS="
 dam
+"
 damci
 morfologik_fsa5d
 morfologik_cfsa2d
@@ -62,7 +63,6 @@ fxcdat
 centrp
 marisa
 darts
-"
 #damac
 
 DATASET_DIR=data-sets

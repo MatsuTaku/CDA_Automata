@@ -8,6 +8,7 @@
 #ifndef MorfologikFSA5DictionaryFoundation_hpp
 #define MorfologikFSA5DictionaryFoundation_hpp
 
+#include "IOInterface.hpp"
 #include "MorfologikFSA5.hpp"
 #include "sim_ds/calc.hpp"
 
@@ -24,7 +25,7 @@ public:
     MorfologikFSA5DictionaryFoundation(const FsaSource& set);
     
     MorfologikFSA5DictionaryFoundation(std::istream& is) {
-        Read(is);
+        LoadFrom(is);
     }
     
     // MARK: Transition parameters
@@ -140,14 +141,14 @@ public:
     
     // MARK: IO
     
-    void Read(std::istream &is) {
+    void LoadFrom(std::istream &is) {
         node_data_length_ = read_val<size_t>(is);
         element_words_lower_size_ = read_val<size_t>(is);
         element_address_size_ = read_val<size_t>(is);
         bytes_ = read_vec<uint8_t>(is);
     }
     
-    void Write(std::ostream &os) const {
+    void StoreTo(std::ostream &os) const {
         write_val(node_data_length_, os);
         write_val(element_words_lower_size_, os);
         write_val(element_address_size_, os);
