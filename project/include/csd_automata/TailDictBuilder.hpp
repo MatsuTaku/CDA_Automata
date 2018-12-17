@@ -29,7 +29,7 @@ class TailDictBuilder {
     const PlainFSA& orig_fsa_;
     
     std::vector<Container> str_dicts_;
-    size_t cur_str_dict_index_;
+    Container* current_dict_ = nullptr;
     std::vector<size_t> fsa_target_indexes_;
     std::vector<bool> has_label_bits_;
     SerializedStringsBuilder label_array_;
@@ -63,10 +63,6 @@ private:
     
     Container& dict_from_id_(size_t id) {
         return str_dicts_[id_map_[id]];
-    }
-    
-    Container& dict_current_() {
-        return str_dicts_[cur_str_dict_index_];
     }
     
     // Recursive function
@@ -132,10 +128,10 @@ void TailDictBuilder::LabelArrange_(size_t state) {
         if (orig_fsa_.is_straight_state(labelTrans)) {
             auto index = labelTrans / PlainFSA::kSizeTrans;
             NewFace_();
-            dict_current_().set(orig_fsa_.get_trans_symbol(labelTrans));
+            current_dict_->push_label(orig_fsa_.get_trans_symbol(labelTrans));
             do {
                 labelTrans = orig_fsa_.get_target_state(labelTrans);
-                dict_current_().set(orig_fsa_.get_trans_symbol(labelTrans));
+                current_dict_->push_label(orig_fsa_.get_trans_symbol(labelTrans));
             } while (orig_fsa_.is_straight_state(labelTrans));
             SaveStrDict_(index);
         }
@@ -149,14 +145,13 @@ void TailDictBuilder::NewFace_() {
     Container dict;
     dict.id = str_dicts_.size();
     str_dicts_.push_back(dict);
-    cur_str_dict_index_ = str_dicts_.size() - 1;
+    current_dict_ = &str_dicts_.back();
 }
 
 void TailDictBuilder::SaveStrDict_(size_t index) {
-    auto& dict = dict_current_();
     has_label_bits_[index] = true;
-    dict.node_id = index;
-    dict.counter = 1;
+    current_dict_->node_id = index;
+    current_dict_->counter = 1;
 }
 
 void TailDictBuilder::MakeDict_() {
