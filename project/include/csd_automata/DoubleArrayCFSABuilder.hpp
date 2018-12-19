@@ -61,6 +61,10 @@ private:
         return offset / kElemSize;
     }
     
+    size_t block_(size_t index) const {
+        return index / kBlockSize;
+    }
+    
     // MARK: of codes
     
     size_t offset_(size_t index) const {
@@ -93,6 +97,7 @@ private:
     }
     
     size_t get_next_(size_t index) const {
+        assert(is_frozen_(index));
         return get_address_(offset_(index) + 1);
     }
     
@@ -101,6 +106,7 @@ private:
     }
     
     size_t get_label_number_(size_t index) const {
+        assert(is_frozen_(index));
         return get_address_(offset_(index) + 1 + kAddrSize);
     }
     
@@ -133,10 +139,12 @@ private:
     }
     
     size_t get_succ_(size_t index) const {
+        assert(!is_frozen_(index));
         return get_address_(offset_(index) + 1) ^ index;
     }
     
     size_t get_pred_(size_t index) const {
+        assert(!is_frozen_(index));
         return get_address_(offset_(index) + 1 + kAddrSize) ^ index;
     }
     
@@ -409,8 +417,6 @@ void DoubleArrayCFSABuilder::ExpandBlock_() {
 void DoubleArrayCFSABuilder::FreezeTrans_(size_t index) {
     assert(!is_frozen_(index));
     
-    set_frozen_(index, true);
-    
     const auto succ = get_succ_(index);
     const auto pred = get_pred_(index);
     
@@ -421,6 +427,8 @@ void DoubleArrayCFSABuilder::FreezeTrans_(size_t index) {
     // set succ and pred to 0
     set_succ_(index, 0);
     set_pred_(index, 0);
+    
+    set_frozen_(index, true);
     
     if (index == unfrozen_head_) {
         unfrozen_head_ = succ == index ? 0 : succ;
@@ -470,14 +478,10 @@ bool DoubleArrayCFSABuilder::CheckNext_(size_t next, size_t trans) const {
     }
     
     bool rejected = false;
-    auto check_next = [&](uint8_t symbol) {
+    src_fsa_.ForAllSymbolInFollowsTrans(trans, &rejected, [&](uint8_t symbol) {
         auto index = next ^ symbol;
-        bool is_frozen = is_frozen_(index);
-        if (is_frozen) {
-            rejected = true;
-        }
-    };
-    src_fsa_.ForAllSymbolInFollowsTrans(trans, &rejected, check_next);
+        rejected = is_frozen_(index);
+    });
     return !rejected;
 }
 

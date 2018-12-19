@@ -85,7 +85,7 @@ public:
     }
     
     uint8_t check(size_t index) const {
-        return static_cast<uint8_t>(multiple_base_.nested_element<kENCheck>(index));
+        return multiple_base_.nested_element_front1byte<kENCheck>(index);
     }
     
     void set_check(size_t index, uint8_t check) {
@@ -182,7 +182,7 @@ public:
         assert(kCumulatesWords);
         if constexpr (kCompressWords) {
             if constexpr (kPlainWords) {
-                size_t cw = multiple_base_.nested_element<kENCWords>(index) & kMaskUpperWords;
+                size_t cw = multiple_base_.nested_element_front1byte<kENCWords>(index) & kMaskUpperWords;
                 if (!cum_words_link_bits_[index])
                     return cw;
                 else {
@@ -190,7 +190,7 @@ public:
                     return cw | (cum_words_flow_[rank] << kBitsUpperWords);
                 }
             } else {
-                size_t cw = multiple_base_.nested_element<kENCWords>(index);
+                size_t cw = multiple_base_.nested_element_front1byte<kENCWords>(index);
                 if (!cum_words_link_bits_[index])
                     return cw;
                 else {
@@ -236,7 +236,7 @@ public:
         assert(kHashing);
         assert(kPlainWords);
         if constexpr (kCompressWords) {
-            size_t words = multiple_base_.nested_element<kENCWords>(index) >> kBitsUpperWords;
+            size_t words = multiple_base_.nested_element_front1byte<kENCWords>(index) >> kBitsUpperWords;
             if (!words_link_bits_[index])
                 return words;
             else {
@@ -326,7 +326,7 @@ public:
                     sizes.push_back(wordsSize);
             }
         }
-        multiple_base_.set_value_sizes(sizes);
+        multiple_base_.set_element_sizes(sizes);
         multiple_base_.resize(size);
         if constexpr (kCompressNext) {
             next_link_bits_.resize(size);
@@ -511,7 +511,7 @@ private:
     
     uint8_t unmasked_flags_(size_t index) const {
         assert(!kCompressNext);
-        return multiple_base_.block(index).template restricted_get<kENNext, uint8_t>();
+        return multiple_base_.nested_element_front1byte<kENNext>(index);
     }
     
 };

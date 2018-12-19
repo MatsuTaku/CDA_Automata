@@ -90,7 +90,7 @@ public:
     }
     
     template <class Work>
-    void ForAllSymbolInFollowsTrans(size_t trans, bool* break_flag, Work& work) const {
+    void ForAllSymbolInFollowsTrans(size_t trans, bool* break_flag, Work work) const {
         for (size_t t = trans; !*break_flag && t != 0; t = get_next_trans(t)) {
             work(get_trans_symbol(t));
         }

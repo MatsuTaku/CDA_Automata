@@ -41,8 +41,7 @@ TEST(MultipleVectorTest, Convert) {
     auto check_src = rand_vector(size, 8);
     
     MultipleVector fva;
-    std::vector<int> unit_sizes = {4, 1};
-    fva.set_value_sizes(unit_sizes);
+    fva.set_element_sizes({4, 1});
     fva.resize(size);
     
     for (auto i = 0; i < size; i++) {
@@ -70,8 +69,7 @@ TEST(MultipleVectorTest, Operator) {
     
     MultipleVector fva;
     Wrapper wrapper(fva);
-    std::vector<int> unit_sizes = {4, 1};
-    fva.set_value_sizes(unit_sizes);
+    fva.set_element_sizes({4, 1});
     fva.resize(size);
     
     for (auto i = 0; i < size; i++) {

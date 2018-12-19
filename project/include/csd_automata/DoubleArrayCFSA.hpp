@@ -39,11 +39,11 @@ public:
         return text_;
     }
     
-    void set_pos(size_t new_value) {
+    void set_pos_on_text(size_t new_value) {
         pos_on_text_ = new_value;
     }
     
-    size_t pos() const {
+    size_t pos_on_text() const {
         return pos_on_text_;
     }
     
@@ -221,7 +221,7 @@ public:
     
     void PrintForDebug(std::ostream& os) const {
         using std::cout, std::endl;
-        cout << "id\tT\tN\tC/S\tCW" << endl;
+        cout << "id\tF\tN\tL\tCW" << endl;
         for (auto i = 0; i < 0x100; i++) {
             cout << i << '\t' << Base::is_final(i) << '\t' << Base::next(i) << '\t';
             if (!Base::is_string(i)) {
@@ -230,7 +230,7 @@ public:
                 cout << strings_map_.string_view(Base::string_id(i));
             }
             if constexpr (kSupportAccess) {
-                cout << '\t' << Base::words(i);
+                cout << '\t' << Base::cum_words(i);
             }
             cout << endl;
         }
@@ -275,14 +275,14 @@ private:
     
     template <class TransWork>
     bool Traverse_(Explorer& exp, TransWork trans_work) const {
-        for (; exp.pos() < exp.text().size(); exp.set_pos(exp.pos() + 1)) {
-            uint8_t c = exp.text()[exp.pos()];
+        for (; exp.pos_on_text() < exp.text().size(); exp.set_pos_on_text(exp.pos_on_text() + 1)) {
+            uint8_t c = exp.text()[exp.pos_on_text()];
             exp.set_trans(transition_(exp.trans(), c));
             if constexpr (kUnionCheckAndId) {
                 if (!Base::is_string(exp.trans())) {
                     // Check label that is character
-                    uint8_t checkE = Base::check(exp.trans());
-                    if (checkE != c)
+                    uint8_t check = Base::check(exp.trans());
+                    if (check != c)
                         return false;
                 } else {
                     // Check label that is indexed string
@@ -300,7 +300,7 @@ private:
                 if (Base::is_string(exp.trans())) {
                     // Check label has indexed string
                     auto str_id = Base::string_id(exp.trans());
-                    exp.set_pos(exp.pos() + 1);
+                    exp.set_pos_on_text(exp.pos_on_text() + 1);
                     bool success_trans_string = strings_map_.match(exp.pos_ptr(), exp.text(), str_id);
 #ifndef NDEBUG
                     if (!success_trans_string) {

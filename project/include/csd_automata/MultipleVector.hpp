@@ -26,47 +26,45 @@ class BlockReference {
     
     storage_pointer pointer_;
     
-    using params_type = typename SerializedSequence::params_type;
-    using params_reference = const params_type&;
-    params_reference element_sizes_;
-    params_reference element_positions_;
+    using table_type = typename SerializedSequence::table_type;
+    using table_reference = const table_type&;
+    table_reference element_table_;
     
     friend typename SerializedSequence::Self;
     
 public:
     template <int Id>
     id_type get() const {
-        return get_<Id, id_type>(element_sizes_[Id]);
+        return get_<Id, id_type>(element_table_[Id].size);
     }
     
     template <int Id, typename T>
     T restricted_get() const {
-        return get_<Id, T>(std::min(element_sizes_[Id], sizeof(T)));
+        return get_<Id, T>(std::min(size_t(element_table_[Id].size), sizeof(T)));
     }
     
     template <int Id>
     id_type set(id_type value) {
-        return set_<Id, id_type>(element_sizes_[Id], value);
+        return set_<Id, id_type>(element_table_[Id].size, value);
     }
     
     template <int Id, typename T>
     T restricted_set(T value) {
-        return set_<Id, T>(std::min(element_sizes_[Id], sizeof(T)), value);
+        return set_<Id, T>(std::min(size_t(element_table_[Id].size), sizeof(T)), value);
     }
     
 private:
     explicit BlockReference(storage_pointer pointer,
-                            params_reference element_sizes,
-                            params_reference element_positions
-                            ) noexcept : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
+                            table_reference element_table
+                            ) noexcept : pointer_(pointer), element_table_(element_table) {}
     
     template <int Id, typename T>
     T get_(size_t width) const {
-        assert(Id < element_sizes_.size());
-        assert(width <= element_sizes_[Id]);
+        assert(Id < element_table_.size());
+        assert(width <= element_table_[Id].size);
         
         id_type value = 0;
-        auto relative_pointer = pointer_ + element_positions_[Id];
+        auto relative_pointer = pointer_ + element_table_[Id].pos;
         for (size_t i = 0; i < width; i++)
             value |= static_cast<id_type>(*(relative_pointer + i)) << (i * kBitsPerWord);
         
@@ -75,10 +73,10 @@ private:
     
     template <int Id, typename T>
     T set_(size_t width, T value) {
-        assert(Id < element_sizes_.size());
-        assert(width <= element_sizes_[Id]);
+        assert(Id < element_table_.size());
+        assert(width <= element_table_[Id].size);
         
-        auto relative_pointer = pointer_ + element_positions_[Id];
+        auto relative_pointer = pointer_ + element_table_[Id].pos;
         for (size_t i = 0; i < width; i++)
             *(relative_pointer + i) = static_cast<storage_type>(value >> (i * kBitsPerWord));
         
@@ -97,37 +95,35 @@ class BlockConstReference {
     
     storage_pointer pointer_;
     
-    using params_type = typename SerializedSequence::params_type;
-    using params_reference = const params_type&;
-    params_reference element_sizes_;
-    params_reference element_positions_;
+    using table_type = typename SerializedSequence::table_type;
+    using table_reference = const table_type&;
+    table_reference element_table_;
     
     friend typename SerializedSequence::Self;
     
 public:
     template <int Id, typename T>
     T restricted_get() const {
-        return get_<Id, T>(std::min(element_sizes_[Id], sizeof(T)));
+        return get_<Id, T>(std::min(size_t(element_table_[Id].size), sizeof(T)));
     }
     
     template <int Id>
     id_type get() const {
-        return get_<Id, id_type>(element_sizes_[Id]);
+        return get_<Id, id_type>(element_table_[Id].size);
     }
     
 private:
     explicit BlockConstReference(storage_pointer pointer,
-                                 params_reference element_sizes,
-                                 params_reference element_positions
-                                 ) noexcept : pointer_(pointer), element_sizes_(element_sizes), element_positions_(element_positions) {}
+                                 table_reference element_table
+                                 ) noexcept : pointer_(pointer), element_table_(element_table) {}
     
     template <int Id, typename T>
     T get_(size_t width) const {
-        assert(Id < element_sizes_.size());
-        assert(width <= element_sizes_[Id]);
+        assert(Id < element_table_.size());
+        assert(width <= element_table_[Id].size);
         
         id_type value = 0;
-        auto relative_pointer = pointer_ + element_positions_[Id];
+        auto relative_pointer = pointer_ + element_table_[Id].pos;
         for (size_t i = 0; i < width; i++)
             value |= static_cast<T>(*(relative_pointer + i)) << (i * kBitsPerWord);
         
@@ -138,6 +134,7 @@ private:
 
 
 class MultipleVector : IOInterface {
+public:
     using Self = MultipleVector;
     using storage_type = uint8_t;
     using storage_pointer = storage_type*;
@@ -145,12 +142,12 @@ class MultipleVector : IOInterface {
     
     static constexpr size_t kBitsPerWord = sizeof(storage_type) * 8;
     
-    using params_type = std::vector<size_t>;
+    using param_type = size_t;
+    struct Element {
+        param_type pos, size;
+    };
+    using table_type = std::vector<Element>;
     using Storage = std::vector<storage_type>;
-    
-    params_type element_sizes_ = {};
-    params_type element_positions_ = {};
-    Storage bytes_ = {};
     
     using Reference = BlockReference<MultipleVector>;
     using ConstReference = BlockConstReference<MultipleVector>;
@@ -158,54 +155,57 @@ class MultipleVector : IOInterface {
     friend class BlockReference<MultipleVector>;
     friend class BlockConstReference<MultipleVector>;
     
-public:
-    template <typename T>
-    void set_value_sizes(std::vector<T>& sizes) {
-        element_sizes_ = {};
-        for (auto i = 0; i < sizes.size(); i++)
-            element_sizes_.push_back(sizes[i]);
-        
-        element_positions_ = {};
+    void set_element_sizes(std::vector<size_t> sizes) {
+        element_table_.resize(sizes.size());
         for (auto i = 0, pos = 0; i < sizes.size(); i++) {
-            element_positions_.push_back(pos);
+            element_table_[i].size = sizes[i];
+            element_table_[i].pos = pos;
             pos += sizes[i];
         }
     }
     
     size_t block_size() const {
-        return element_positions_.back() + element_sizes_.back();
+        auto& elem_back = element_table_.back();
+        return elem_back.pos + elem_back.size;
+    }
+    
+    size_t element_size(size_t id) const {
+        return element_table_[id].size;
     }
     
     size_t size() const {
         return bytes_.size() / block_size();
     }
     
-    size_t element_size(size_t offset) const {
-        return element_sizes_[offset];
-    }
-    
     Reference block(size_t index) {
-        return Reference(&bytes_[offset_(index)], element_sizes_, element_positions_);
+        return Reference(&bytes_[offset_(index)], element_table_);
     }
     
     ConstReference block(size_t index) const {
-        return ConstReference(&bytes_[offset_(index)], element_sizes_, element_positions_);
+        return ConstReference(&bytes_[offset_(index)], element_table_);
     }
     
     template <int Id>
     id_type set_nested_element(size_t index, id_type value) {
-        assert(Id < element_sizes_.size());
+        assert(Id < element_table_.size());
         assert(index < size());
-        assert(element_sizes_[Id] == 8 || // 8 Byte element has no problem.
-               sim_ds::calc::SizeFitsInBytes(value) <= element_sizes_[Id]);
-        return set_(offset_(index) + element_positions_[Id], element_sizes_[Id], value);
+        assert(element_table_[Id].size == 8 || // 8 Byte element has no problem.
+               sim_ds::calc::SizeFitsInBytes(value) <= element_table_[Id].size);
+        return set_(offset_(index) + element_table_[Id].pos, element_table_[Id].size, value);
     }
     
     template <int Id>
     id_type nested_element(size_t index) const {
-        assert(Id < element_sizes_.size());
+        assert(Id < element_table_.size());
         assert(index < size());
-        return get_(offset_(index) + element_positions_[Id], element_sizes_[Id]);
+        return get_(offset_(index) + element_table_[Id].pos, element_table_[Id].size);
+    }
+    
+    template <int Id>
+    id_type nested_element_front1byte(size_t index) const {
+        assert(Id < element_table_.size());
+        assert(index < size());
+        return bytes_[offset_(index) + element_table_[Id].pos];
     }
     
     void resize(size_t size) {
@@ -216,27 +216,42 @@ public:
     
     size_t size_in_bytes() const override {
         auto size = size_vec(bytes_);
-        size += size_vec(element_sizes_);
+        size += size_vec(element_table_) / 2;
         return size;
     }
     
     void LoadFrom(std::istream& is) override {
         bytes_ = read_vec<storage_type>(is);
         
-        element_sizes_ = read_vec<size_t>(is);
-        element_positions_ = {};
-        for (auto i = 0, pos = 0; i < element_sizes_.size(); i++) {
-            element_positions_.push_back(pos);
-            pos += element_sizes_[i];
-        }
+        auto element_sizes = read_vec<param_type>(is);
+        set_element_sizes(element_sizes);
     }
     
     void StoreTo(std::ostream& os) const override {
         write_vec(bytes_, os);
-        write_vec(element_sizes_, os);
+        
+        std::vector<param_type> element_sizes;
+        for (auto table : element_table_) {
+            element_sizes.push_back(table.size);
+        }
+        write_vec(element_sizes, os);
     }
     
+    // MARK: copy guard
+    
+    MultipleVector() = default;
+    ~MultipleVector() = default;
+    
+    MultipleVector(const MultipleVector&) = delete;
+    MultipleVector& operator=(const MultipleVector&) = delete;
+    
+    MultipleVector(MultipleVector &&rhs) noexcept = default;
+    MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
+    
 private:
+    table_type element_table_;
+    Storage bytes_ = {};
+    
     size_t offset_(size_t index) const {
         return index * block_size();
     }
@@ -255,18 +270,6 @@ private:
         
         return value;
     }
-    
-public:
-    // MARK: copy guard
-    
-    MultipleVector() = default;
-    ~MultipleVector() = default;
-    
-    MultipleVector(const MultipleVector&) = delete;
-    MultipleVector& operator=(const MultipleVector&) = delete;
-    
-    MultipleVector(MultipleVector &&rhs) noexcept = default;
-    MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
     
 };
     
