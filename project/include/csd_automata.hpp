@@ -18,14 +18,15 @@ using DaFsa = DoubleArrayFSA<false>;
 using DaFsaDac = DoubleArrayFSA<true>;
 
 // Recomended
-using Dam = DoubleArrayCFSA<true, true, false, false, true, false>;
+using Dam = DoubleArrayCFSA<true, true, false, false, true, false, false>;
 
 // For Expression
-using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true>;
-using SdLoDaFsa = DoubleArrayCFSA<true, true, false, false, true, false>;
-using SdLoCidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false>;
+using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true, false>;
+using SdLoDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, false>;
+using SdLoDacDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, true>;
+using SdLoCidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, false>;
 // Rejected
-using SdLoSiDaFsa = DoubleArrayCFSA<false, true, false, true, true, false>;
+using SdLoSiDaFsa = DoubleArrayCFSA<false, true, false, true, true, false, false>;
 
 }
 

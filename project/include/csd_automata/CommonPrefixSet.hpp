@@ -8,6 +8,7 @@
 #ifndef CommonPrefixSet_hpp
 #define CommonPrefixSet_hpp
 
+#include "basic.hpp"
 #include "sim_ds/BitVector.hpp"
 
 namespace csd_automata {

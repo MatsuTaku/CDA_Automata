@@ -85,15 +85,15 @@ private:
 void TailDictBuilder::Build(bool merge_suffix, bool divide_front) {
     std::cout << "------ TailDict build bench mark ------" << std::endl;
     
-    std::cout << "makeDict: " << MeasureProcessing([&]() {
+    std::cout << "MakeDict: " << MeasureProcessing([&]() {
         MakeDict_();
     }) << "ms" << std::endl;
     
-    std::cout << "setSharings: " <<  MeasureProcessing([&, merge_suffix]() {
+    std::cout << "SetSharings: " <<  MeasureProcessing([&, merge_suffix]() {
         SetSharing_(merge_suffix);
     }) << "ms" << std::endl;
     
-    std::cout << "setUpLabelArray: " << MeasureProcessing([&, divide_front]() {
+    std::cout << "SetUpLabelArray: " << MeasureProcessing([&, divide_front]() {
         SetUpLabelArray_(divide_front);
     }) << "ms" << std::endl;
     

@@ -26,25 +26,25 @@ namespace {
 }
 
 int main(int argc, const char* argv[]) {
-    auto setName = argv[1];
-    auto dictName = argv[2];
-    int setType = atoi(argv[3]);
+    auto set_name = argv[1];
+    auto dict_name = argv[2];
+    int set_type = atoi(argv[3]);
     
 #ifndef NDEBUG
-    setName = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2";
-    dictName = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
-    setType = 1;
+    set_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2";
+    dict_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
+    set_type = 1;
 #endif
     
-    switch (setType) {
+    switch (set_type) {
         case 0:
-            BuildMorfologikFSADictionary<SdMrfFsa5>(setName, dictName);
+            BuildMorfologikFSADictionary<SdMrfFsa5>(set_name, dict_name);
             break;
         case 1:
-            BuildMorfologikFSADictionary<SdMrfCFsa2>(setName, dictName);
+            BuildMorfologikFSADictionary<SdMrfCFsa2>(set_name, dict_name);
             break;
         default:
-            std::cerr << "Error setType: " << setType << std::endl;
+            std::cerr << "Error setType: " << set_type << std::endl;
             return -1;
     }
     

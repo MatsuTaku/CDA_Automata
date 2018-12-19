@@ -41,6 +41,8 @@ int main(int argc, const char* argv[]) {
             type_index = 1;
         } else if (option == "--comp-id") {
             type_index = 2;
+        } else if (option == "--comp-next") {
+            type_index = 4;
         } else if (option == "--values") {
             values_name = argv[++i];
         } else {
@@ -49,14 +51,15 @@ int main(int argc, const char* argv[]) {
     }
     
 #ifndef NDEBUG
-    dataset_name = "../../data-sets/weiss/wikipedia2.dict";
-    dict_name = "../../results/wikipedia2/wikipedia2.dam";
+//    dataset_name = "../../data-sets/weiss/wikipedia2.dict";
+//    dict_name = "../../results/wikipedia2/wikipedia2.dam";
+    dataset_name = "../../data-sets/local/enwiki-20181001.dict";
+    dict_name = "../../results/enwiki-20181001/enwiki-20181001.dam";
 //    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
-//    dataset_name = "../../data-sets/local/jawiki-20181001.1000000.rnd_dict";
 //    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    dataset_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    dict_name = "../../results/abc/abc.dam";
-    type_index = 0;
+    type_index = 4;
 #endif
     
     if (dataset_name == "") {
@@ -77,6 +80,8 @@ int main(int argc, const char* argv[]) {
             return director::FullyBuild<SdDaFsa>(dict_name, dataset_name, values_name);
         case 2: // ! Not recomended
             return director::FullyBuild<SdLoCidDaFsa>(dict_name, dataset_name, values_name);
+        case 4: // ! Not recomended
+            return director::FullyBuild<SdLoDacDaFsa>(dict_name, dataset_name, values_name);
         case 3: // ! Rejected
             return director::FullyBuild<SdLoSiDaFsa>(dict_name, dataset_name, values_name);
         default:

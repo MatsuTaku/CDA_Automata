@@ -5,6 +5,11 @@ function dam {
 }
 export -f dam
 
+function damcn {
+  ./build/dam_bench $1 $2 16 >$1.bench.stdout 2>&1
+}
+export -f damcn
+
 function damci {
   ./build/dam_bench $1 $2 15 >$1.bench.stdout 2>&1
 }
@@ -54,7 +59,7 @@ export -f centrp
 
 TOOLS="
 dam
-"
+damcn
 damci
 morfologik_fsa5d
 morfologik_cfsa2d
@@ -63,6 +68,7 @@ fxcdat
 centrp
 marisa
 darts
+"
 #damac
 
 DATASET_DIR=data-sets

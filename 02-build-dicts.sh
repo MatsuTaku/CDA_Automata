@@ -5,6 +5,11 @@ dam() {
 }
 export -f dam
 
+damcn() {
+  ./build/dam_build $1 -o $2 --comp-next >$2.stdout 2>&1
+}
+export -f damcn
+
 damci() {
   ./build/dam_build $1 -o $2 --comp-id >$2.stdout 2>&1
 }
@@ -77,7 +82,7 @@ export -f darts
 
 TOOLS="
 dam
-"
+damcn
 damci
 morfologik_fsa5d
 morfologik_cfsa2d
@@ -86,6 +91,7 @@ xcdat
 fxcdat
 marisa
 centrp
+"
 #damac
 
 DATASET_DIR=data-sets

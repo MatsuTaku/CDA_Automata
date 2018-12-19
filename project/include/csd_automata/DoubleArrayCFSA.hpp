@@ -69,10 +69,10 @@ private:
 };
 
 
-template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
-class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<false, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren> {
+template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext>
+class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren> {
 public:
-    using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>;
+    using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext>;
     
     static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kUseCumulativeWords = UseCumulativeWords;
@@ -80,17 +80,16 @@ public:
     static constexpr bool kCompressStrId = CompressStrId;
     static constexpr bool kCompressWords = CompressWords;
     static constexpr bool kSupportAccess = SupportAccess;
+    static constexpr bool kCompressNext = CompressNext;
     
     static constexpr uint8_t kHeader = (kUnionCheckAndId |
                                         kUseCumulativeWords << 1 |
                                         kLinkChildren << 2 |
                                         kCompressStrId << 3 |
                                         kCompressWords << 4 |
-                                        kSupportAccess << 5);
+                                        kSupportAccess << 5 |
+                                        kCompressNext << 6);
     
-    static constexpr size_t kSearchError = 0;
-    
-    static constexpr bool kCompressNext = false;
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
     using Base = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren>;
@@ -105,6 +104,8 @@ public:
     using Builder = DoubleArrayCFSABuilder;
     
     using Explorer = AutomataExplorer;
+    
+    static constexpr size_t kSearchError = 0;
     
     static std::string name() {
         return "DoubleArrayCFSA";
@@ -137,7 +138,26 @@ public:
         return Traverse_(explorer) && Base::is_final(explorer.trans());
     }
     
-    id_type Lookup(std::string_view text) const override;
+    id_type Lookup(std::string_view text) const override {
+        // Separate algorithm from template parameters, that is to use cumulative-words.
+        if (kUseCumulativeWords) {
+            Explorer explorer(text);
+            size_t counter = 0;
+            bool traversed = Traverse_(explorer, [&](auto exp) {
+                counter += Base::cum_words(exp.trans());
+                bool is_final_trans = Base::is_final(exp.trans());
+                if (is_final_trans)
+                    ++counter;
+                exp.observe(is_final_trans);
+            });
+            bool accept = traversed && explorer.observed<bool>();
+            return accept ? counter : kSearchError;
+        } else {
+            return LookupLegacy(text);
+        }
+    }
+    
+    id_type LookupLegacy(std::string_view text) const;
     
     std::string Access(id_type key) const override;
     
@@ -156,7 +176,7 @@ public:
         return prefixSet;
     }
     
-    // MARK: - ByteData method
+    // MARK: IOInterface method
     
     size_t size_in_bytes() const override {
         auto size = Base::size_in_bytes();
@@ -229,7 +249,6 @@ public:
     
 private:
     size_t num_trans_ = 0;
-//    Foundation Base::;
     StringsMap strings_map_;
     // If set values in extended storage
     ValueSet values_;
@@ -237,13 +256,16 @@ private:
     // MARK: Getter
     
     size_t target_state_(size_t index) const {
-        return Base::next(index);
+        if constexpr (!kCompressNext) {
+            return Base::next(index);
+        } else {
+            return Base::next(index) ^ index;
+        }
     }
     
     size_t transition_(size_t prev_trans, uint8_t label) const {
         auto state = target_state_(prev_trans);
         auto trans = state ^ label;
-        assert(trans != prev_trans);
         return trans;
     }
     
@@ -300,100 +322,86 @@ private:
 };
 
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
-id_type DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>::
-Lookup(std::string_view text) const {
-    // Separate algorithm from template parameters, that is to use cumulative-words.
-    if constexpr (kUseCumulativeWords) {
-        Explorer explorer(text);
-        size_t counter = 0;
-        bool traversed = Traverse_(explorer, [&](auto exp) {
-            counter += Base::cum_words(exp.trans());
-            bool is_final_trans = Base::is_final(exp.trans());
-            if (is_final_trans)
-                counter++;
-            exp.observe(is_final_trans);
-        });
-        bool accept = traversed && explorer.observed<bool>();
-        return accept ? counter : kSearchError;
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext>
+id_type DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext>::
+LookupLegacy(std::string_view text) const {
+    assert(!kUseCumulativeWords);
+    
+    size_t trans = 0;
+    size_t counter = 0;
+    for (size_t pos = 0, size = text.size(); pos < size; pos++) {
+        if (trans > 0 && Base::is_final(trans))
+            counter++;
         
-    } else {
-        size_t trans = 0;
-        size_t counter = 0;
-        for (size_t pos = 0, size = text.size(); pos < size; pos++) {
-            if (trans > 0 && Base::is_final(trans))
-                counter++;
+        uint8_t c = text[pos];
+        
+        // Add counter to words at trans for each which has label at front is less than 'c'.
+        for (uint8_t label = 1; label < c; label++) {
+            size_t nt = transition_(trans, label);
+            size_t check_type;
             
-            uint8_t c = text[pos];
-            
-            // Add counter to words at trans for each which has label at front is less than 'c'.
-            for (uint8_t label = 1; label < c; label++) {
-                size_t nt = transition_(trans, label);
-                size_t check_type;
-                
-                if constexpr (kUnionCheckAndId) {
-                    if (!Base::is_string(nt)) {
-                        check_type = Base::check(nt);
-                        if (check_type != label)
-                            continue;
-                    } else {
-                        check_type = Base::string_id(nt);
-                        if (strings_map_[check_type] != label)
-                            continue;
-                    }
-                } else {
+            if constexpr (kUnionCheckAndId) {
+                if (!Base::is_string(nt)) {
                     check_type = Base::check(nt);
                     if (check_type != label)
                         continue;
-                }
-                
-                counter += Base::words(nt);
-            }
-            
-            trans = transition_(trans, c);
-            if constexpr (kUnionCheckAndId) {
-                if (!Base::is_string(trans)) {
-                    uint8_t checkE = Base::check(trans);
-                    if (checkE != c)
-                        return kSearchError;
                 } else {
-                    size_t str_id = Base::string_id(trans);
-                    if (!strings_map_.match(&pos, text, str_id)) {
-#ifndef NDEBUG
-                        strings_map_.ShowLabels(str_id - 32, str_id + 32);
-#endif
-                        return kSearchError;
-                    }
+                    check_type = Base::string_id(nt);
+                    if (strings_map_[check_type] != label)
+                        continue;
                 }
             } else {
-                uint8_t checkE = Base::check(trans);
-                bool success_trans = checkE == c;
-                
-                if (Base::is_string(trans)) {
-                    auto str_id = Base::string_id(trans);
-                    if constexpr (!kUnionCheckAndId) {
-                        pos++;
-                    }
-                    bool success_trans_string = strings_map_.match(&pos, text, str_id);
-                    if (!success_trans_string) { // Increment 'pos'
-#ifndef NDEBUG
-                        strings_map_.ShowLabels(str_id - 32, str_id + 32);
-#endif
-                    }
-                    success_trans &= success_trans_string;
-                }
-                if (!success_trans)
-                    return kSearchError;
+                check_type = Base::check(nt);
+                if (check_type != label)
+                    continue;
             }
+            
+            counter += Base::words(nt);
         }
         
-        return Base::is_final(trans) ? ++counter : kSearchError;
+        trans = transition_(trans, c);
+        if constexpr (kUnionCheckAndId) {
+            if (!Base::is_string(trans)) {
+                uint8_t checkE = Base::check(trans);
+                if (checkE != c)
+                    return kSearchError;
+            } else {
+                size_t str_id = Base::string_id(trans);
+                if (!strings_map_.match(&pos, text, str_id)) {
+#ifndef NDEBUG
+                    strings_map_.ShowLabels(str_id - 32, str_id + 32);
+#endif
+                    return kSearchError;
+                }
+            }
+        } else {
+            uint8_t checkE = Base::check(trans);
+            bool success_trans = checkE == c;
+            
+            if (Base::is_string(trans)) {
+                auto str_id = Base::string_id(trans);
+                if constexpr (!kUnionCheckAndId) {
+                    pos++;
+                }
+                bool success_trans_string = strings_map_.match(&pos, text, str_id);
+                if (!success_trans_string) { // Increment 'pos'
+#ifndef NDEBUG
+                    strings_map_.ShowLabels(str_id - 32, str_id + 32);
+#endif
+                }
+                success_trans &= success_trans_string;
+            }
+            if (!success_trans)
+                return kSearchError;
+        }
     }
+    
+    return Base::is_final(trans) ? ++counter : kSearchError;
 }
 
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess>
-std::string DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess>::
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext>
+std::string DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext>::
 Access(id_type key) const {
     assert(kSupportAccess);
     

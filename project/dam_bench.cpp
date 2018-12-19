@@ -200,14 +200,16 @@ int main(int argc, const char* argv[]) {
     auto type = atoi(argv[3]);
     
 #ifndef NDEBUG
-    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+//    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_fsa5";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
-    query_name = "../../data-sets/local/jawiki-20181001.dict";
+//    query_name = "../../data-sets/local/jawiki-20181001.dict";
+    fsa_name = "../../results/wikipedia2/wikipedia2.dam";
+    query_name = "../../data-sets/weiss/wikipedia2.dict";
 //    fsa_name = "../../results/abc/abc.dam";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.1000000.rnd_dict";
-    type = 11;
+    type = 16;
 #endif
     
     switch (type) {
@@ -222,6 +224,9 @@ int main(int argc, const char* argv[]) {
             break;
         case 15:
             BenchFsa<csd_automata::SdLoCidDaFsa>(fsa_name, query_name, false);
+            break;
+        case 16:
+            BenchFsa<csd_automata::SdLoDacDaFsa>(fsa_name, query_name, false);
             break;
         case 14:
             BenchFsa<csd_automata::SdLoSiDaFsa>(fsa_name, query_name, false);

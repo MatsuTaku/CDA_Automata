@@ -9,7 +9,6 @@
 #define DawgInterface_hpp
 
 #include "basic.hpp"
-#include "CommonPrefixSet.hpp"
 
 namespace csd_automata {
     

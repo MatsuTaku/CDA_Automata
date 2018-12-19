@@ -238,83 +238,86 @@ void DoubleArrayCFSABuilder::Build(bool binary_mode, bool merge_suffix, bool div
 }
 
 template <class Product>
-void DoubleArrayCFSABuilder::Release(Product& da) {
-//    typename Product::Base fd;
+void DoubleArrayCFSABuilder::Release(Product& dam) {
     const auto num_elems = num_elements_();
-    da.Base::resize(num_elems, get_num_words());
+    dam.Base::resize(num_elems, get_num_words());
     
     auto num_trans = 0;
-    for (auto i = 0; i < num_elems; i++) {
+    for (size_t i = 0; i < num_elems; i++) {
         if (is_frozen_(i)) {
             num_trans++;
             
             auto is_str_trans = has_label_(i);
-            da.Base::set_next(i, get_next_(i));
-            da.Base::set_is_string(i, is_str_trans);
-            da.Base::set_is_final(i, is_final_(i));
+            if constexpr (!Product::kCompressNext) {
+                dam.Base::set_next(i, get_next_(i));
+            } else {
+                dam.Base::set_next(i, get_next_(i) ^ i);
+            }
+            dam.Base::set_is_string(i, is_str_trans);
+            dam.Base::set_is_final(i, is_final_(i));
             if (Product::kUnionCheckAndId) {
                 if (is_str_trans)
-                    da.Base::set_string_id(i, get_label_number_(i));
+                    dam.Base::set_string_id(i, get_label_number_(i));
                 else
-                    da.Base::set_check(i, get_check_(i));
+                    dam.Base::set_check(i, get_check_(i));
             } else {
-                da.Base::set_check(i, get_check_(i));
+                dam.Base::set_check(i, get_check_(i));
                 if (is_str_trans)
-                    da.Base::set_string_id(i, get_label_number_(i));
+                    dam.Base::set_string_id(i, get_label_number_(i));
             }
             
             if constexpr (Product::kSupportAccess)
-                da.Base::set_words(i, get_words_(i));
+                dam.Base::set_words(i, get_words_(i));
             if constexpr (Product::kUseCumulativeWords)
-                da.Base::set_cum_words(i, get_cum_words_(i));
+                dam.Base::set_cum_words(i, get_cum_words_(i));
             
             if constexpr (Product::kLinkChildren) {
                 bool hasBro = has_brother_(i);
-                da.Base::set_has_brother(i, hasBro);
+                dam.Base::set_has_brother(i, hasBro);
                 if (hasBro)
-                    da.Base::set_brother(i, get_brother_(i));
+                    dam.Base::set_brother(i, get_brother_(i));
             }
         }
         
         if constexpr (Product::kLinkChildren) {
             bool is_state = is_used_next_(i);
-            da.Base::set_is_state(i, is_state);
+            dam.Base::set_is_state(i, is_state);
             if (is_state)
-                da.Base::set_eldest(i, get_eldest_(i));
+                dam.Base::set_eldest(i, get_eldest_(i));
         }
     }
-    da.Base::Build();
+    dam.Base::Build();
     
-//    da = Product(fd);
-//    da.base_ = std::move(fd);
-    da.num_trans_ = num_trans;
-    GetSerializedStringsBuilder(tail_dict_).Release(&da.strings_map_);
+    dam.num_trans_ = num_trans;
+    GetSerializedStringsBuilder(tail_dict_).Release(&dam.strings_map_);
     
-    CheckEquivalence(da);
+    CheckEquivalence(dam);
 }
 
 
 template <class Product>
-inline void DoubleArrayCFSABuilder::CheckEquivalence(Product& fsa) {
+void DoubleArrayCFSABuilder::CheckEquivalence(Product& dam) {
     auto tab = "\t";
-    for (auto i = 0; i < num_elements_(); i++) {
+    for (size_t i = 0; i < num_elements_(); i++) {
         if (!is_frozen_(i)) continue;
         auto bn = get_next_(i);
         auto bi = has_label_(i);
         auto bc = !bi ? get_check_(i) : get_label_number_(i);
-        auto fn = fsa.Base::next(i);
-        auto fi = fsa.Base::is_string(i);
-        auto fc = !fi ? fsa.Base::check(i) : fsa.Base::string_id(i);
+        auto fn = dam.target_state_(i);
+        auto fi = dam.Base::is_string(i);
+        auto fc = !fi ? dam.Base::check(i) : dam.Base::string_id(i);
         if (bn == fn && bc == fc && bi == fi)
             continue;
         
         using std::cout, std::endl;
         cout << i << "] builder" << tab << "fsa" << endl;
-        cout << "next: " << bn << tab << fn << endl;
-        cout << "check: " << bc << tab << fc << endl;
+        if (bn != fn)
+            cout << "next: " << bn << tab << fn << tab << (bn ^ fn) << endl;
+        if (bc != fc)
+            cout << "check: " << bc << tab << fc << endl;
         cout << "is-str: " << bi << tab << fi << endl;
-        cout << "accept: " << is_final_(i) << tab << fsa.Base::is_final(i) << endl;
-        if (bi || fi) {
+        if (bi != fi) {
+            cout << "accept: " << is_final_(i) << tab << dam.Base::is_final(i) << endl;
             sim_ds::log::ShowAsBinary(bc, 4);
             sim_ds::log::ShowAsBinary(fc, 4);
         }
@@ -324,7 +327,7 @@ inline void DoubleArrayCFSABuilder::CheckEquivalence(Product& fsa) {
 }
     
 
-inline void DoubleArrayCFSABuilder::ShowMapping(bool show_density) {
+void DoubleArrayCFSABuilder::ShowMapping(bool show_density) {
     auto tab = "\t";
     
     std::vector<size_t> next_map;
@@ -479,7 +482,7 @@ bool DoubleArrayCFSABuilder::CheckNext_(size_t next, size_t trans) const {
 }
 
 // Recursive function
-inline void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
+void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
     const auto first_trans = src_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
