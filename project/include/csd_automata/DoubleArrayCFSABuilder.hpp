@@ -326,8 +326,8 @@ void DoubleArrayCFSABuilder::CheckEquivalence(Product& dam) {
         cout << "is-str: " << bi << tab << fi << endl;
         if (bi != fi) {
             cout << "accept: " << is_final_(i) << tab << dam.Base::is_final(i) << endl;
-            sim_ds::log::ShowAsBinary(bc, 4);
-            sim_ds::log::ShowAsBinary(fc, 4);
+            sim_ds::ShowAsBinary(bc, 4);
+            sim_ds::ShowAsBinary(fc, 4);
         }
         std::cout << std::endl;
     }
@@ -551,9 +551,9 @@ void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
     
     set_eldest_(next, trans_children.front().first);
     for (auto i = 0; i < trans_children.size() - 1; i++) {
-        auto childIndex = next ^ trans_children[i].first;
-        set_has_brother_(childIndex);
-        set_brother_(childIndex, trans_children[i + 1].first);
+        auto child_index = next ^ trans_children[i].first;
+        set_has_brother_(child_index);
+        set_brother_(child_index, trans_children[i + 1].first);
     }
     
     // Transition next node

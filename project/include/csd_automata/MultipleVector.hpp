@@ -147,7 +147,6 @@ public:
         param_type pos, size;
     };
     using table_type = std::vector<Element>;
-    using Storage = std::vector<storage_type>;
     
     using Reference = BlockReference<MultipleVector>;
     using ConstReference = BlockConstReference<MultipleVector>;
@@ -201,13 +200,6 @@ public:
         return get_(offset_(index) + element_table_[Id].pos, element_table_[Id].size);
     }
     
-    template <int Id>
-    id_type nested_element_front1byte(size_t index) const {
-        assert(Id < element_table_.size());
-        assert(index < size());
-        return bytes_[offset_(index) + element_table_[Id].pos];
-    }
-    
     void resize(size_t size) {
         bytes_.resize(offset_(size));
     }
@@ -248,9 +240,9 @@ public:
     MultipleVector(MultipleVector &&rhs) noexcept = default;
     MultipleVector& operator=(MultipleVector &&rhs) noexcept = default;
     
-private:
+protected:
     table_type element_table_;
-    Storage bytes_ = {};
+    std::vector<storage_type> bytes_ = {};
     
     size_t offset_(size_t index) const {
         return index * block_size();

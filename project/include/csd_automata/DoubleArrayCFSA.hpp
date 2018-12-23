@@ -10,6 +10,7 @@
 
 #include "StringDictionaryInterface.hpp"
 #include "IOInterface.hpp"
+#include "DoubleArrayCFSABuilder.hpp"
 
 #include "DAFoundation.hpp"
 #include "sim_ds/BitVector.hpp"
@@ -18,7 +19,8 @@
 
 #include "CommonPrefixSet.hpp"
 
-#include "DoubleArrayCFSABuilder.hpp"
+#include "sim_ds/log.hpp"
+
 
 namespace csd_automata {
 
@@ -189,7 +191,8 @@ public:
     void LoadFrom(std::istream& is) override {
         auto header = read_val<uint8_t>(is);
         if (header != kHeader) {
-            std::cerr << "ERROR: Class type is not match to stream! header: " << header << std::endl;
+            std::cerr << "ERROR: Class type is not match to stream! header: ";
+            sim_ds::ShowAsBinary(header);
             exit(EXIT_FAILURE);
         }
         
@@ -427,7 +430,7 @@ Access(id_type key) const {
                     success_trans = uint8_t(strings_map_[check_type]) == c;
                 }
             } else {
-                uint8_t check_type = Base::check(nt);
+                check_type = Base::check(nt);
                 success_trans = check_type == c;
             }
             if (!success_trans) {
@@ -439,9 +442,9 @@ Access(id_type key) const {
                 }
             }
             
-            auto curStore = Base::words(nt);
-            if (curStore < counter) {
-                counter -= curStore;
+            auto words = Base::words(nt);
+            if (words < counter) {
+                counter -= words;
                 if constexpr (kLinkChildren) {
                     if (!Base::has_brother(nt))
                         return "";

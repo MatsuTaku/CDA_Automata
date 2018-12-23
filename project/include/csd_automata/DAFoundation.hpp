@@ -18,13 +18,12 @@
 #include "sim_ds/calc.hpp"
 
 namespace csd_automata {
-    
-using sim_ds::bit_tools::width_mask;
 
 template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren>
-class DAFoundation : IOInterface {
+class DAFoundation : MultipleVector {
 public:
     using Self = DAFoundation<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren>;
+    using Base = MultipleVector;
     
     static constexpr bool kCompressNext = CompNext;
     static constexpr bool kUseStrId = UseStrId;
@@ -36,19 +35,28 @@ public:
     static constexpr bool kPlainWords = PlainWords;
     static constexpr bool kLinkChildren = LinkChildren;
     
-    static constexpr id_type kMaskIsFinal = 0b01;
-    static constexpr id_type kMaskIsStrId = 0b10;
-    static constexpr size_t kFlags = !kCompressNext ? (kCompressStrId ? 2 : 1) : 0;
-    static constexpr size_t kFlagsExtend = kCompressNext ? (kCompressStrId ? 2 : 1) : 0;
-    static constexpr size_t kBitsUpperNext = 8;
-    static constexpr id_type kMaskUpperNext = width_mask<kBitsUpperNext>;
-    static constexpr size_t kBitsUpperWords = kPlainWords ? 4 : 8;
-    static constexpr id_type kMaskUpperWords = width_mask<kBitsUpperWords>;
-    enum ElementNumber {
-        kENNext = 0,
-        kENCheck = 1,
-        kENCWords = 2,
-        kENWords = 3,
+    enum Bits : size_t {
+        kFlags = !kCompressNext ? (kCompressStrId ? 2 : 1) : 0,
+        kFlagsExtend = kCompressNext ? (kCompressStrId ? 2 : 1) : 0,
+        kBitsUpperNext = 8,
+        kBitsUpperWords = kPlainWords ? 4 : 8,
+    };
+    enum Mask : Base::storage_type {
+        kMaskIsFinal = 0b01,
+        kMaskIsStrId = 0b10,
+        kMaskFlags = sim_ds::bit_tools::width_mask<kFlags>,
+        kMaskUpperNext = sim_ds::bit_tools::width_mask<kBitsUpperNext>,
+        kMaskUpperWords = sim_ds::bit_tools::width_mask<kBitsUpperWords>,
+    };
+    enum ElementNumber : size_t {
+        kElementIdCheck = 0,
+        kElementIdNext = 1,
+        kElementIdCWords = 2,
+        kElementIdWords = 3,
+    };
+    enum ElementPosition : size_t {
+        kElementPositionNext = 1,
+        kElementPositionCheck = 0,
     };
     
     using BitVector = sim_ds::BitVector;
@@ -56,7 +64,7 @@ public:
     using FitVector = sim_ds::FitVector;
     
     size_t next(size_t index) const {
-        size_t ne = multiple_base_.nested_element<kENNext>(index);
+        size_t ne = Base::get_(Base::offset_(index) + kElementPositionNext, Base::element_table_[kElementIdNext].size);
         if constexpr (!kCompressNext) {
             return ne >> kFlags;
         } else {
@@ -71,10 +79,10 @@ public:
     
     void set_next(size_t index, size_t next) {
         if constexpr (!kCompressNext) {
-            auto flags = unmasked_flags_(index) & width_mask<kFlags>;
-            multiple_base_.set_nested_element<kENNext>(index, next << kFlags | flags);
+            auto flags = unmasked_flags_(index) & kMaskFlags;
+            Base::set_nested_element<kElementIdNext>(index, next << kFlags | flags);
         } else {
-            multiple_base_.set_nested_element<kENNext>(index, next & kMaskUpperNext);
+            Base::set_nested_element<kElementIdNext>(index, next & kMaskUpperNext);
             id_type flow = next >> kBitsUpperNext;
             bool has_flow = flow > 0;
             next_link_bits_[index] = has_flow;
@@ -85,11 +93,11 @@ public:
     }
     
     uint8_t check(size_t index) const {
-        return multiple_base_.nested_element_front1byte<kENCheck>(index);
+        return Base::bytes_[Base::offset_(index) + kElementPositionCheck];
     }
     
     void set_check(size_t index, uint8_t check) {
-        multiple_base_.set_nested_element<kENCheck>(index, check);
+        Base::set_nested_element<kElementIdCheck>(index, check);
     }
     
     bool is_final(size_t index) const {
@@ -107,7 +115,7 @@ public:
                 v |= kMaskIsFinal;
             else
                 v &= ~kMaskIsFinal;
-            multiple_base_.block(index).template restricted_set<kENNext, uint8_t>(v);
+            Base::block(index).template restricted_set<kElementIdNext, uint8_t>(v);
         } else {
             flags_bits_[index * kFlagsExtend] = is_final;
         }
@@ -134,7 +142,7 @@ public:
                     v |= kMaskIsStrId;
                 else
                     v &= ~kMaskIsStrId;
-                multiple_base_.block(index).template restricted_set<kENNext, uint8_t>(v);
+                Base::block(index).template restricted_set<kElementIdNext, uint8_t>(v);
             } else {
                 flags_bits_[index * kFlagsExtend + 1] = is_str;
             }
@@ -182,7 +190,7 @@ public:
         assert(kCumulatesWords);
         if constexpr (kCompressWords) {
             if constexpr (kPlainWords) {
-                size_t cw = multiple_base_.nested_element_front1byte<kENCWords>(index) & kMaskUpperWords;
+                size_t cw = front_byte_of_element<kElementIdCWords>(index) & kMaskUpperWords;
                 if (!cum_words_link_bits_[index])
                     return cw;
                 else {
@@ -190,7 +198,7 @@ public:
                     return cw | (cum_words_flow_[rank] << kBitsUpperWords);
                 }
             } else {
-                size_t cw = multiple_base_.nested_element_front1byte<kENCWords>(index);
+                size_t cw = front_byte_of_element<kElementIdCWords>(index);
                 if (!cum_words_link_bits_[index])
                     return cw;
                 else {
@@ -199,7 +207,7 @@ public:
                 }
             }
         } else {
-            return multiple_base_.nested_element<kENCWords>(index);
+            return Base::nested_element<kElementIdCWords>(index);
         }
     }
     
@@ -210,17 +218,17 @@ public:
         if constexpr (kCompressWords) {
             if constexpr (kPlainWords) {
                 // Shared same byte with words to save each upper 4bits.
-                uint8_t base = multiple_base_.nested_element<kENCWords>(index);
+                uint8_t base = Base::nested_element<kElementIdCWords>(index);
                 base &= kMaskUpperWords << kBitsUpperWords;
                 base |= cw & kMaskUpperWords;
-                multiple_base_.set_nested_element<kENCWords>(index, base);
+                Base::set_nested_element<kElementIdCWords>(index, base);
                 auto flow = cw >> kBitsUpperWords;
                 bool has_flow = flow > 0;
                 cum_words_link_bits_[index] = has_flow;
                 if (has_flow)
                     cum_words_flow_src_.push_back(flow);
             } else {
-                multiple_base_.set_nested_element<kENCWords>(index, cw & kMaskUpperWords);
+                Base::set_nested_element<kElementIdCWords>(index, cw & kMaskUpperWords);
                 auto flow = cw >> kBitsUpperWords;
                 bool hasFlow = flow > 0;
                 cum_words_link_bits_[index] = hasFlow;
@@ -228,7 +236,7 @@ public:
                     cum_words_flow_src_.push_back(flow);
             }
         } else {
-            multiple_base_.set_nested_element<kENCWords>(index, cw);
+            Base::set_nested_element<kElementIdCWords>(index, cw);
         }
     }
     
@@ -236,7 +244,7 @@ public:
         assert(kHashing);
         assert(kPlainWords);
         if constexpr (kCompressWords) {
-            size_t words = multiple_base_.nested_element_front1byte<kENCWords>(index) >> kBitsUpperWords;
+            size_t words = front_byte_of_element<kElementIdCWords>(index) >> kBitsUpperWords;
             if (!words_link_bits_[index])
                 return words;
             else {
@@ -244,7 +252,7 @@ public:
                 return words | (words_flow_[rank] << kBitsUpperWords);
             }
         } else {
-            return multiple_base_.nested_element<kENWords>(index);
+            return Base::nested_element<kElementIdWords>(index);
         }
     }
     
@@ -254,17 +262,17 @@ public:
         
         if constexpr (kCompressWords) {
             // Shared same byte with c-words to save each upper 4bits.
-            uint8_t base = multiple_base_.nested_element<kENCWords>(index);
+            uint8_t base = Base::nested_element<kElementIdCWords>(index);
             base &= kMaskUpperWords;
             base |= ((words & kMaskUpperWords) << kBitsUpperWords);
-            multiple_base_.set_nested_element<kENCWords>(index, base);
+            Base::set_nested_element<kElementIdCWords>(index, base);
             auto flow = words >> kBitsUpperWords;
             bool has_flow = flow > 0;
             words_link_bits_[index] = has_flow;
             if (has_flow)
                 words_flow_src_.push_back(flow);
         } else {
-            multiple_base_.set_nested_element<kENWords>(index, words);
+            Base::set_nested_element<kElementIdWords>(index, words);
         }
     }
     
@@ -307,7 +315,7 @@ public:
     }
     
     size_t num_elements() const {
-        return multiple_base_.size();
+        return Base::size();
     }
     
     // MARK: - Protocol settings for build
@@ -315,19 +323,19 @@ public:
     // First. Set size of elements
     void resize(size_t size, size_t words = 0) {
         auto nextSize = sim_ds::calc::SizeFitsInBytes(size << kFlags);
-        std::vector<size_t> sizes = { kCompressNext ? 1 : nextSize, 1 };
+        std::vector<size_t> element_sizes = {1, kCompressNext ? 1 : nextSize};
         if constexpr (kHashing) {
             if constexpr (kCompressWords) {
-                sizes.push_back(1);
+                element_sizes.push_back(1);
             } else {
-                auto wordsSize = sim_ds::calc::SizeFitsInBytes(words);
-                sizes.push_back(wordsSize);
+                auto words_size = sim_ds::calc::SizeFitsInBytes(words);
+                element_sizes.push_back(words_size);
                 if (kPlainWords)
-                    sizes.push_back(wordsSize);
+                    element_sizes.push_back(words_size);
             }
         }
-        multiple_base_.set_element_sizes(sizes);
-        multiple_base_.resize(size);
+        Base::set_element_sizes(element_sizes);
+        Base::resize(size);
         if constexpr (kCompressNext) {
             next_link_bits_.resize(size);
             flags_bits_.resize(size * kFlagsExtend);
@@ -380,7 +388,7 @@ public:
     // MARK: - IO
     
     size_t size_in_bytes() const override {
-        auto size = multiple_base_.size_in_bytes();
+        auto size = Base::size_in_bytes();
         if constexpr (kCompressNext) {
             size += next_link_bits_.size_in_bytes();
             size += next_flow_.size_in_bytes();
@@ -410,7 +418,7 @@ public:
     }
     
     void LoadFrom(std::istream& is) override {
-        multiple_base_.LoadFrom(is);
+        Base::LoadFrom(is);
         if constexpr (kCompressNext) {
             next_link_bits_.Read(is);
             next_flow_.Read(is);
@@ -439,7 +447,7 @@ public:
     }
     
     void StoreTo(std::ostream& os) const override {
-        multiple_base_.StoreTo(os);
+        Base::StoreTo(os);
         if constexpr (kCompressNext) {
             next_link_bits_.Write(os);
             next_flow_.Write(os);
@@ -483,7 +491,6 @@ public:
     DAFoundation& operator=(DAFoundation&&) noexcept = default;
     
 private:
-    MultipleVector multiple_base_;
     // Enabled at NextCheck<true, C>
     BitVector next_link_bits_;
     DacVector next_flow_;
@@ -509,9 +516,18 @@ private:
     array_type words_flow_src_;
     array_type cum_words_flow_src_;
     
+    template <size_t Id>
+    Base::storage_type front_byte_of_element(size_t index) const {
+        auto relative_pos = Base::element_table_[Id].pos;
+        return Base::bytes_[Base::offset_(index) + relative_pos];
+    }
+    
+    /**
+     Flags that is_final and is_string_label are stored in upper bits of next.
+     */
     uint8_t unmasked_flags_(size_t index) const {
         assert(!kCompressNext);
-        return multiple_base_.nested_element_front1byte<kENNext>(index);
+        return Base::bytes_[offset_(index) + kElementPositionNext];
     }
     
 };
@@ -526,8 +542,8 @@ ShowStats(std::ostream& os) const {
     };
     os << "--- Stat of " << "DAFoundation N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
     os << "size:\t" << size_in_bytes() << endl;
-    os << "\tbytes:\t" << multiple_base_.size_in_bytes() << endl;
-    os << "\tnext:\t" << num_elements() * multiple_base_.element_size(kENNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+    os << "\tbytes:\t" << Base::size_in_bytes() << endl;
+    os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
     os << "\tcheck:\t" << num_elements() + check_link_bits_.size_in_bytes() + check_flow_.size_in_bytes() << endl;
     if constexpr (kHashing) {
         size_t cWordsSize;
@@ -537,12 +553,12 @@ ShowStats(std::ostream& os) const {
                 wordsSize = num_elements() / 2 + words_link_bits_.size_in_bytes() + words_flow_.size_in_bytes();
                 cWordsSize = num_elements() / 2 + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes();
             } else {
-                wordsSize = num_elements() * multiple_base_.element_size(kENWords);
-                cWordsSize = num_elements() * multiple_base_.element_size(kENCWords);
+                wordsSize = num_elements() * Base::element_size(kElementIdWords);
+                cWordsSize = num_elements() * Base::element_size(kElementIdCWords);
             }
             os << "\twords:\t" << wordsSize << endl;
         } else {
-            cWordsSize = kCumulatesWords ? (num_elements() + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes()) : (num_elements() * multiple_base_.element_size(kENCWords));
+            cWordsSize = kCumulatesWords ? (num_elements() + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes()) : (num_elements() * Base::element_size(kElementIdCWords));
         }
         os << "\tcum_words:\t" << cWordsSize << endl;
         
