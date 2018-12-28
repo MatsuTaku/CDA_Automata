@@ -71,10 +71,12 @@ private:
 };
 
 
-template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext>
-class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren> {
+template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
 public:
-    using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext>;
+    static_assert((SelectStrId && CompressStrId) || !SelectStrId, "ERROR: Failed template parameters: SelectStrId && CompressStrId");
+    
+    using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>;
     
     static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kUseCumulativeWords = UseCumulativeWords;
@@ -83,22 +85,26 @@ public:
     static constexpr bool kCompressWords = CompressWords;
     static constexpr bool kSupportAccess = SupportAccess;
     static constexpr bool kCompressNext = CompressNext;
+    static constexpr bool kSelectStrId = SelectStrId;
+    static constexpr bool kDacWords = DacWords;
     
-    static constexpr uint8_t kHeader = (kUnionCheckAndId |
+    static constexpr id_type kHeader = (kUnionCheckAndId |
                                         kUseCumulativeWords << 1 |
                                         kLinkChildren << 2 |
                                         kCompressStrId << 3 |
                                         kCompressWords << 4 |
                                         kSupportAccess << 5 |
-                                        kCompressNext << 6);
+                                        kCompressNext << 6 |
+                                        kSelectStrId << 7 |
+                                        kDacWords << 8);
     
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Base = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren>;
+    using Base = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
-    using StringsMap = SerializedStrings<kUseBinaryLabel>;
+    using StringsMap = SerializedStrings<kUseBinaryLabel, kSelectStrId>;
     
     using BitVector = sim_ds::BitVector;
     
@@ -110,7 +116,7 @@ public:
     static constexpr size_t kSearchError = 0;
     
     static std::string name() {
-        return "DoubleArrayCFSA";
+        return typeid(Self).name();
     }
     
     explicit DoubleArrayCFSA(const Builder& builder) {
@@ -189,7 +195,7 @@ public:
     }
     
     void LoadFrom(std::istream& is) override {
-        auto header = read_val<uint8_t>(is);
+        auto header = read_val<id_type>(is);
         if (header != kHeader) {
             std::cerr << "ERROR: Class type is not match to stream! header: ";
             sim_ds::ShowAsBinary(header);
@@ -292,7 +298,7 @@ private:
                     auto str_id = Base::string_id(exp.trans());
                     if (!strings_map_.match(exp.pos_ptr(), exp.text(), str_id)) {
 #ifndef NDEBUG
-                        strings_map_.ShowLabels(str_id - 32, str_id + 32);
+                        strings_map_.ShowLabels(str_id);
 #endif
                         return false;
                     }
@@ -307,7 +313,7 @@ private:
                     bool success_trans_string = strings_map_.match(exp.pos_ptr(), exp.text(), str_id);
 #ifndef NDEBUG
                     if (!success_trans_string) {
-                        strings_map_.ShowLabels(str_id - 32, str_id + 32);
+                        strings_map_.ShowLabels(str_id);
                     }
 #endif
                     success_trans &= success_trans_string;
@@ -325,8 +331,8 @@ private:
 };
 
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext>
-id_type DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext>::
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+id_type DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
 LookupLegacy(std::string_view text) const {
     assert(!kUseCumulativeWords);
     
@@ -372,7 +378,7 @@ LookupLegacy(std::string_view text) const {
                 size_t str_id = Base::string_id(trans);
                 if (!strings_map_.match(&pos, text, str_id)) {
 #ifndef NDEBUG
-                    strings_map_.ShowLabels(str_id - 32, str_id + 32);
+                    strings_map_.ShowLabels(str_id);
 #endif
                     return kSearchError;
                 }
@@ -389,7 +395,7 @@ LookupLegacy(std::string_view text) const {
                 bool success_trans_string = strings_map_.match(&pos, text, str_id);
                 if (!success_trans_string) { // Increment 'pos'
 #ifndef NDEBUG
-                    strings_map_.ShowLabels(str_id - 32, str_id + 32);
+                    strings_map_.ShowLabels(str_id);
 #endif
                 }
                 success_trans &= success_trans_string;
@@ -403,8 +409,8 @@ LookupLegacy(std::string_view text) const {
 }
 
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext>
-std::string DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext>::
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+std::string DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
 Access(id_type key) const {
     assert(kSupportAccess);
     

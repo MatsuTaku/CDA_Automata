@@ -200,22 +200,25 @@ void TailDictBuilder::SetSharing_(bool merge_suffix) {
 
 void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](Container lhs, Container rhs) {
-        return lhs.is_merged != rhs.is_merged ? lhs.is_merged < rhs.is_merged :
-        lhs.entropy() > rhs.entropy();
+        return (lhs.is_merged != rhs.is_merged ? lhs.is_merged < rhs.is_merged :
+//                lhs.entropy() > rhs.entropy());
+                lhs.counter > rhs.counter);
     });
     UpdateIdMap_();
     auto count = 0;
     for (auto& dict : str_dicts_) {
         auto index = label_array_.size();
         if (dict.is_merged) {
-            auto ownerDict = dict_from_id_(dict.owner);
-            if (ownerDict.place == -1) {
+            auto owner_dict = dict_from_id_(dict.owner);
+            if (owner_dict.place == -1) {
                 abort();
             }
-            index = ownerDict.place + ownerDict.label.size() - dict.label.size();
+            index = owner_dict.place + owner_dict.label.size() - dict.label.size();
         }
         dict.place = index;
         fsa_target_indexes_[dict.node_id] = count++;
+        
+        label_array_.SetPopuration(index);
         if (!dict.is_merged) {
             label_array_.AddString(divide_front ? dict.follows() : dict.label);
         }

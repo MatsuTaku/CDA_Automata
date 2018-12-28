@@ -18,15 +18,18 @@ using DaFsa = DoubleArrayFSA<false>;
 using DaFsaDac = DoubleArrayFSA<true>;
 
 // Recomended
-using Dam = DoubleArrayCFSA<true, true, false, false, true, false, false>;
+using Dam = DoubleArrayCFSA<true, true, false, false, true, false, false, false, false>;
 
 // For Expression
-using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true, false>;
-using SdLoDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, false>;
-using SdLoDacDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, true>;
-using SdLoCidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, false>;
+using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true, false, false, false>;
+using SdLoDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, false, false, false>;
+using SdLoCnDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, true, false, false>;
+using SdLoCidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, false, false, false>;
+using SdLoCsidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, false, true, false>;
+using SdLoCnsidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, true, true, false>;
+using SdLoDwDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, false, false, true>;
 // Rejected
-using SdLoSiDaFsa = DoubleArrayCFSA<false, true, false, true, true, false, false>;
+using SdLoSiDaFsa = DoubleArrayCFSA<false, true, false, true, true, false, false, false, false>;
 
 }
 

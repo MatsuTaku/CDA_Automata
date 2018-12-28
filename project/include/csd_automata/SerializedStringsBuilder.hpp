@@ -20,20 +20,27 @@ public:
     
     static constexpr char_type kEndLabel = '\0';
     
-    SerializedStringsBuilder(bool binaryMode) : binary_mode_(binaryMode) {}
+    SerializedStringsBuilder(bool binary_mode) : binary_mode_(binary_mode) {}
     
     // MARK: For build
     
     void AddString(std::string_view str) {
         assert(str.size() > 0);
         for (auto c : str) {
-            bytes_.emplace_back(static_cast<char_type>(c));
+            bytes_.push_back(static_cast<char_type>(c));
         }
         if (binary_mode_) {
+            boundary_flags_.resize(bytes_.size());
             boundary_flags_[bytes_.size() - 1] = true;
         } else {
             bytes_.emplace_back(kEndLabel);
         }
+    }
+    
+    void SetPopuration(size_t index) {
+        if (popuration_flags_.size() < index + 1)
+            popuration_flags_.resize(index + 1);
+        popuration_flags_[index] = true;
     }
     
     template<class Product>
@@ -44,6 +51,10 @@ public:
             abort();
         }
         product->bytes_ = move(bytes_);
+        if (Product::kSelectAccess) {
+            popuration_flags_.Build(true);
+            product->popuration_flags_ = popuration_flags_;
+        }
         if (Product::kIsBinaryMode) {
             product->boundary_flags_ = boundary_flags_;
         }
@@ -83,6 +94,7 @@ private:
     
     std::vector<char_type> bytes_;
     BitVector boundary_flags_;
+    BitVector popuration_flags_;
     
 };
 

@@ -21,7 +21,7 @@ template<bool CompressNext>
 class DoubleArrayFSA : public StringDictionaryInterface, public IOInterface {
 public:
     static constexpr bool kCompressNext = CompressNext;
-    using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false, false>;
+    using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false, false, false, false>;
     using BitVector = sim_ds::BitVector;
     
     static std::string name() {

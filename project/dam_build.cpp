@@ -30,7 +30,26 @@ int main(int argc, const char* argv[]) {
     std::string dataset_name = "";
     std::string dict_name = "";
     
-    int type_index = 0;
+    struct InputOption {
+        uint8_t binary = 0;
+        
+        void access() {
+            binary |= 0b01;
+        }
+        void comp_id() {
+            binary |= 0b10;
+        }
+        void select_id() {
+            binary |= 0b100;
+        }
+        void comp_next() {
+            binary |= 0b1000;
+        }
+        void dac_cwords() {
+            binary |= 0b10000;
+        }
+    };
+    InputOption options;
     std::string values_name = "";
     
     for (int i = 1; i < argc; i++) {
@@ -38,11 +57,15 @@ int main(int argc, const char* argv[]) {
         if (option == "-o" || option == "--output") {
             dict_name = argv[++i];
         } else if (option == "--access") {
-            type_index = 1;
+            options.access();
         } else if (option == "--comp-id") {
-            type_index = 2;
+            options.comp_id();
+        } else if (option == "--select-id") {
+            options.select_id();
         } else if (option == "--comp-next") {
-            type_index = 4;
+            options.comp_next();
+        } else if (option == "--dac_cwords") {
+            options.dac_cwords();
         } else if (option == "--values") {
             values_name = argv[++i];
         } else {
@@ -59,7 +82,7 @@ int main(int argc, const char* argv[]) {
     dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    dataset_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    dict_name = "../../results/abc/abc.dam";
-    type_index = 0;
+    options.binary = 0b10000;
 #endif
     
     if (dataset_name == "") {
@@ -73,17 +96,21 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
     
-    switch (type_index) {
-        case 0: // Recomended
+    switch (options.binary) {
+        case 0b00000: // Recomended
             return director::FullyBuild<SdLoDaFsa>(dict_name, dataset_name, values_name);
-        case 1: // supporting ACCESS
-            return director::FullyBuild<SdDaFsa>(dict_name, dataset_name, values_name);
-        case 2: // ! Not recomended
+        case 0b00010: // Comparations
             return director::FullyBuild<SdLoCidDaFsa>(dict_name, dataset_name, values_name);
-        case 4: // ! Not recomended
-            return director::FullyBuild<SdLoDacDaFsa>(dict_name, dataset_name, values_name);
-        case 3: // ! Rejected
-            return director::FullyBuild<SdLoSiDaFsa>(dict_name, dataset_name, values_name);
+        case 0b00110: // Comparations
+            return director::FullyBuild<SdLoCsidDaFsa>(dict_name, dataset_name, values_name);
+        case 0b01110: // Comparations
+            return director::FullyBuild<SdLoCnsidDaFsa>(dict_name, dataset_name, values_name);
+        case 0b01000: // Comparations
+            return director::FullyBuild<SdLoCnDaFsa>(dict_name, dataset_name, values_name);
+        case 0b10000: // Comparations
+            return director::FullyBuild<SdLoDwDaFsa>(dict_name, dataset_name, values_name);
+        case 0b00001: // supporting ACCESS
+            return director::FullyBuild<SdDaFsa>(dict_name, dataset_name, values_name);
         default:
             break;
     }
