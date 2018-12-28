@@ -9,7 +9,7 @@
 #define NextCheck_hpp
 
 #include "IOInterface.hpp"
-#include "MultipleVector.hpp"
+#include "sim_ds/MultipleVector.hpp"
 #include "sim_ds/BitVector.hpp"
 #include "sim_ds/DacVector.hpp"
 #include "sim_ds/FitVector.hpp"
@@ -20,10 +20,10 @@
 namespace csd_automata {
 
 template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-class DAFoundation : MultipleVector {
+class DAFoundation : sim_ds::MultipleVector, IOInterface {
 public:
     using Self = DAFoundation<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
-    using Base = MultipleVector;
+    using Base = sim_ds::MultipleVector;
     
     static constexpr bool kCompressNext = CompNext;
     static constexpr bool kUseStrId = UseStrId;

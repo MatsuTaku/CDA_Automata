@@ -15,6 +15,16 @@ function damci {
 }
 export -f damci
 
+function damcsi {
+  ./build/dam_bench $1 $2 17 >$1.bench.stdout 2>&1
+}
+export -f damcsi
+
+function damdw {
+  ./build/dam_bench $1 $2 19 >$1.bench.stdout 2>&1
+}
+export -f damdw
+
 function damac {
   ./build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
 }
@@ -61,6 +71,8 @@ TOOLS="
 dam
 damcn
 damci
+damcsi
+damdw
 morfologik_fsa5d
 morfologik_cfsa2d
 xcdat

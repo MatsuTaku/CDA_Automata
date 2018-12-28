@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) {
             options.select_id();
         } else if (option == "--comp-next") {
             options.comp_next();
-        } else if (option == "--dac_cwords") {
+        } else if (option == "--dac-cwords") {
             options.dac_cwords();
         } else if (option == "--values") {
             values_name = argv[++i];
@@ -78,10 +78,10 @@ int main(int argc, const char* argv[]) {
 //    dict_name = "../../results/wikipedia2/wikipedia2.dam";
 //    dataset_name = "../../data-sets/local/enwiki-20181001.dict";
 //    dict_name = "../../results/enwiki-20181001/enwiki-20181001.dam";
-    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
-    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
-//    dataset_name = "../../data-sets/ciura-deorowicz/abc.dict";
-//    dict_name = "../../results/abc/abc.dam";
+//    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
+//    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+    dataset_name = "../../data-sets/ciura-deorowicz/english.dict";
+    dict_name = "../../results/english/english.dam";
     options.binary = 0b10000;
 #endif
     

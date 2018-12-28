@@ -199,7 +199,7 @@ int main(int argc, const char* argv[]) {
     auto query_name = argv[2];
     auto type = atoi(argv[3]);
     
-//#ifndef NDEBUG
+#ifndef NDEBUG
     fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_fsa5";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
@@ -210,7 +210,7 @@ int main(int argc, const char* argv[]) {
 //    query_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.1000000.rnd_dict";
     type = 19;
-//#endif
+#endif
     
     switch (type) {
 //        case 0:
