@@ -91,12 +91,12 @@ export -f darts
 
 
 TOOLS="
-damcsi
-damdw
-"
 dam
 damcn
 damci
+damcsi
+damdw
+"
 morfologik_fsa5d
 morfologik_cfsa2d
 darts

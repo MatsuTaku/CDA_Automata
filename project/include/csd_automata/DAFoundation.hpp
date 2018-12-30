@@ -11,13 +11,15 @@
 #include "IOInterface.hpp"
 #include "sim_ds/MultipleVector.hpp"
 #include "sim_ds/BitVector.hpp"
+#include "sim_ds/SuccinctBitVector.hpp"
 #include "sim_ds/DacVector.hpp"
 #include "sim_ds/FitVector.hpp"
 
-#include "sim_ds/bit_tools.hpp"
+#include "sim_ds/bit_util.hpp"
 #include "sim_ds/calc.hpp"
 
 namespace csd_automata {
+    
 
 template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
 class DAFoundation : sim_ds::MultipleVector, IOInterface {
@@ -46,9 +48,9 @@ public:
     enum Mask : Base::storage_type {
         kMaskIsFinal = 0b01,
         kMaskIsStrId = 0b10,
-        kMaskFlags = sim_ds::bit_tools::width_mask<kFlags>,
-        kMaskUpperNext = sim_ds::bit_tools::width_mask<kBitsUpperNext>,
-        kMaskUpperWords = sim_ds::bit_tools::width_mask<kBitsUpperWords>,
+        kMaskFlags = sim_ds::bit_util::width_mask<kFlags>,
+        kMaskUpperNext = sim_ds::bit_util::width_mask<kBitsUpperNext>,
+        kMaskUpperWords = sim_ds::bit_util::width_mask<kBitsUpperWords>,
     };
     enum ElementNumber : size_t {
         kElementIdCheck = 0,
@@ -62,18 +64,72 @@ public:
     };
     
     using BitVector = sim_ds::BitVector;
+    using RankSupportBitVector = sim_ds::SuccinctBitVector<false>;
     using DacVector = sim_ds::DacVector;
     using FitVector = sim_ds::FitVector;
     
+private:
+    // Enabled at NextCheck<true, C>
+    RankSupportBitVector next_paths_;
+    DacVector next_flow_;
+    BitVector flags_bits_;
+    // Enabled at NextCheck<N, true>
+    RankSupportBitVector check_paths_;
+    FitVector check_flow_;
+    DacVector check_flow_dac_;
+    // Enable ar NextCheck<N, C, true, true, CW>
+    RankSupportBitVector words_paths_;
+    FitVector words_flow_;
+    RankSupportBitVector cum_words_paths_;
+    FitVector cum_words_flow_;
+    DacVector cum_words_dacs_;
+    // If use LinkChildren
+    RankSupportBitVector has_brother_bits_;
+    std::vector<uint8_t> brother_;
+    RankSupportBitVector is_state_bits_;
+    std::vector<uint8_t> eldest_;
+    
+    /*******************************************/
+    // Used for build.
+    // These are not used after building.
+    BitVector b_next_paths_;
+    BitVector b_check_paths_;
+    BitVector b_words_paths_;
+    BitVector b_cum_words_paths_;
+    BitVector b_has_brother_bits_;
+    BitVector b_is_state_bits_;
+    std::vector<id_type> b_next_flow_;
+    std::vector<id_type> b_check_flow_;
+    std::vector<id_type> b_words_flow_;
+    std::vector<id_type> b_cum_words_flow_;
+    /*******************************************/
+    
+    template <size_t Id>
+    Base::storage_type front_byte_of_element_(size_t index) const {
+        auto relative_pos = Base::element_table_[Id].pos;
+        return Base::bytes_[Base::offset_(index) + relative_pos]; // Faster extraction
+    }
+    
+    /**
+     Flags that is_final and is_string_label are stored in upper bits of next.
+     */
+    uint8_t unmasked_flags_(size_t index) const {
+        assert(!kCompressNext);
+        return Base::bytes_[offset_(index) + kElementPositionNext]; // Fastest extraction
+    }
+        
+public:
+    DAFoundation() = default;
+        
     size_t next(size_t index) const {
         size_t ne = Base::get_(Base::offset_(index) + kElementPositionNext, Base::element_table_[kElementIdNext].size); // Faster extraction
         if constexpr (!kCompressNext) {
             return ne >> kFlags;
         } else {
-            if (!next_link_bits_[index]) {
+            if (!next_paths_[index]) {
                 return ne;
             } else {
-                auto rank = next_link_bits_.rank(index);
+                auto rank = next_paths_.rank(index);
                 return ne | (next_flow_[rank] << kBitsUpperNext);
             }
         }
@@ -87,9 +143,9 @@ public:
             Base::set_nested_element<kElementIdNext>(index, next & kMaskUpperNext);
             id_type flow = next >> kBitsUpperNext;
             bool has_flow = flow > 0;
-            next_link_bits_[index] = has_flow;
+            b_next_paths_[index] = has_flow;
             if (has_flow) {
-                next_flow_src_.push_back(flow);
+                b_next_flow_.push_back(flow);
             }
         }
     }
@@ -131,7 +187,7 @@ public:
                 return flags_bits_[index * kFlagsExtend + 1];
             }
         } else {
-            return check_link_bits_[index];
+            return check_paths_[index];
         }
     }
     
@@ -149,7 +205,7 @@ public:
                 flags_bits_[index * kFlagsExtend + 1] = is_str;
             }
         } else {
-            check_link_bits_[index] = is_str;
+            b_check_paths_[index] = is_str;
         }
     }
     
@@ -157,10 +213,10 @@ public:
         assert(kUseStrId);
         if constexpr (kUnionCheckAndId) {
             auto id = check(index);
-            if (kCompressStrId && !check_link_bits_[index]) {
+            if (kCompressStrId && !check_paths_[index]) {
                 return id;
             } else {
-                auto rank = check_link_bits_.rank(index);
+                auto rank = check_paths_.rank(index);
                 if constexpr (kSelectId)
                     return id | (check_flow_dac_[rank] << kBitsUpperNext);
                 else
@@ -168,7 +224,7 @@ public:
             }
         } else {
             assert(!kCompressStrId);
-            auto rank = check_link_bits_.rank(index);
+            auto rank = check_paths_.rank(index);
             return check_flow_[rank];
         }
     }
@@ -181,12 +237,12 @@ public:
             auto flow = str_id >> kBitsUpperNext;
             bool has_flow = flow > 0;
             if constexpr (kCompressStrId)
-                check_link_bits_[index] = has_flow;
+                b_check_paths_[index] = has_flow;
             if (!kCompressStrId || (kCompressStrId && has_flow))
-                check_flow_src_.push_back(flow);
+                b_check_flow_.push_back(flow);
         } else {
             assert(!kCompressStrId);
-            check_flow_src_.emplace_back(str_id);
+            b_check_flow_.emplace_back(str_id);
         }
     }
     
@@ -198,19 +254,19 @@ public:
                 return cum_words_dacs_[index];
             } else {
                 if constexpr (kPlainWords) {
-                    size_t cw = front_byte_of_element<kElementIdCWords>(index) & kMaskUpperWords;
-                    if (!cum_words_link_bits_[index])
+                    size_t cw = front_byte_of_element_<kElementIdCWords>(index) & kMaskUpperWords;
+                    if (!cum_words_paths_[index])
                         return cw;
                     else {
-                        auto rank = cum_words_link_bits_.rank(index);
+                        auto rank = cum_words_paths_.rank(index);
                         return cw | (cum_words_flow_[rank] << kBitsUpperWords);
                     }
                 } else {
-                    size_t cw = front_byte_of_element<kElementIdCWords>(index);
-                    if (!cum_words_link_bits_[index])
+                    size_t cw = front_byte_of_element_<kElementIdCWords>(index);
+                    if (!cum_words_paths_[index])
                         return cw;
                     else {
-                        auto rank = cum_words_link_bits_.rank(index);
+                        auto rank = cum_words_paths_.rank(index);
                         return cw | (cum_words_flow_[rank] << kBitsUpperWords);
                     }
                 }
@@ -226,7 +282,7 @@ public:
         
         if constexpr (kCompressWords) {
             if constexpr (kDacWords) {
-                cum_words_flow_src_.push_back(cw);
+                b_cum_words_flow_.push_back(cw);
             } else {
                 if constexpr (kPlainWords) {
                     // Shared same byte with words to save each upper 4bits.
@@ -236,16 +292,16 @@ public:
                     Base::set_nested_element<kElementIdCWords>(index, base);
                     auto flow = cw >> kBitsUpperWords;
                     bool has_flow = flow > 0;
-                    cum_words_link_bits_[index] = has_flow;
+                    b_cum_words_paths_[index] = has_flow;
                     if (has_flow)
-                        cum_words_flow_src_.push_back(flow);
+                        b_cum_words_flow_.push_back(flow);
                 } else {
                     Base::set_nested_element<kElementIdCWords>(index, cw & kMaskUpperWords);
                     auto flow = cw >> kBitsUpperWords;
                     bool hasFlow = flow > 0;
-                    cum_words_link_bits_[index] = hasFlow;
+                    b_cum_words_paths_[index] = hasFlow;
                     if (hasFlow)
-                        cum_words_flow_src_.push_back(flow);
+                        b_cum_words_flow_.push_back(flow);
                 }
             }
         } else {
@@ -257,11 +313,11 @@ public:
         assert(kHashing);
         assert(kPlainWords);
         if constexpr (kCompressWords) {
-            size_t words = front_byte_of_element<kElementIdCWords>(index) >> kBitsUpperWords;
-            if (!words_link_bits_[index])
+            size_t words = front_byte_of_element_<kElementIdCWords>(index) >> kBitsUpperWords;
+            if (!words_paths_[index])
                 return words;
             else {
-                auto rank = words_link_bits_.rank(index);
+                auto rank = words_paths_.rank(index);
                 return words | (words_flow_[rank] << kBitsUpperWords);
             }
         } else {
@@ -281,9 +337,9 @@ public:
             Base::set_nested_element<kElementIdCWords>(index, base);
             auto flow = words >> kBitsUpperWords;
             bool has_flow = flow > 0;
-            words_link_bits_[index] = has_flow;
+            b_words_paths_[index] = has_flow;
             if (has_flow)
-                words_flow_src_.push_back(flow);
+                b_words_flow_.push_back(flow);
         } else {
             Base::set_nested_element<kElementIdWords>(index, words);
         }
@@ -295,7 +351,7 @@ public:
     }
     
     void set_has_brother(size_t index, bool has) {
-        has_brother_bits_[index] = has;
+        b_has_brother_bits_[index] = has;
     }
     
     uint8_t brother(size_t index) const {
@@ -314,7 +370,7 @@ public:
     }
     
     void set_is_state(size_t index, bool is_state) {
-        is_state_bits_[index] = is_state;
+        b_is_state_bits_[index] = is_state;
     }
     
     uint8_t eldest(size_t index) const {
@@ -349,72 +405,82 @@ public:
         Base::set_element_sizes(element_sizes);
         Base::resize(size);
         if constexpr (kCompressNext) {
-            next_link_bits_.resize(size);
+            b_next_paths_.resize(size);
             flags_bits_.resize(size * kFlagsExtend);
         }
         if constexpr (kUseStrId)
-            check_link_bits_.resize(size);
+            b_check_paths_.resize(size);
         if constexpr (kHashing && kCompressWords) {
-            cum_words_link_bits_.resize(size);
+            b_cum_words_paths_.resize(size);
             if constexpr (kPlainWords)
-                words_link_bits_.resize(size);
+                b_words_paths_.resize(size);
         }
         if constexpr (kLinkChildren) {
-            has_brother_bits_.resize(size);
-            is_state_bits_.resize(size);
+            b_has_brother_bits_.resize(size);
+            b_is_state_bits_.resize(size);
         }
     }
     
     // Finaly. Serialize flows.
     void Build() {
         if constexpr (kCompressNext) {
-            next_link_bits_.Build(false);
-            next_flow_ = DacVector(next_flow_src_);
-            next_flow_src_.resize(0);
-            next_flow_src_.shrink_to_fit();
+            next_paths_ = RankSupportBitVector(b_next_paths_);
+            next_flow_ = DacVector(b_next_flow_);
         }
         if constexpr (kUseStrId) {
-            check_link_bits_.Build(false);
+            check_paths_ = RankSupportBitVector(b_check_paths_);
             if constexpr (kSelectId)
-                check_flow_dac_ = DacVector(check_flow_src_);
+                check_flow_dac_ = DacVector(b_check_flow_);
             else
-                check_flow_ = FitVector(check_flow_src_);
-            check_flow_src_.resize(0);
-            check_flow_src_.shrink_to_fit();
+                check_flow_ = FitVector(b_check_flow_);
         }
         if constexpr (kHashing) {
             if constexpr (kPlainWords) {
-                words_link_bits_.Build(false);
-                words_flow_ = FitVector(words_flow_src_);
-                words_flow_src_.resize(0);
-                words_flow_src_.shrink_to_fit();
+                words_paths_ = RankSupportBitVector(b_words_paths_);
+                words_flow_ = FitVector(b_words_flow_);
             }
-            if constexpr (kDacWords)
-                cum_words_dacs_ = DacVector(cum_words_flow_src_);
-            else {
-                cum_words_link_bits_.Build(false);
-                cum_words_flow_ = FitVector(cum_words_flow_src_);
+            if constexpr (kDacWords) {
+                cum_words_dacs_ = DacVector(b_cum_words_flow_);
+            } else {
+                cum_words_paths_ = RankSupportBitVector(b_cum_words_paths_);
+                cum_words_flow_ = FitVector(b_cum_words_flow_);
             }
-            cum_words_flow_src_.resize(0);
-            cum_words_flow_src_.shrink_to_fit();
         }
         if constexpr (kLinkChildren) {
-            has_brother_bits_.Build(false);
-            is_state_bits_.Build(false);
+            has_brother_bits_ = RankSupportBitVector(b_has_brother_bits_);
+            is_state_bits_ = RankSupportBitVector(b_is_state_bits_);
         }
+        
+        // Clear all build modules.
+        std::apply([](auto*... args) {
+            auto clear = [](auto* module) {
+                module->resize(0);
+                module->shrink_to_fit();
+            };
+            (clear(args), ...);
+        }, std::make_tuple(&b_next_paths_,
+                           &b_check_paths_,
+                           &b_words_paths_,
+                           &b_cum_words_paths_,
+                           &b_has_brother_bits_,
+                           &b_is_state_bits_,
+                           &b_next_flow_,
+                           &b_check_flow_,
+                           &b_words_flow_,
+                           &b_cum_words_flow_));
     }
-    
+
     // MARK: - IO
     
     size_t size_in_bytes() const override {
         auto size = Base::size_in_bytes();
         if constexpr (kCompressNext) {
-            size += next_link_bits_.size_in_bytes();
+            size += next_paths_.size_in_bytes();
             size += next_flow_.size_in_bytes();
             size += flags_bits_.size_in_bytes();
         }
         if constexpr (kUseStrId) {
-            size += check_link_bits_.size_in_bytes();
+            size += check_paths_.size_in_bytes();
             if constexpr (kSelectId)
                 size += check_flow_dac_.size_in_bytes();
             else
@@ -422,14 +488,14 @@ public:
         }
         if constexpr (kHashing && kCompressWords) {
             if constexpr (kPlainWords) {
-                size += words_link_bits_.size_in_bytes();
+                size += words_paths_.size_in_bytes();
                 size += words_flow_.size_in_bytes();
             }
             if constexpr (kCumulatesWords) {
                 if constexpr (kDacWords) {
                     size += cum_words_dacs_.size_in_bytes();
                 } else {
-                    size += cum_words_link_bits_.size_in_bytes();
+                    size += cum_words_paths_.size_in_bytes();
                     size += cum_words_flow_.size_in_bytes();
                 }
             }
@@ -446,12 +512,12 @@ public:
     void LoadFrom(std::istream& is) override {
         Base::LoadFrom(is);
         if constexpr (kCompressNext) {
-            next_link_bits_.Read(is);
+            next_paths_.Read(is);
             next_flow_.Read(is);
             flags_bits_.Read(is);
         }
         if constexpr (kUseStrId) {
-            check_link_bits_.Read(is);
+            check_paths_.Read(is);
             if constexpr (kSelectId)
                 check_flow_dac_.Read(is);
             else
@@ -459,14 +525,14 @@ public:
         }
         if constexpr (kHashing && kCompressWords) {
             if constexpr (kPlainWords) {
-                words_link_bits_.Read(is);
+                words_paths_.Read(is);
                 words_flow_ = FitVector(is);
             }
             if constexpr (kCumulatesWords) {
                 if constexpr (kDacWords)
                     cum_words_dacs_.Read(is);
                 else {
-                    cum_words_link_bits_.Read(is);
+                    cum_words_paths_.Read(is);
                     cum_words_flow_ = FitVector(is);
                 }
             }
@@ -482,12 +548,12 @@ public:
     void StoreTo(std::ostream& os) const override {
         Base::StoreTo(os);
         if constexpr (kCompressNext) {
-            next_link_bits_.Write(os);
+            next_paths_.Write(os);
             next_flow_.Write(os);
             flags_bits_.Write(os);
         }
         if constexpr (kUseStrId) {
-            check_link_bits_.Write(os);
+            check_paths_.Write(os);
             if constexpr (kSelectId)
                 check_flow_dac_.Write(os);
             else
@@ -495,14 +561,14 @@ public:
         }
         if constexpr (kHashing && kCompressWords) {
             if constexpr (kPlainWords) {
-                words_link_bits_.Write(os);
+                words_paths_.Write(os);
                 words_flow_.Write(os);
             }
             if constexpr (kCumulatesWords) {
                 if constexpr (kDacWords) {
                     cum_words_dacs_.Write(os);
                 } else {
-                    cum_words_link_bits_.Write(os);
+                    cum_words_paths_.Write(os);
                     cum_words_flow_.Write(os);
                 }
             }
@@ -519,60 +585,6 @@ public:
     
     void ShowSizeMap(std::ostream& os) const;
     
-    // MARK: Copy guard
-    
-    DAFoundation() = default;
-    ~DAFoundation() = default;
-    
-    DAFoundation (const DAFoundation&) = delete;
-    DAFoundation& operator=(const DAFoundation&) = delete;
-    
-    DAFoundation (DAFoundation&&) noexcept = default;
-    DAFoundation& operator=(DAFoundation&&) noexcept = default;
-    
-private:
-    // Enabled at NextCheck<true, C>
-    BitVector next_link_bits_;
-    DacVector next_flow_;
-    BitVector flags_bits_;
-    // Enabled at NextCheck<N, true>
-    BitVector check_link_bits_;
-    FitVector check_flow_;
-    DacVector check_flow_dac_;
-    // Enable ar NextCheck<N, C, true, true, CW>
-    BitVector words_link_bits_;
-    FitVector words_flow_;
-    BitVector cum_words_link_bits_;
-    FitVector cum_words_flow_;
-    DacVector cum_words_dacs_;
-    // If use LinkChildren
-    BitVector has_brother_bits_;
-    std::vector<uint8_t> brother_;
-    BitVector is_state_bits_;
-    std::vector<uint8_t> eldest_;
-    
-    // Used for build.
-    // These are not used after building.
-    using array_type = std::vector<id_type>;
-    array_type next_flow_src_;
-    array_type check_flow_src_;
-    array_type words_flow_src_;
-    array_type cum_words_flow_src_;
-    
-    template <size_t Id>
-    Base::storage_type front_byte_of_element(size_t index) const {
-        auto relative_pos = Base::element_table_[Id].pos;
-        return Base::bytes_[Base::offset_(index) + relative_pos]; // Faster extraction
-    }
-    
-    /**
-     Flags that is_final and is_string_label are stored in upper bits of next.
-     */
-    uint8_t unmasked_flags_(size_t index) const {
-        assert(!kCompressNext);
-        return Base::bytes_[offset_(index) + kElementPositionNext]; // Fastest extraction
-    }
-    
 };
 
 
@@ -586,15 +598,15 @@ ShowStats(std::ostream& os) const {
     os << "--- Stat of " << "DAFoundation N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
     os << "size:\t" << size_in_bytes() << endl;
     os << "\tbytes:\t" << Base::size_in_bytes() << endl;
-    os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_link_bits_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
-    os << "\tcheck:\t" << num_elements() + check_link_bits_.size_in_bytes() + (!kSelectId ? check_flow_.size_in_bytes() : check_flow_dac_.size_in_bytes()) << endl;
+    os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+    os << "\tcheck:\t" << num_elements() + check_paths_.size_in_bytes() + (!kSelectId ? check_flow_.size_in_bytes() : check_flow_dac_.size_in_bytes()) << endl;
     if constexpr (kHashing) {
         size_t cWordsSize;
         if constexpr (kPlainWords) {
             size_t wordsSize;
             if constexpr (kCumulatesWords) {
-                wordsSize = num_elements() / 2 + words_link_bits_.size_in_bytes() + words_flow_.size_in_bytes();
-                cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes());
+                wordsSize = num_elements() / 2 + words_paths_.size_in_bytes() + words_flow_.size_in_bytes();
+                cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes());
             } else {
                 wordsSize = num_elements() * Base::element_size(kElementIdWords);
                 cWordsSize = num_elements() * Base::element_size(kElementIdCWords);
@@ -602,7 +614,7 @@ ShowStats(std::ostream& os) const {
             os << "\twords:\t" << wordsSize << endl;
         } else {
             cWordsSize = (kCumulatesWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
-                                             num_elements() + cum_words_link_bits_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
+                                             num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
                           (num_elements() * Base::element_size(kElementIdCWords)));
         }
         os << "\tcum_words:\t" << cWordsSize << endl;

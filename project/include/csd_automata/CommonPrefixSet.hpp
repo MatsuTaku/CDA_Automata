@@ -10,14 +10,17 @@
 
 #include "basic.hpp"
 #include "sim_ds/BitVector.hpp"
+#include "sim_ds/SuccinctBitVector.hpp"
 
 namespace csd_automata {
     
 class CommonPrefixSet {
 private:
     std::string base_string_;
-    sim_ds::BitVector terminals_;
+    sim_ds::SuccinctBitVector<> terminals_;
     std::vector<size_t> ids_;
+    // For build
+    sim_ds::BitVector b_terminals_;
     
 public:
     CommonPrefixSet(std::string_view str) : base_string_(str) {}
@@ -30,10 +33,13 @@ public:
         if (length == 0 || length > base_string_.size())
             return;
         if (terminals_.size() < length)
-            terminals_.resize(length);
-        terminals_[length - 1] = true;
-        terminals_.Build(true);
+            b_terminals_.resize(length);
+        b_terminals_[length - 1] = true;
         ids_.emplace_back(id);
+    }
+    
+    void Freeze() {
+        terminals_ = sim_ds::SuccinctBitVector<>(b_terminals_);
     }
     
     /**

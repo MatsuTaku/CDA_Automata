@@ -20,6 +20,25 @@ public:
     friend class TailDictBuilder;
     using Builder = TailDictBuilder;
     
+private:
+    std::vector<TailDictContainer> str_dicts_;
+    std::vector<size_t> fsa_target_indexes_;
+    std::vector<bool> has_label_bits_;
+    SerializedStringsBuilder label_array_;
+    
+    const TailDictContainer& data_(size_t trans) const {
+        return str_dicts_[dict_trans(trans)];
+    }
+    
+public:
+    TailDict() = default;
+    
+    TailDict(const TailDict &) = delete;
+    TailDict& operator=(const TailDict &) = delete;
+    
+    TailDict(TailDict&&) = default;
+    TailDict& operator=(TailDict&&) = default;
+    
     void Build(const PlainFSA& src_fsa_, bool binary_mode, bool merge_suffix, bool divide_front) {
         Builder builder(src_fsa_, binary_mode);
         builder.Build(merge_suffix, divide_front);
@@ -61,27 +80,6 @@ public:
     
     friend SerializedStringsBuilder& GetSerializedStringsBuilder(TailDict& sd) {
         return sd.label_array_;
-    }
-    
-    TailDict() = default;
-    ~TailDict() = default;
-    
-    TailDict(const TailDict &) = delete;
-    TailDict& operator=(const TailDict &) = delete;
-    
-    TailDict(TailDict &&) noexcept = default;
-    TailDict& operator=(TailDict &&) noexcept = default;
-    
-private:
-    std::vector<TailDictContainer> str_dicts_;
-    std::vector<size_t> fsa_target_indexes_;
-    std::vector<bool> has_label_bits_;
-    SerializedStringsBuilder label_array_;
-    
-//    size_t pos_on_label_ = 0;
-    
-    const TailDictContainer& data_(size_t trans) const {
-        return str_dicts_[dict_trans(trans)];
     }
     
 };

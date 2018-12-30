@@ -119,6 +119,15 @@ public:
         return typeid(Self).name();
     }
     
+private:
+    size_t num_trans_ = 0;
+    StringsMap strings_map_;
+    // If set values in extended storage
+    ValueSet values_;
+    
+public:
+    DoubleArrayCFSA() = default;
+    
     explicit DoubleArrayCFSA(const Builder& builder) {
         builder.Release(*this);
     }
@@ -171,17 +180,18 @@ public:
     
     CommonPrefixSet CommonPrefixSearch(std::string_view text) const {
         Explorer explorer(text);
-        CommonPrefixSet prefixSet(text);
+        CommonPrefixSet prefix_set(text);
         size_t counter = 0;
         Traverse_(explorer, [&](auto exp) {
             auto trans = exp.trans();
             counter += Base::cum_words(trans);
             if (Base::is_final(trans)) { // Found prefix match one
                 ++counter;
-                prefixSet.AppendPrefixAndId(exp.pos() + 1, counter);
+                prefix_set.AppendPrefixAndId(exp.pos() + 1, counter);
             }
         });
-        return prefixSet;
+        prefix_set.Freeze();
+        return prefix_set;
     }
     
     // MARK: IOInterface method
@@ -245,25 +255,7 @@ public:
         }
     }
     
-    // MARK: Copy guard
-    
-    DoubleArrayCFSA() = default;
-    ~DoubleArrayCFSA() = default;
-    
-    DoubleArrayCFSA (const DoubleArrayCFSA&) = delete;
-    DoubleArrayCFSA& operator=(const DoubleArrayCFSA&) = delete;
-    
-    DoubleArrayCFSA(DoubleArrayCFSA&& rhs) noexcept = default;
-    DoubleArrayCFSA& operator=(DoubleArrayCFSA&& rhs) noexcept = default;
-    
 private:
-    size_t num_trans_ = 0;
-    StringsMap strings_map_;
-    // If set values in extended storage
-    ValueSet values_;
-    
-    // MARK: Getter
-    
     size_t target_state_(size_t index) const {
         if constexpr (!kCompressNext) {
             return Base::next(index);

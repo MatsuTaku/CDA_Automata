@@ -10,14 +10,16 @@
 
 #include "IOInterface.hpp"
 #include "sim_ds/BitVector.hpp"
+#include "sim_ds/SuccinctBitVector.hpp"
 
 namespace csd_automata {
-    
+
 template<bool IsBinaryMode, bool SelectAccess>
 class SerializedStrings : IOInterface {
     using char_type = char;
     using Storage = std::vector<char_type>;
     using BitVector = sim_ds::BitVector;
+    using SuccinctBitVector = sim_ds::SuccinctBitVector<>;
     
     static constexpr bool kIsBinaryMode = IsBinaryMode;
     static constexpr bool kSelectAccess = SelectAccess;
@@ -156,7 +158,7 @@ public:
 private:
     Storage bytes_;
     BitVector boundary_flags_;
-    BitVector popuration_flags_;
+    SuccinctBitVector popuration_flags_;
     
 };
     

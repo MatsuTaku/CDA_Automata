@@ -18,6 +18,7 @@ TEST(CommonPrefixSetTest, Sequential) {
     cps.AppendPrefixAndId(9, 2);
     cps.AppendPrefixAndId(12, 3);
     cps.AppendPrefixAndId(20, 4);
+    cps.Freeze();
     
     EXPECT_EQ(cps[0], "Test");
     EXPECT_EQ(cps[1], "Test text");

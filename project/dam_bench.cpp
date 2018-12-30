@@ -209,7 +209,7 @@ int main(int argc, const char* argv[]) {
 //    fsa_name = "../../results/abc/abc.dam";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.dict";
 //    query_name = "../../data-sets/ciura-deorowicz/abc.1000000.rnd_dict";
-    type = 19;
+    type = 16;
 #endif
     
     switch (type) {
