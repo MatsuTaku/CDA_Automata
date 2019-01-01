@@ -18,7 +18,7 @@ using DaFsa = DoubleArrayFSA<false>;
 using DaFsaDac = DoubleArrayFSA<true>;
 
 // Recomended
-using Dam = DoubleArrayCFSA<true, true, false, false, true, false, false, false, false>;
+using Daram = DoubleArrayCFSA<true, true, false, false, true, false, false, false, false>;
 
 // For Expression
 using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true, false, false, false>;

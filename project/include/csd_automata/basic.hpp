@@ -31,49 +31,6 @@ namespace csd_automata {
 using id_type = sim_ds::id_type;
 
 
-class Stopwatch {
-    using clock = std::chrono::high_resolution_clock;
-public:
-    Stopwatch() : start_(clock::now()) {}
-    
-    double get_sec() const {
-        auto tp = clock::now() - start_;
-        return std::chrono::duration<double>(tp).count();
-    }
-    double get_milli_sec() const {
-        auto tp = clock::now() - start_;
-        return std::chrono::duration<double, std::milli>(tp).count();
-    }
-    double get_micro_sec() const {
-        auto tp = clock::now() - start_;
-        return std::chrono::duration<double, std::micro>(tp).count();
-    }
-    
-private:
-    clock::time_point start_;
-};
-    
-/**
- Measurement input process as milli sec
- */
-template <class Process>
-inline double MeasureProcessing(Process process) {
-    Stopwatch sw;
-    process();
-    return sw.get_milli_sec();
-}
-
-
-template <class Stream>
-inline Stream GetStreamOrDie(const std::string& file_name) {
-    Stream stream(file_name);
-    if (!stream) {
-        std::cout << "ERROR: Not found file: " << file_name << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    return stream;
-}
-
 
 template <typename T>
 inline T read_val(std::istream& is) {

@@ -1,32 +1,32 @@
 #!/bin/bash
 
 dam() {
-  ./build/dam_build $1 -o $2 >$2.stdout 2>&1
+  ./build/daram_build $1 -o $2 >$2.stdout 2>&1
 }
 export -f dam
 
 damcn() {
-  ./build/dam_build $1 -o $2 --comp-next >$2.stdout 2>&1
+  ./build/daram_build $1 -o $2 --comp-next >$2.stdout 2>&1
 }
 export -f damcn
 
 damci() {
-  ./build/dam_build $1 -o $2 --comp-id >$2.stdout 2>&1
+  ./build/daram_build $1 -o $2 --comp-id >$2.stdout 2>&1
 }
 export -f damci
 
 damcsi() {
-  ./build/dam_build $1 -o $2 --comp-id --select-id >$2.stdout 2>&1
+  ./build/daram_build $1 -o $2 --comp-id --select-id >$2.stdout 2>&1
 }
 export -f damcsi
 
 damdw() {
-  ./build/dam_build $1 -o $2 --dac-cwords >$2.stdout 2>&1
+  ./build/daram_build $1 -o $2 --dac-cwords >$2.stdout 2>&1
 }
 export -f damdw
 
 damac() {
-  ./build/dam_build $1 -o $2 --access >$2.stdout 2>&1
+  ./build/daram_build $1 -o $2 --access >$2.stdout 2>&1
 }
 export -f damac
 

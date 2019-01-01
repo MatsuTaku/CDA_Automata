@@ -55,26 +55,26 @@ public:
     
     template <typename T>
     void observe(T new_value) {
-        observed_ = new_value;
+        observe_target_ = new_value;
     }
     
     template <typename T = id_type>
     T observed() const {
-        return T(observed_);
+        return T(observe_target_);
     }
     
 private:
     size_t trans_;
     std::string_view text_;
     size_t pos_on_text_;
-    id_type observed_ = 0;
+    id_type observe_target_ = 0;
 };
 
 
 template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
 class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
 public:
-    static_assert((SelectStrId && CompressStrId) || !SelectStrId, "ERROR: Failed template parameters: SelectStrId && CompressStrId");
+    static_assert((SelectStrId and CompressStrId) or !SelectStrId, "ERROR: Failed template parameters: SelectStrId and CompressStrId");
     
     using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>;
     
@@ -152,22 +152,22 @@ public:
     
     bool Accept(std::string_view text) const override {
         Explorer explorer(text);
-        return Traverse_(explorer) && Base::is_final(explorer.trans());
+        return Traverse_(explorer) and Base::is_final(explorer.trans());
     }
     
     id_type Lookup(std::string_view text) const override {
         // Separate algorithm from template parameters, that is to use cumulative-words.
-        if (kUseCumulativeWords) {
+        if constexpr (kUseCumulativeWords) {
             Explorer explorer(text);
             size_t counter = 0;
-            bool traversed = Traverse_(explorer, [&](auto exp) {
+            bool traversed = Traverse_(explorer, [&](auto& exp) {
                 counter += Base::cum_words(exp.trans());
                 bool is_final_trans = Base::is_final(exp.trans());
                 if (is_final_trans)
                     ++counter;
                 exp.observe(is_final_trans);
             });
-            bool accept = traversed && explorer.observed<bool>();
+            bool accept = traversed and explorer.observed<bool>();
             return accept ? counter : kSearchError;
         } else {
             return LookupLegacy(text);
@@ -207,7 +207,7 @@ public:
     void LoadFrom(std::istream& is) override {
         auto header = read_val<id_type>(is);
         if (header != kHeader) {
-            std::cerr << "ERROR: Class type is not match to stream! header: ";
+            std::cerr << "ERROR: Class type is not match to stream! header: " << std::endl;
             sim_ds::ShowAsBinary(header);
             exit(EXIT_FAILURE);
         }
@@ -331,7 +331,7 @@ LookupLegacy(std::string_view text) const {
     size_t trans = 0;
     size_t counter = 0;
     for (size_t pos = 0, size = text.size(); pos < size; pos++) {
-        if (trans > 0 && Base::is_final(trans))
+        if (trans > 0 and Base::is_final(trans))
             counter++;
         
         uint8_t c = text[pos];

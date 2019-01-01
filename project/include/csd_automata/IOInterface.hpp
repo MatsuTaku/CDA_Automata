@@ -9,6 +9,7 @@
 #define IOInterface_hpp
 
 #include "basic.hpp"
+#include "util.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -32,13 +33,13 @@ public:
 
 template <class Product>
 inline void LoadFromFile(Product& product, const std::string& file_name) {
-    auto ifs = GetStreamOrDie<std::ifstream>(file_name);
+    auto ifs = util::GetStreamOrDie<std::ifstream>(file_name);
     product.LoadFrom(ifs);
 }
 
 template <class Product>
 inline void StoreToFile(Product& product, const std::string& file_name) {
-    auto ofs = GetStreamOrDie<std::ofstream>(file_name);
+    auto ofs = util::GetStreamOrDie<std::ofstream>(file_name);
     product.StoreTo(ofs);
 }
 

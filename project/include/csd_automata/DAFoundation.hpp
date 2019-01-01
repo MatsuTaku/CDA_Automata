@@ -213,7 +213,7 @@ public:
         assert(kUseStrId);
         if constexpr (kUnionCheckAndId) {
             auto id = check(index);
-            if (kCompressStrId && !check_paths_[index]) {
+            if (kCompressStrId and !check_paths_[index]) {
                 return id;
             } else {
                 auto rank = check_paths_.rank(index);
@@ -238,7 +238,7 @@ public:
             bool has_flow = flow > 0;
             if constexpr (kCompressStrId)
                 b_check_paths_[index] = has_flow;
-            if (!kCompressStrId || (kCompressStrId && has_flow))
+            if (!kCompressStrId or (kCompressStrId and has_flow))
                 b_check_flow_.push_back(flow);
         } else {
             assert(!kCompressStrId);
@@ -394,7 +394,7 @@ public:
         auto nextSize = sim_ds::calc::SizeFitsInBytes(size << kFlags);
         std::vector<size_t> element_sizes = {1, kCompressNext ? 1 : nextSize};
         if constexpr (kHashing) {
-            if constexpr (kCompressWords && !kDacWords) {
+            if constexpr (kCompressWords and !kDacWords) {
                 element_sizes.push_back(1);
             } else {
                 auto words_size = sim_ds::calc::SizeFitsInBytes(words);
@@ -410,7 +410,7 @@ public:
         }
         if constexpr (kUseStrId)
             b_check_paths_.resize(size);
-        if constexpr (kHashing && kCompressWords) {
+        if constexpr (kHashing and kCompressWords) {
             b_cum_words_paths_.resize(size);
             if constexpr (kPlainWords)
                 b_words_paths_.resize(size);
@@ -486,7 +486,7 @@ public:
             else
                 size += check_flow_.size_in_bytes();
         }
-        if constexpr (kHashing && kCompressWords) {
+        if constexpr (kHashing and kCompressWords) {
             if constexpr (kPlainWords) {
                 size += words_paths_.size_in_bytes();
                 size += words_flow_.size_in_bytes();
@@ -523,7 +523,7 @@ public:
             else
                 check_flow_ = FitVector(is);
         }
-        if constexpr (kHashing && kCompressWords) {
+        if constexpr (kHashing and kCompressWords) {
             if constexpr (kPlainWords) {
                 words_paths_.Read(is);
                 words_flow_ = FitVector(is);
@@ -559,7 +559,7 @@ public:
             else
                 check_flow_.Write(os);
         }
-        if constexpr (kHashing && kCompressWords) {
+        if constexpr (kHashing and kCompressWords) {
             if constexpr (kPlainWords) {
                 words_paths_.Write(os);
                 words_flow_.Write(os);
@@ -596,7 +596,7 @@ ShowStats(std::ostream& os) const {
         return use ? "Comp" : "Plain";
     };
     os << "--- Stat of " << "DAFoundation N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
-    os << "size:\t" << size_in_bytes() << endl;
+    os << "size:\t" << Self::size_in_bytes() << endl;
     os << "\tbytes:\t" << Base::size_in_bytes() << endl;
     os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
     os << "\tcheck:\t" << num_elements() + check_paths_.size_in_bytes() + (!kSelectId ? check_flow_.size_in_bytes() : check_flow_dac_.size_in_bytes()) << endl;

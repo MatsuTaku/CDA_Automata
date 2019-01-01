@@ -1,62 +1,63 @@
 #!/bin/bash
 
 function dam {
-  ./build/dam_bench $1 $2 11 >$1.bench.stdout 2>&1
+  #./build/experiment $1 $2 11 >$1.bench.stdout 2>&1
+  ./build/daram_benchmark $1 $2 >$1.bench.stdout 2>&1
 }
 export -f dam
 
 function damcn {
-  ./build/dam_bench $1 $2 16 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 16 >$1.bench.stdout 2>&1
 }
 export -f damcn
 
 function damci {
-  ./build/dam_bench $1 $2 15 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 15 >$1.bench.stdout 2>&1
 }
 export -f damci
 
 function damcsi {
-  ./build/dam_bench $1 $2 17 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 17 >$1.bench.stdout 2>&1
 }
 export -f damcsi
 
 function damdw {
-  ./build/dam_bench $1 $2 19 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 19 >$1.bench.stdout 2>&1
 }
 export -f damdw
 
 function damac {
-  ./build/dam_bench $1 $2 2 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 2 >$1.bench.stdout 2>&1
 }
 export -f damac
 
 function morfologik_fsa5d {
-  ./build/dam_bench $1 $2 9 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 9 >$1.bench.stdout 2>&1
 }
 export -f morfologik_fsa5d
 
 function morfologik_cfsa2d {
-  ./build/dam_bench $1 $2 10 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 10 >$1.bench.stdout 2>&1
 }
 export -f morfologik_cfsa2d
 
 function xcdat {
-  ./build/dam_bench $1 $2 7 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 7 >$1.bench.stdout 2>&1
 }
 export -f xcdat
 
 function fxcdat {
-  ./build/dam_bench $1 $2 13 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 13 >$1.bench.stdout 2>&1
 }
 export -f fxcdat
 
 function marisa {
-  ./build/dam_bench $1 $2 8 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 8 >$1.bench.stdout 2>&1
 }
 export -f marisa
 
 function darts {
-  ./build/dam_bench $1 $2 12 >$1.bench.stdout 2>&1
+  ./build/experiment $1 $2 12 >$1.bench.stdout 2>&1
 }
 export -f darts
 

@@ -4,8 +4,7 @@
 
 #include "csd_automata.hpp"
 #include "csd_automata/basic.hpp"
-#include "csd_automata/FsaTools.hpp"
-#include "csd_automata/FsaTools.hpp"
+#include "csd_automata/util.hpp"
 #include "XcdatWrapper.hpp"
 #include "MarisaWrapper.hpp"
 #include "DartsCloneWrapper.hpp"
@@ -21,16 +20,16 @@ constexpr int kRuns = 1;
 template <typename Fsa>
 void BenchFsa(const char* fsa_name, const char* query_name, bool needs_access = true) {
     std::cout << "Bench " << Fsa::name() << " from " << fsa_name << std::endl;
-    auto ifs = csd_automata::GetStreamOrDie<std::ifstream>(fsa_name);
+    auto ifs = csd_automata::util::GetStreamOrDie<std::ifstream>(fsa_name);
     Fsa fsa(ifs);
     
     std::cout << "Search benchmark for " << query_name << std::endl;
     using std::cout, std::endl;
     
-    const auto& strs = csd_automata::GetKeySets(query_name);
+    const auto& strs = csd_automata::util::GetKeySets(query_name);
     auto num = strs.size();
     auto ng = 0;
-    csd_automata::Stopwatch sw;
+    csd_automata::util::Stopwatch sw;
     for (auto& str : strs) {
         if (!fsa.Accept(str)) {
             ++ng;
@@ -50,7 +49,7 @@ void BenchFsa(const char* fsa_name, const char* query_name, bool needs_access = 
         values[i] = fsa.Lookup(strs[i]);
     }
     
-    sw = csd_automata::Stopwatch();
+    sw = csd_automata::util::Stopwatch();
     for (auto r = 0; r < kRuns; r++) {
         ng = 0;
         for (auto i = 0; i < strs.size(); i++) {
@@ -65,7 +64,7 @@ void BenchFsa(const char* fsa_name, const char* query_name, bool needs_access = 
     << "NG: " << ng << endl;
     
     if (needs_access) {
-        sw = csd_automata::Stopwatch();
+        sw = csd_automata::util::Stopwatch();
         for (auto r = 0; r < kRuns; r++) {
             ng = 0;
             for (auto i = 0; i < strs.size(); i++) {
@@ -94,7 +93,7 @@ void BenchMarisa(const char* fsa_name, const char* query_name, bool needs_access
     
     std::cout << "Search benchmark for " << query_name << std::endl;
     marisa::Keyset keyset;
-    auto ifs = csd_automata::GetStreamOrDie<std::ifstream>(query_name);
+    auto ifs = csd_automata::util::GetStreamOrDie<std::ifstream>(query_name);
     wrapper::SetMarisaKeySet(ifs, &keyset);
     auto num = keyset.size();
     marisa::Agent agent;
@@ -107,7 +106,7 @@ void BenchMarisa(const char* fsa_name, const char* query_name, bool needs_access
         values[i] = agent.key().id();
     }
     
-    csd_automata::Stopwatch sw;
+    csd_automata::util::Stopwatch sw;
     for (auto r = 0; r < kRuns; r++) {
         ng = 0;
         for (auto i = 0; i < keyset.size(); i++) {
@@ -123,7 +122,7 @@ void BenchMarisa(const char* fsa_name, const char* query_name, bool needs_access
     std::cout << "NG: " << ng << std::endl;
     
     if (needs_access) {
-        sw = csd_automata::Stopwatch();
+        sw = csd_automata::util::Stopwatch();
         for (auto r = 0; r < kRuns; r++) {
             ng = 0;
             for (auto i = 0; i < keyset.size(); i++) {
@@ -151,25 +150,23 @@ void BenchDarts(const char* fsa_name, const char* query_name) {
     std::cout << "Search benchmark for " << query_name << std::endl;
     std::vector<char*> strs;
     size_t num;
-    {
-        const auto& sets = csd_automata::GetKeySets(query_name);
-        num = sets.size();
-        for (auto& key : sets) {
-            strs.push_back(new char[key.size() + 1]);
-            strcpy(strs.back(), key.c_str());
-            strs.back()[key.size()]  = '\0';
-        }
+    auto sets = csd_automata::util::GetKeySets(query_name);
+    num = sets.size();
+    for (auto& key : sets) {
+        strs.push_back(new char[key.size() + 1]);
+        strcpy(strs.back(), key.c_str());
+        strs.back()[key.size()]  = '\0';
     }
     
     auto ng = 0;
-    csd_automata::Stopwatch sw;
+    csd_automata::util::Stopwatch sw;
     
     std::vector<size_t> values(num);
     for (auto i = 0; i < num; i++) {
         values[i] = darts.Lookup(strs[i]);
     }
     
-    sw = csd_automata::Stopwatch();
+    sw = csd_automata::util::Stopwatch();
     for (auto r = 0; r < kRuns; r++) {
         ng = 0;
         for (auto i = 0; i < num; i++) {
@@ -195,12 +192,12 @@ void BenchDarts(const char* fsa_name, const char* query_name) {
 
 
 int main(int argc, const char* argv[]) {
-    auto fsa_name = argv[1];
+    auto dict_name = argv[1];
     auto query_name = argv[2];
     auto type = atoi(argv[3]);
     
 #ifndef NDEBUG
-    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_fsa5";
 //    fsa_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
     query_name = "../../data-sets/local/jawiki-20181001.dict";
@@ -213,53 +210,23 @@ int main(int argc, const char* argv[]) {
 #endif
     
     switch (type) {
-//        case 0:
-//            BenchFsa<csd_automata::DaFsa>(fsa_name, query_name);
-//            break;
-//        case 1:
-//            BenchFsa<csd_automata::DaFsaDac>(fsa_name, query_name);
-//            break;
-        case 11:
-            BenchFsa<csd_automata::SdLoDaFsa>(fsa_name, query_name, false);
-            break;
-        case 15:
-            BenchFsa<csd_automata::SdLoCidDaFsa>(fsa_name, query_name, false);
-            break;
-        case 17:
-            BenchFsa<csd_automata::SdLoCsidDaFsa>(fsa_name, query_name, false);
-            break;
-        case 16:
-            BenchFsa<csd_automata::SdLoCnDaFsa>(fsa_name, query_name, false);
-            break;
-        case 18:
-            BenchFsa<csd_automata::SdLoCnsidDaFsa>(fsa_name, query_name, false);
-            break;
-        case 14:
-            BenchFsa<csd_automata::SdLoSiDaFsa>(fsa_name, query_name, false);
-            break;
-        case 19:
-            BenchFsa<csd_automata::SdLoDwDaFsa>(fsa_name, query_name, false);
-            break;
-        case 2:
-            BenchFsa<csd_automata::SdDaFsa>(fsa_name, query_name);
-            break;
-        case 7:
-            BenchFsa<wrapper::XcdatWrapper<false>>(fsa_name, query_name);
-            break;
-        case 13:
-            BenchFsa<wrapper::XcdatWrapper<true>>(fsa_name, query_name);
-            break;
         case 9:
-            BenchFsa<csd_automata::SdMrfFsa5>(fsa_name, query_name);
+            BenchFsa<csd_automata::SdMrfFsa5>(dict_name, query_name);
             break;
         case 10:
-            BenchFsa<csd_automata::SdMrfCFsa2>(fsa_name, query_name);
+            BenchFsa<csd_automata::SdMrfCFsa2>(dict_name, query_name);
+            break;
+        case 7:
+            BenchFsa<wrapper::XcdatWrapper<false>>(dict_name, query_name);
+            break;
+        case 13:
+            BenchFsa<wrapper::XcdatWrapper<true>>(dict_name, query_name);
             break;
         case 8:
-            BenchMarisa(fsa_name, query_name);
+            BenchMarisa(dict_name, query_name);
             break;
         case 12:
-            BenchDarts(fsa_name, query_name);
+            BenchDarts(dict_name, query_name);
             break;
         default:
             std::cerr << "type is invalid value: " << type << std::endl;

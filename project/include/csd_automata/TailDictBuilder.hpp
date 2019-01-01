@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 #include "basic.hpp"
+#include "util.hpp"
 #include "PlainFSA.hpp"
 #include "TailDictContainer.hpp"
 #include "SerializedStringsBuilder.hpp"
@@ -85,15 +86,15 @@ private:
 void TailDictBuilder::Build(bool merge_suffix, bool divide_front) {
     std::cout << "------ TailDict build bench mark ------" << std::endl;
     
-    std::cout << "MakeDict: " << MeasureProcessing([&]() {
+    std::cout << "MakeDict: " << util::MeasureProcessing([&]() {
         MakeDict_();
     }) << "ms" << std::endl;
     
-    std::cout << "SetSharings: " <<  MeasureProcessing([&, merge_suffix]() {
+    std::cout << "SetSharings: " <<  util::MeasureProcessing([&, merge_suffix]() {
         SetSharing_(merge_suffix);
     }) << "ms" << std::endl;
     
-    std::cout << "SetUpLabelArray: " << MeasureProcessing([&, divide_front]() {
+    std::cout << "SetUpLabelArray: " << util::MeasureProcessing([&, divide_front]() {
         SetUpLabelArray_(divide_front);
     }) << "ms" << std::endl;
     

@@ -33,11 +33,14 @@ include_directories(/usr/local/include)
 
 file(GLOB wrappers XcdatWrapper.hpp MarisaWrapper.hpp DartsCloneWrapper.hpp)
 
-add_executable(dam_build dam_build.cpp)
-target_link_libraries(dam_build CSDAutomata)
+add_executable(daram_build daram_build.cpp)
+target_link_libraries(daram_build CSDAutomata)
 
-add_executable(dam_bench dam_bench.cpp ${wrappers})
-target_link_libraries(dam_bench CSDAutomata xcdat marisa)
+add_executable(daram_benchmark daram_benchmark.cpp)
+target_link_libraries(daram_benchmark CSDAutomata)
+
+add_executable(experiment experiment.cpp ${wrappers})
+target_link_libraries(experiment CSDAutomata xcdat marisa)
 
 add_executable(convert convert.cpp)
 target_link_libraries(convert CSDAutomata)

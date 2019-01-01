@@ -9,6 +9,8 @@
 #define Director_hpp
 
 #include "basic.hpp"
+#include "util.hpp"
+#include "fsa_util.hpp"
 #include "PlainFSABuilder.hpp"
 #include "DoubleArrayFSA.hpp"
 #include "DoubleArrayCFSA.hpp"
@@ -20,36 +22,11 @@ namespace csd_automata {
     
 namespace director {
 
-// Might throw DataNotFoundException
-inline PlainFSA BuildPlainFSA(const std::string& data_name) {
-    auto ifs = GetStreamOrDie<std::ifstream>(data_name);
-    
-    PlainFSABuilder builder;
-    for (std::string line; getline(ifs, line);)
-        builder.add(line);
-    
-    return builder.release();
-}
-
-inline PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
-    auto ifs = GetStreamOrDie<std::ifstream>(plain_fsa_name);
-    PlainFSA plainFsa;
-    plainFsa.read(ifs);
-    return plainFsa;
-}
-
-inline void Generate(const std::string& data_name, const std::string& plain_fsa_name) {
-    auto plainFsa = BuildPlainFSA(data_name);
-    auto ofs = GetStreamOrDie<std::ofstream>(data_name);
-    std::cout << "Write PlainFSA into " << plain_fsa_name << std::endl;
-    plainFsa.write(ofs);
-}
-
 // May throw Exceptions
 template <class StringDictionaryType>
 int CheckHasMember(const std::string& dataset_name, StringDictionaryType& sd) {
     std::cout << std::endl << "Check membering ... ";
-    auto ifs = GetStreamOrDie<std::ifstream>(dataset_name);
+    auto ifs = util::GetStreamOrDie<std::ifstream>(dataset_name);
     
     auto length = 0;
     auto count = 0;
@@ -77,7 +54,7 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
     std::string base_name = out_name;
     auto da_ext = extension::kExtensionDoubleArrayAutomata;
     // If baseName's extension is same as '.dam'...
-    if (base_name.size() > da_ext.size() &&
+    if (base_name.size() > da_ext.size() and
         base_name.substr(base_name.size() - da_ext.size()) == da_ext) {
         base_name.erase(base_name.end() - da_ext.size(), base_name.end());
     }
@@ -92,8 +69,8 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
         pfa.read(plain_fsa_stream);
     } else {
         std::cout << "Build pfa to: " << plain_fsa_name << std::endl;
-        auto time_build_pfa = MeasureProcessing([&]() {
-            pfa = BuildPlainFSA(dataset_name);
+        auto time_build_pfa = util::MeasureProcessing([&] {
+            pfa = fsa_util::BuildPlainFSA(dataset_name);
             std::ofstream pfa_out(plain_fsa_name);
             pfa.write(pfa_out);
         });
@@ -104,11 +81,11 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
     std::cout << "Build dam to: " << out_name << std::endl;
     
     DoubleArrayType da;
-    auto time_build_dam = MeasureProcessing([&]() {
+    auto time_build_dam = util::MeasureProcessing([&] {
         if (values_name == "") {
             da = DoubleArrayType(pfa);
         } else {
-            auto values_stream = GetStreamOrDie<std::ifstream>(values_name);
+            auto values_stream = util::GetStreamOrDie<std::ifstream>(values_name);
             std::vector<size_t> values;
             for (std::string v; std::getline(values_stream, v);) {
                 size_t vi = stoi(v);
