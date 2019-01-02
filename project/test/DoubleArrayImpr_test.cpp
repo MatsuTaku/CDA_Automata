@@ -6,22 +6,22 @@
 //
 
 #include "gtest/gtest.h"
-#include "csd_automata/DAFoundation.hpp"
+#include "csd_automata/DoubleArrayImpr.hpp"
 
 using namespace csd_automata;
 
 namespace {
-    
-    std::vector<uint64_t> RandVector(size_t size) {
-        std::vector<uint64_t> src(size);
-        auto bitsWidth = sim_ds::calc::SizeFitsInBits(size);
-        for (auto i = 0; i < size; i++) {
-            auto rndWidth = rand() % bitsWidth;
-            src[i] = 1ULL << rndWidth;
-        }
-        return src;
+
+std::vector<uint64_t> RandVector(size_t size) {
+    std::vector<uint64_t> src(size);
+    auto bitsWidth = sim_ds::calc::SizeFitsInBits(size);
+    for (auto i = 0; i < size; i++) {
+        auto rnd_width = rand() % bitsWidth;
+        src[i] = 1ULL << rnd_width;
     }
-    
+    return src;
+}
+
 }
 
 TEST(DAFoundationTest, UseDac) {
@@ -30,7 +30,7 @@ TEST(DAFoundationTest, UseDac) {
     auto next_src = RandVector(size);
     auto check_src = RandVector(size);
 
-    DAFoundation<true, true, true, true, false, false, false, false, false, false, false> fd;
+    DoubleArrayImpr<true, true, true, true, false, false, false, false, false, false, false> fd;
     fd.resize(size);
 
     std::vector<bool> is_str_ids(size);
@@ -67,7 +67,7 @@ TEST(DAFoundationTest, LookupDict) {
     auto check_src = RandVector(size);
     auto cwords_src = RandVector(size);
     
-    DAFoundation<false, true, true, false, true, true, true, false, false, false, false> fd;
+    DoubleArrayImpr<false, true, true, false, true, true, true, false, false, false, false> fd;
     fd.resize(size);
     
     std::vector<bool> is_str_ids(size);

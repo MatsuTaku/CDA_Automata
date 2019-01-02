@@ -1,12 +1,12 @@
 //
-//  DAFoundation.hpp
+//  DoubleArrayImpr.hpp
 //  ArrayFSA
 //
 //  Created by 松本拓真 on 2018/01/13.
 //
 
-#ifndef NextCheck_hpp
-#define NextCheck_hpp
+#ifndef Double_Array_Impr_hpp
+#define Double_Array_Impr_hpp
 
 #include "IOInterface.hpp"
 #include "sim_ds/MultipleVector.hpp"
@@ -22,9 +22,9 @@ namespace csd_automata {
     
 
 template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-class DAFoundation : sim_ds::MultipleVector, IOInterface {
+class DoubleArrayImpr : sim_ds::MultipleVector, IOInterface {
 public:
-    using Self = DAFoundation<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
+    using Self = DoubleArrayImpr<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
     using Base = sim_ds::MultipleVector;
     
     static constexpr bool kCompressNext = CompNext;
@@ -119,7 +119,7 @@ private:
     }
         
 public:
-    DAFoundation() = default;
+    DoubleArrayImpr() = default;
         
     size_t next(size_t index) const {
         size_t ne = Base::get_(Base::offset_(index) + kElementPositionNext, Base::element_table_[kElementIdNext].size); // Faster extraction
@@ -589,13 +589,13 @@ public:
 
 
 template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-void DAFoundation<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+void DoubleArrayImpr<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
 ShowStats(std::ostream& os) const {
     using std::endl;
     auto codes_name = [](bool use) {
         return use ? "Comp" : "Plain";
     };
-    os << "--- Stat of " << "DAFoundation N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
+    os << "--- Stat of " << "DoubleArrayImpr N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
     os << "size:\t" << Self::size_in_bytes() << endl;
     os << "\tbytes:\t" << Base::size_in_bytes() << endl;
     os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
@@ -631,7 +631,7 @@ ShowStats(std::ostream& os) const {
 
     
 template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-void DAFoundation<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+void DoubleArrayImpr<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
 ShowSizeMap(std::ostream& os) const {
     auto numElem = num_elements();
     std::vector<size_t> nexts(numElem);
@@ -650,4 +650,4 @@ ShowSizeMap(std::ostream& os) const {
     
 }
 
-#endif /* NextCheck_hpp */
+#endif /* Double_Array_Impr_hpp */

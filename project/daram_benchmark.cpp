@@ -17,7 +17,7 @@ void ShowUsage() {
 }
 
 template <class DaramDictionary>
-    void BenchmarkDictionary(const DaramDictionary& dict, const std::string dataset_name) {
+    void BenchmarkDictionary(const DaramDictionary& dict, const std::string dataset_name, const std::string results_name) {
     auto keyset = csd_automata::util::GetKeySets(dataset_name);
     
 #ifdef NDEBUG
@@ -45,6 +45,13 @@ template <class DaramDictionary>
     << "NG: " << ngs / kRuns << std::endl << std::endl;
     
     dict.ShowStats(std::cout);
+    
+    if (results_name != "") {
+        std::ofstream results(results_name, std::ios::app);
+        auto delim = ", ";
+        results << DaramDictionary::tag() << delim
+        << dict.size_in_bytes() << delim << lookup_time << std::endl;
+    }
     
 }
 
@@ -82,9 +89,9 @@ template <class Process>
     }
 }
 
-    void Benchmark(const std::string dict_name, const std::string dataset_name) {
-    ProcessMatchDictionary(dict_name, [&dataset_name](auto dict) {
-        BenchmarkDictionary(dict, dataset_name);
+void Benchmark(const std::string dict_name, const std::string dataset_name, const std::string results_name) {
+    ProcessMatchDictionary(dict_name, [&dataset_name, &results_name](auto dict) {
+        BenchmarkDictionary(dict, dataset_name, results_name);
     });
 }
 
@@ -92,28 +99,34 @@ template <class Process>
 
 int main(int argc, char* argv[]) {
 #ifdef NDEBUG
-    if (argc != 3) {
-        std::cout << "ERROR: Failed to invalid arguments!" << std::endl;
+    if (argc != 3 and argc != 4) {
+        std::cout << "ERROR: Invalid number of  arguments!: " << argc << std::endl;
         ShowUsage();
         exit(EXIT_FAILURE);
     }
 #endif
     
-    std::string dict_name = argv[1];
-    std::string dataset_name = argv[2];
+    std::string dict_name;
+    std::string dataset_name;
+    std::string results_name;
     
-    if (dict_name == "" or dataset_name == "") {
-        std::cout << "Invalid arguments: " << dict_name << " " << dataset_name << std::endl;
-        ShowUsage();
-        exit(EXIT_FAILURE);
-    }
-    
-#ifndef NDEBUG
+#ifdef NDEBUG
+    dict_name = argv[1];
+    dataset_name = argv[2];
+    results_name = argv[3];
+#else
     dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
     dataset_name = "../../data-sets/local/jawiki-20181001.dict";
+    results_name = "../../results/jawiki-20181001/jawiki-20181001.DAM_TOOLS";
 #endif
     
-    Benchmark(dict_name, dataset_name);
+    if (dict_name == "" or dataset_name == "") {
+        std::cout << "Invalid arguments!" << std::endl;
+        ShowUsage();
+        exit(EXIT_FAILURE);
+    }
+    
+    Benchmark(dict_name, dataset_name, results_name);
     
     return 0;
 }

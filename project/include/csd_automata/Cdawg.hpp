@@ -10,9 +10,9 @@
 
 #include "StringDictionaryInterface.hpp"
 #include "IOInterface.hpp"
-#include "DoubleArrayCFSABuilder.hpp"
+#include "CdawgBuilder.hpp"
 
-#include "DAFoundation.hpp"
+#include "DoubleArrayImpr.hpp"
 #include "sim_ds/BitVector.hpp"
 #include "SerializedStrings.hpp"
 #include "ValueSet.hpp"
@@ -25,9 +25,9 @@
 namespace csd_automata {
 
 
-class AutomataExplorer {
+class Explorer {
 public:
-    AutomataExplorer(std::string_view text) : trans_(0), text_(text), pos_on_text_(0) {}
+    Explorer(std::string_view text) : trans_(0), text_(text), pos_on_text_(0) {}
     
     void set_trans(size_t new_value) {
         trans_ = new_value;
@@ -72,11 +72,11 @@ private:
 
 
 template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-class DoubleArrayCFSA : public StringDictionaryInterface, DAFoundation<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
+class Cdawg : public StringDictionaryInterface, DoubleArrayImpr<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
 public:
     static_assert((SelectStrId and CompressStrId) or !SelectStrId, "ERROR: Failed template parameters: SelectStrId and CompressStrId");
     
-    using Self = DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>;
+    using Self = Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>;
     
     static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kUseCumulativeWords = UseCumulativeWords;
@@ -100,7 +100,7 @@ public:
     
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Base = DAFoundation<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
+    using Base = DoubleArrayImpr<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
@@ -108,15 +108,22 @@ public:
     
     using BitVector = sim_ds::BitVector;
     
-    friend class DoubleArrayCFSABuilder;
-    using Builder = DoubleArrayCFSABuilder;
-    
-    using Explorer = AutomataExplorer;
+    using Builder = CdawgBuilder;
+    friend class CdawgBuilder;
     
     static constexpr size_t kSearchError = 0;
     
     static std::string name() {
         return typeid(Self).name();
+    }
+    
+    static std::string tag() {
+        return  (std::string("Daram-")
+                 + (kSupportAccess ? "A" : "")
+                 + (kCompressNext ? "N" : "")
+                 + (kCompressStrId ? "C" : "")
+                 + (kSelectStrId ? "s" : "")
+                 + (kDacWords ? "Wd" : ""));
     }
     
 private:
@@ -126,27 +133,27 @@ private:
     ValueSet values_;
     
 public:
-    DoubleArrayCFSA() = default;
+    Cdawg() = default;
     
-    explicit DoubleArrayCFSA(const Builder& builder) {
+    explicit Cdawg(const Builder& builder) {
         builder.Release(*this);
     }
     
-    explicit DoubleArrayCFSA(const Builder& builder, ValueSet&& values) : DoubleArrayCFSA(builder) {
+    explicit Cdawg(const Builder& builder, ValueSet&& values) : Cdawg(builder) {
         values_ = std::move(values);
     }
     
-    explicit DoubleArrayCFSA(const PlainFSA& fsa) {
+    explicit Cdawg(const PlainFSA& fsa) {
         Builder builder(fsa);
         builder.Build(kUseBinaryLabel, kMergeSuffixOfSerializedStrings, !kUnionCheckAndId);
         builder.Release(*this);
     }
     
-    explicit DoubleArrayCFSA(const PlainFSA& fsa, ValueSet&& values) : DoubleArrayCFSA(fsa) {
+    explicit Cdawg(const PlainFSA& fsa, ValueSet&& values) : Cdawg(fsa) {
         values_ = std::move(values);
     }
     
-    explicit DoubleArrayCFSA(std::istream& is) {
+    explicit Cdawg(std::istream& is) {
         LoadFrom(is);
     }
     
@@ -324,7 +331,7 @@ private:
 
 
 template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-id_type DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
+id_type Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
 LookupLegacy(std::string_view text) const {
     assert(!kUseCumulativeWords);
     
@@ -402,7 +409,7 @@ LookupLegacy(std::string_view text) const {
 
 
 template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-std::string DoubleArrayCFSA<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
+std::string Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
 Access(id_type key) const {
     assert(kSupportAccess);
     

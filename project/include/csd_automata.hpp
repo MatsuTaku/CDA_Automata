@@ -8,28 +8,28 @@
 #ifndef array_fsa_hpp
 #define array_fsa_hpp
 
-#include "csd_automata/DoubleArrayFSA.hpp"
-#include "csd_automata/DoubleArrayCFSA.hpp"
+#include "csd_automata/Dawg.hpp"
+#include "csd_automata/Cdawg.hpp"
 #include "csd_automata/MorfologikFsaDictionary.hpp"
 
 namespace csd_automata {
 
-using DaFsa = DoubleArrayFSA<false>;
-using DaFsaDac = DoubleArrayFSA<true>;
+using DaFsa = Dawg<false>;
+using DaFsaDac = Dawg<true>;
 
 // Recomended
-using Daram = DoubleArrayCFSA<true, true, false, false, true, false, false, false, false>;
+using Daram = Cdawg<true, true, false, false, true, false, false, false, false>;
 
 // For Expression
-using SdDaFsa = DoubleArrayCFSA<true, true, true, false, true, true, false, false, false>;
-using SdLoDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, false, false, false>;
-using SdLoCnDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, true, false, false>;
-using SdLoCidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, false, false, false>;
-using SdLoCsidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, false, true, false>;
-using SdLoCnsidDaFsa = DoubleArrayCFSA<true, true, false, true, true, false, true, true, false>;
-using SdLoDwDaFsa = DoubleArrayCFSA<true, true, false, false, true, false, false, false, true>;
+using SdDaFsa = Cdawg<true, true, true, false, true, true, false, false, false>;
+using SdLoDaFsa = Cdawg<true, true, false, false, true, false, false, false, false>;
+using SdLoCnDaFsa = Cdawg<true, true, false, false, true, false, true, false, false>;
+using SdLoCidDaFsa = Cdawg<true, true, false, true, true, false, false, false, false>;
+using SdLoCsidDaFsa = Cdawg<true, true, false, true, true, false, false, true, false>;
+using SdLoCnsidDaFsa = Cdawg<true, true, false, true, true, false, true, true, false>;
+using SdLoDwDaFsa = Cdawg<true, true, false, false, true, false, false, false, true>;
 // Rejected
-using SdLoSiDaFsa = DoubleArrayCFSA<false, true, false, true, true, false, false, false, false>;
+using SdLoSiDaFsa = Cdawg<false, true, false, true, true, false, false, false, false>;
 
 }
 

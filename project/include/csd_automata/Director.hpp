@@ -12,8 +12,8 @@
 #include "util.hpp"
 #include "fsa_util.hpp"
 #include "PlainFSABuilder.hpp"
-#include "DoubleArrayFSA.hpp"
-#include "DoubleArrayCFSA.hpp"
+#include "Dawg.hpp"
+#include "Cdawg.hpp"
 #include "ValueSet.hpp"
 #include <fstream>
 #include "Extension.hpp"

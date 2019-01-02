@@ -1,24 +1,24 @@
 //
-//  ArrayFSATailBuilder.hpp
-//  array_fsa
+//  CdawgBuilder.hpp
+//  csd_automata
 //
 //  Created by 松本拓真 on 2017/11/03.
 //
 
-#ifndef ArrayFSA_TailBuilder_hpp
-#define ArrayFSA_TailBuilder_hpp
+#ifndef Cdawg_Builder_hpp
+#define Cdawg_Builder_hpp
 
 #include "basic.hpp"
 #include "PlainFSA.hpp"
 #include "TailDict.hpp"
 #include "sim_ds/log.hpp"
 
-#include "DoubleArrayCFSA.hpp"
+#include "Cdawg.hpp"
 
 namespace csd_automata {
-    
 
-class DoubleArrayCFSABuilder {
+
+class CdawgBuilder {
     static constexpr size_t kAddrSize = 4;
     static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 3;
     
@@ -33,15 +33,15 @@ class DoubleArrayCFSABuilder {
     TailDict tail_dict_;
     
 public:
-    explicit DoubleArrayCFSABuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
+    explicit CdawgBuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
     
     void Build(bool binary_mode, bool merge_suffix, bool divide_front);
     
     template <class Product>
     void Release(Product& da);
     
-    DoubleArrayCFSABuilder(const DoubleArrayCFSABuilder&) = delete;
-    DoubleArrayCFSABuilder& operator=(const DoubleArrayCFSABuilder&) = delete;
+    CdawgBuilder(const CdawgBuilder&) = delete;
+    CdawgBuilder& operator=(const CdawgBuilder&) = delete;
     
 private:
     template <class Fsa>
@@ -232,7 +232,7 @@ private:
 };
 
     
-void DoubleArrayCFSABuilder::Build(bool binary_mode, bool merge_suffix, bool divide_front) {
+void CdawgBuilder::Build(bool binary_mode, bool merge_suffix, bool divide_front) {
     ExpandBlock_();
     FreezeTrans_(0);
     set_final_(0, true);
@@ -246,7 +246,7 @@ void DoubleArrayCFSABuilder::Build(bool binary_mode, bool merge_suffix, bool div
 }
 
 template <class Product>
-void DoubleArrayCFSABuilder::Release(Product& dam) {
+void CdawgBuilder::Release(Product& dam) {
     const auto num_elems = num_elements_();
     dam.Base::resize(num_elems, get_num_words());
     GetSerializedStringsBuilder(tail_dict_).Release(&dam.strings_map_);
@@ -283,9 +283,9 @@ void DoubleArrayCFSABuilder::Release(Product& dam) {
                 dam.Base::set_cum_words(i, get_cum_words_(i));
             
             if constexpr (Product::kLinkChildren) {
-                bool hasBro = has_brother_(i);
-                dam.Base::set_has_brother(i, hasBro);
-                if (hasBro)
+                bool has_bro = has_brother_(i);
+                dam.Base::set_has_brother(i, has_bro);
+                if (has_bro)
                     dam.Base::set_brother(i, get_brother_(i));
             }
         }
@@ -306,7 +306,7 @@ void DoubleArrayCFSABuilder::Release(Product& dam) {
 
 
 template <class Product>
-void DoubleArrayCFSABuilder::CheckEquivalence(Product& dam) {
+void CdawgBuilder::CheckEquivalence(Product& dam) {
     auto tab = "\t";
     for (size_t i = 0; i < num_elements_(); i++) {
         if (!is_frozen_(i)) continue;
@@ -337,7 +337,7 @@ void DoubleArrayCFSABuilder::CheckEquivalence(Product& dam) {
 }
     
 
-void DoubleArrayCFSABuilder::ShowMapping(bool show_density) {
+void CdawgBuilder::ShowMapping(bool show_density) {
     auto tab = "\t";
     
     std::vector<size_t> next_map;
@@ -386,7 +386,7 @@ void DoubleArrayCFSABuilder::ShowMapping(bool show_density) {
 
 // MARK: - private
 
-void DoubleArrayCFSABuilder::ExpandBlock_() {
+void CdawgBuilder::ExpandBlock_() {
     const auto begin = index_(bytes_.size());
     const auto end = begin + kBlockSize;
     
@@ -416,7 +416,7 @@ void DoubleArrayCFSABuilder::ExpandBlock_() {
 }
 
 
-void DoubleArrayCFSABuilder::FreezeTrans_(size_t index) {
+void CdawgBuilder::FreezeTrans_(size_t index) {
     assert(!is_frozen_(index));
     
     const auto succ = get_succ_(index);
@@ -438,10 +438,10 @@ void DoubleArrayCFSABuilder::FreezeTrans_(size_t index) {
 }
 
 
-void DoubleArrayCFSABuilder::CloseBlock_(size_t begin) {
+void CdawgBuilder::CloseBlock_(size_t begin) {
     const auto end = begin + kBlockSize;
     
-    if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
+    if (unfrozen_head_ == 0 or unfrozen_head_ >= end) {
         return;
     }
     for (auto i = begin; i < end; i++) {
@@ -455,7 +455,7 @@ void DoubleArrayCFSABuilder::CloseBlock_(size_t begin) {
 
 
 // so-called XCHECK
-size_t DoubleArrayCFSABuilder::FindNext_(size_t first_trans) const {
+size_t CdawgBuilder::FindNext_(size_t first_trans) const {
     const auto symbol = src_fsa_.get_trans_symbol(first_trans);
     
     if (unfrozen_head_ != 0) {
@@ -474,7 +474,7 @@ size_t DoubleArrayCFSABuilder::FindNext_(size_t first_trans) const {
 }
 
 
-bool DoubleArrayCFSABuilder::CheckNext_(size_t next, size_t trans) const {
+bool CdawgBuilder::CheckNext_(size_t next, size_t trans) const {
     if (is_used_next_(next)) {
         return false;
     }
@@ -488,18 +488,18 @@ bool DoubleArrayCFSABuilder::CheckNext_(size_t next, size_t trans) const {
 }
 
 // Recursive function
-void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
+void CdawgBuilder::Arrange_(size_t state, size_t index) {
     const auto first_trans = src_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
-        set_next_(index, index); // to the terminal state
+        set_next_(index, 0); // to the terminal state
         return;
     }
     
     { // Set next of offset to state's second if needed.
         auto it = state_map_.find(state);
         if (it != state_map_.end()) {
-            // already visited state
+            // Is already visited state
             set_next_(index, it->second);
             return;
         }
@@ -511,7 +511,7 @@ void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
     }
     
     set_next_(index, next);
-    state_map_.insert(std::make_pair(state, next));
+    state_map_.insert({state, next});
     set_used_next_(next, true);
     
     // Contain <symbol, trans>
@@ -522,13 +522,8 @@ void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
         const auto symbol = src_fsa_.get_trans_symbol(trans);
         const auto child_index = next ^ symbol;
         
-        assert(!is_frozen_(child_index));
         FreezeTrans_(child_index);
-        assert(is_frozen_(child_index));
-        // set check
         set_check_(child_index, symbol);
-        assert(get_check_(child_index) == symbol);
-        // Set: hasLabel, stringId
         auto trans_index = trans / PlainFSA::kSizeTrans;
         auto label_trans = trans;
         if (tail_dict_.is_label_source(trans_index)) {
@@ -539,9 +534,7 @@ void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
                 label_trans = src_fsa_.get_target_state(label_trans);
             }
         }
-        // set is_final
         set_final_(child_index, src_fsa_.is_final_trans(label_trans));
-        // set word
         const auto words = src_fsa_.get_words_trans(label_trans);
         set_words_(child_index, words);
         set_cum_words_(child_index, words_counter);
@@ -566,4 +559,4 @@ void DoubleArrayCFSABuilder::Arrange_(size_t state, size_t index) {
     
 }
 
-#endif /* ArrayFSA_TailBuilder_hpp */
+#endif /* Cdawg_Builder_hpp */

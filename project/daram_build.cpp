@@ -54,7 +54,7 @@ int main(int argc, const char* argv[]) {
     
     for (int i = 1; i < argc; i++) {
         std::string option(argv[i]);
-        if (option == "-o" || option == "--output") {
+        if (option == "-o" or option == "--output") {
             dict_name = argv[++i];
         } else if (option == "--access") {
             options.access();

@@ -30,7 +30,7 @@ public:
     }
     
     void AppendPrefixAndId(size_t length, size_t id) {
-        if (length == 0 || length > base_string_.size())
+        if (length == 0 or length > base_string_.size())
             return;
         if (terminals_.size() < length)
             b_terminals_.resize(length);

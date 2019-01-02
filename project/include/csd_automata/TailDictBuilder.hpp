@@ -117,7 +117,7 @@ void TailDictBuilder::Release(Product& dict) {
 void TailDictBuilder::LabelArrange_(size_t state) {
     const auto first_trans = orig_fsa_.get_first_trans(state);
     
-    if (first_trans == 0 || // last trans
+    if (first_trans == 0 or // last trans
         state_map_.find(state) != state_map_.end()) {// already visited state
         return;
     }
@@ -167,7 +167,7 @@ void TailDictBuilder::SetSharing_(bool merge_suffix) {
     });
     
     auto dummy = Container();
-    Container *owner = &dummy;
+    Container* owner = &dummy;
     for (auto i = str_dicts_.size(); i > 0; --i) {
         auto &cur = str_dicts_[i - 1];
         if (cur.label.size() == 0) {
@@ -175,19 +175,19 @@ void TailDictBuilder::SetSharing_(bool merge_suffix) {
             continue;
         }
         auto match = 0;
-        auto oLen = owner->label.length();
-        auto cLen = cur.label.length();
-        while ((oLen > match && cLen > match) &&
-               owner->label[oLen - match - 1] == cur.label[cLen - match - 1]) {
+        auto owner_label_len = owner->label.length();
+        auto label_len = cur.label.length();
+        while ((owner_label_len > match and label_len > match) and
+               owner->label[owner_label_len - match - 1] == cur.label[label_len - match - 1]) {
             ++match;
         }
-        if (match > 0 && match == oLen) {
+        if (match > 0 and match == owner_label_len) {
             // sharing
             cur.is_merged = true;
             cur.enabled = false;
             cur.owner = owner->id;
             owner->counter++;
-        } else if (merge_suffix && (match > 0 && match == cLen)) {
+        } else if (merge_suffix and (match > 0 and match == label_len)) {
             // merge
             cur.is_merged = true;
             cur.owner = owner->id;

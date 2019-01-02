@@ -96,7 +96,6 @@ damcn
 damci
 damcsi
 damdw
-"
 morfologik_fsa5d
 morfologik_cfsa2d
 darts
@@ -104,6 +103,7 @@ xcdat
 fxcdat
 marisa
 centrp
+"
 #damac
 
 DATASET_DIR=data-sets

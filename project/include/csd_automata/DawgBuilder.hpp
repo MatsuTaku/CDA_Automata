@@ -2,8 +2,8 @@
 // Created by Kampersanda on 2017/05/26.
 //
 
-#ifndef ARRAY_FSA_ARRAYFSABUILDER_HPP
-#define ARRAY_FSA_ARRAYFSABUILDER_HPP
+#ifndef Dawg_Builder_hpp
+#define Dawg_Builder_hpp
 
 #include "basic.hpp"
 
@@ -14,14 +14,12 @@
 
 namespace csd_automata {
 
-class DoubleArrayFSABuilder {
+class DawgBuilder {
 public:
-    DoubleArrayFSABuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
+    DawgBuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
     
-    virtual ~DoubleArrayFSABuilder() = default;
-    
-    DoubleArrayFSABuilder(const DoubleArrayFSABuilder&) = delete;
-    DoubleArrayFSABuilder& operator=(const DoubleArrayFSABuilder&) = delete;
+    DawgBuilder(const DawgBuilder&) = delete;
+    DawgBuilder& operator=(const DawgBuilder&) = delete;
     
     static constexpr size_t kAddrSize = 4;
     static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 3;
@@ -152,7 +150,7 @@ protected:
 // MARK: - public
 
 template <class T>
-inline void DoubleArrayFSABuilder::CheckEquivalence(T &fsa) {
+inline void DawgBuilder::CheckEquivalence(T &fsa) {
     auto tab = "\t";
     for (auto i = 0; i < num_elements_(); i++) {
         if (!is_frozen_(i)) continue;
@@ -178,7 +176,7 @@ inline void DoubleArrayFSABuilder::CheckEquivalence(T &fsa) {
     }
 }
 
-inline void DoubleArrayFSABuilder::ShowMapping(bool show_density) {
+inline void DawgBuilder::ShowMapping(bool show_density) {
     auto tab = "\t";
     
     std::vector<size_t> next_map;
@@ -227,7 +225,7 @@ inline void DoubleArrayFSABuilder::ShowMapping(bool show_density) {
 
 // MARK: - private
 
-void DoubleArrayFSABuilder::ExpandBlock_() {
+void DawgBuilder::ExpandBlock_() {
     const auto begin = index_(bytes_.size());
     const auto end = begin + kBlockSize;
     
@@ -256,7 +254,7 @@ void DoubleArrayFSABuilder::ExpandBlock_() {
     }
 }
 
-void DoubleArrayFSABuilder::FreezeTrans_(size_t index) {
+void DawgBuilder::FreezeTrans_(size_t index) {
     assert(!is_frozen_(index));
     
     set_frozen_(index, true);
@@ -277,10 +275,10 @@ void DoubleArrayFSABuilder::FreezeTrans_(size_t index) {
     }
 }
 
-void DoubleArrayFSABuilder::CloseBlock_(size_t begin) {
+void DawgBuilder::CloseBlock_(size_t begin) {
     const auto end = begin + kBlockSize;
     
-    if (unfrozen_head_ == 0 || unfrozen_head_ >= end) {
+    if (unfrozen_head_ == 0 or unfrozen_head_ >= end) {
         return;
     }
     for (auto i = begin; i < end; i++) {
@@ -293,7 +291,7 @@ void DoubleArrayFSABuilder::CloseBlock_(size_t begin) {
 }
 
 // so-called XCHECK
-size_t DoubleArrayFSABuilder::FindNext_(size_t first_trans) const {
+size_t DawgBuilder::FindNext_(size_t first_trans) const {
     const auto symbol = src_fsa_.get_trans_symbol(first_trans);
     
     if (unfrozen_head_ != 0) {
@@ -310,7 +308,7 @@ size_t DoubleArrayFSABuilder::FindNext_(size_t first_trans) const {
     return index_(bytes_.size()) ^ symbol;
 }
 
-bool DoubleArrayFSABuilder::CheckNext_(size_t next, size_t trans) const {
+bool DawgBuilder::CheckNext_(size_t next, size_t trans) const {
     if (is_used_next_(next)) {
         return false;
     }
@@ -328,7 +326,7 @@ bool DoubleArrayFSABuilder::CheckNext_(size_t next, size_t trans) const {
 }
 
 // Recusive function
-inline void DoubleArrayFSABuilder::Arrange_(size_t state, size_t index) {
+inline void DawgBuilder::Arrange_(size_t state, size_t index) {
     const auto first_trans = src_fsa_.get_first_trans(state);
     
     if (first_trans == 0) {
@@ -375,4 +373,4 @@ inline void DoubleArrayFSABuilder::Arrange_(size_t state, size_t index) {
     
 }
 
-#endif //ARRAY_FSA_ARRAYFSABUILDER_HPP
+#endif //Dawg_Builder_hpp

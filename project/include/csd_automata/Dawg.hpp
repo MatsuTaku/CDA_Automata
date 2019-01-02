@@ -10,18 +10,18 @@
 
 #include "StringDictionaryInterface.hpp"
 #include "IOInterface.hpp"
-#include "DAFoundation.hpp"
+#include "DoubleArrayImpr.hpp"
 #include "sim_ds/BitVector.hpp"
 
-#include "DoubleArrayFSABuilder.hpp"
+#include "DawgBuilder.hpp"
 
 namespace csd_automata {
 
 template<bool CompressNext>
-class DoubleArrayFSA : public StringDictionaryInterface, public IOInterface {
+class Dawg : public StringDictionaryInterface, public IOInterface {
 public:
     static constexpr bool kCompressNext = CompressNext;
-    using foundation_type = DAFoundation<CompressNext, false, false, false, false, false, false, false, false, false, false>;
+    using foundation_type = DoubleArrayImpr<CompressNext, false, false, false, false, false, false, false, false, false, false>;
     using BitVector = sim_ds::BitVector;
     
     static std::string name() {
@@ -29,15 +29,17 @@ public:
         return name + "DoubleArrayFSA";
     }
     
-    DoubleArrayFSA(const DoubleArrayFSABuilder& builder) {
+    Dawg() = default;
+    
+    Dawg(const DawgBuilder& builder) {
         Build(builder);
     }
     
-    DoubleArrayFSA(std::istream &is) {
+    Dawg(std::istream &is) {
         LoadFrom(is);
     }
     
-    void Build(DoubleArrayFSABuilder& builder);
+    void Build(DawgBuilder& builder);
     
     // MARK: - getter
     
@@ -97,17 +99,6 @@ public:
         
     }
     
-    // MARK: - Copy guard
-    
-    DoubleArrayFSA() = default;
-    ~DoubleArrayFSA() = default;
-    
-    DoubleArrayFSA (const DoubleArrayFSA&) = delete;
-    DoubleArrayFSA& operator=(const DoubleArrayFSA&) = delete;
-    
-    DoubleArrayFSA(DoubleArrayFSA&&) noexcept = default;
-    DoubleArrayFSA& operator=(DoubleArrayFSA&&) noexcept = default;
-    
 private:
     foundation_type fd_;
     BitVector is_final_bits_;
@@ -133,7 +124,7 @@ private:
     }
     
     void set_next_and_is_final_(size_t index, size_t next, bool isFinal) {
-        if (CompressNext) {
+        if constexpr (CompressNext) {
             fd_.set_next(index, next);
             is_final_bits_[index] = isFinal;
         } else {
@@ -182,7 +173,7 @@ private:
 
 
 template<bool CompressNext>
-inline void DoubleArrayFSA<CompressNext>::Build(DoubleArrayFSABuilder& builder) {
+inline void Dawg<CompressNext>::Build(DawgBuilder& builder) {
     builder.Build();
     
     const auto numElem = builder.num_elements_();

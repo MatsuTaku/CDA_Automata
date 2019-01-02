@@ -133,7 +133,7 @@ public:
         }
         std::cout << std::endl;
         for (auto i = from; i <= to; i++) {
-            if (i < 0 || i >= bytes_.size())
+            if (i < 0 or i >= bytes_.size())
                 std::cout << ' ';
             else {
                 auto c =  bytes_[i];

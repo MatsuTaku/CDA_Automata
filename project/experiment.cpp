@@ -111,7 +111,7 @@ void BenchMarisa(const char* fsa_name, const char* query_name, bool needs_access
         ng = 0;
         for (auto i = 0; i < keyset.size(); i++) {
             agent.set_query(keyset[i].ptr(), keyset[i].length());
-            if (!marisa.Lookup(agent) || agent.key().id() != values[i])
+            if (!marisa.Lookup(agent) or agent.key().id() != values[i])
                 ng++;
         }
     }
