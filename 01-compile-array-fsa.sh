@@ -5,6 +5,7 @@ DIR_ROOT=$(dirname $0)
 cd $DIR_ROOT
 mkdir build
 cd build
-cmake ../project
+cmake ..
 make
 ctest
+

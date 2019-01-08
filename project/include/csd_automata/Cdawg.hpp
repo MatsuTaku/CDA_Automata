@@ -157,6 +157,8 @@ public:
         LoadFrom(is);
     }
     
+    friend void LoadFromFile(Self& self, std::string file_name);
+    
     bool Accept(std::string_view text) const override {
         Explorer explorer(text);
         return Traverse_(explorer) and Base::is_final(explorer.trans());
@@ -328,6 +330,13 @@ private:
     }
     
 };
+    
+
+template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+void LoadFromFile(Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>& self, std::string file_name) {
+    auto ifs = util::GetStreamOrDie<std::ifstream>(file_name);
+    self.LoadFrom(ifs);
+}
 
 
 template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>

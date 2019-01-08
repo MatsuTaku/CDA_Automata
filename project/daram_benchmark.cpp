@@ -17,7 +17,7 @@ void ShowUsage() {
 }
 
 template <class DaramDictionary>
-    void BenchmarkDictionary(const DaramDictionary& dict, const std::string dataset_name, const std::string results_name) {
+void BenchmarkDictionary(const DaramDictionary& dict, const std::string dataset_name, const std::string results_name) {
     auto keyset = csd_automata::util::GetKeySets(dataset_name);
     
 #ifdef NDEBUG
@@ -26,6 +26,13 @@ template <class DaramDictionary>
     const size_t kRuns = 1;
 #endif
     
+    // warmup
+    bool buf = 0;
+    for (auto& text : keyset) {
+        buf &= dict.Accept(text);
+    }
+    std::cout << (buf ? "All keys are stored!" : "Some keys aren't stored!!!");
+
     std::cout << "Search benchmark from input: " << dataset_name << std::endl;
     std::cout << "------" << std::endl
     << "Lookup time in " << kRuns << "s runs...";
@@ -40,7 +47,8 @@ template <class DaramDictionary>
         }
     });
     size_t query_count = keyset.size();
-    std::cout << ": " << lookup_time / kRuns / query_count << " µs/query" << std::endl
+    auto ave_time = lookup_time / kRuns / query_count;
+    std::cout << ": " << ave_time << " µs/query" << std::endl
     << "OK: " << query_count - ngs / kRuns << std::endl
     << "NG: " << ngs / kRuns << std::endl << std::endl;
     
@@ -49,14 +57,13 @@ template <class DaramDictionary>
     if (results_name != "") {
         std::ofstream results(results_name, std::ios::app);
         auto delim = ", ";
-        results << DaramDictionary::tag() << delim
-        << dict.size_in_bytes() << delim << lookup_time << std::endl;
+        results << DaramDictionary::tag() << delim << dict.size_in_bytes() << delim << ave_time << std::endl;
     }
     
 }
 
 template <class Process>
-    void ProcessMatchDictionary(const std::string dict_name, Process process) {
+void ProcessMatchDictionary(const std::string dict_name, Process process) {
     auto dict_stream = csd_automata::util::GetStreamOrDie<std::ifstream>(dict_name);
     
     auto header = csd_automata::read_val<csd_automata::id_type>(dict_stream);

@@ -7,3 +7,6 @@
 [submodule "project/lib/SimpleDataStructure"]
 	path = project/lib/SimpleDataStructure
 	url = git@github.com:MatsuTaku/SimpleDataStructure.git
+[submodule "lib/path_decomposed_tries"]
+	path = lib/path_decomposed_tries
+	url = git@github.com:ot/path_decomposed_tries.git

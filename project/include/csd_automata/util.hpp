@@ -64,7 +64,7 @@ inline Stream GetStreamOrDie(const std::string& file_name) {
     return stream;
 }
 
-    std::vector<std::string> GetKeySets(const std::string queryName) {
+std::vector<std::string> GetKeySets(const std::string queryName) {
     auto ifs = GetStreamOrDie<std::ifstream>(queryName);
     std::vector<std::string> strs;
     for (std::string line; std::getline(ifs, line);)

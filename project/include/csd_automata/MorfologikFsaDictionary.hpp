@@ -25,11 +25,20 @@ public:
         return Base::name();
     }
     
+    static std::string tag() {
+        return (std::string("Morfologik")
+                + (typeid(MorfologikFsaBaseType) == typeid(MorfologikCFSA2DictionaryFoundation) ? "-c" : ""));
+    }
+    
+    MorfologikFsaDictionary() = default;
+    
     MorfologikFsaDictionary(std::istream& is) noexcept : Base(is) {}
     
     MorfologikFsaDictionary(const FsaSource& fsa) noexcept : Base(fsa) {}
     
     MorfologikFsaDictionary(Base&& fd) noexcept : Base(std::move(fd)) {}
+    
+    friend void LoadFromFile(MorfologikFsaDictionary<Base>& self, std::string file_name);
     
     // MARK: String-Dictionary's functions
     
@@ -68,17 +77,15 @@ public:
         Base::PrintForDebug(os);
     }
     
-    MorfologikFsaDictionary() = default;
-    ~MorfologikFsaDictionary() = default;
-    
-    MorfologikFsaDictionary(const MorfologikFsaDictionary&) = delete;
-    MorfologikFsaDictionary& operator=(const MorfologikFsaDictionary&) = delete;
-    
-    MorfologikFsaDictionary(MorfologikFsaDictionary&&) = default;
-    MorfologikFsaDictionary& operator=(MorfologikFsaDictionary&&) = default;
-    
     
 };
+
+
+template <class BaseType>
+void LoadFromFile(MorfologikFsaDictionary<BaseType>& self, std::string file_name) {
+    auto ifs = util::GetStreamOrDie<std::ifstream>(file_name);
+    self.LoadFrom(ifs);
+}
 
 
 template <class FoundationType>
@@ -150,7 +157,7 @@ inline std::string MorfologikFsaDictionary<FoundationType>::Access(id_type id) c
 
 using SdMrfFsa5 = MorfologikFsaDictionary<MorfologikFSA5DictionaryFoundation>;
 using SdMrfCFsa2 = MorfologikFsaDictionary<MorfologikCFSA2DictionaryFoundation>;
-    
+
 }
 
 #endif /* MorfologikFSADictionary_hpp */

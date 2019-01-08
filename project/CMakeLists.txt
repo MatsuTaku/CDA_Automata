@@ -19,19 +19,14 @@ file(GLOB HEADER_FILES ${IncludeDir}/csd_automata.hpp ${IncludeDir}/csd_automata
 
 # Build Interface Library
 add_library(CSDAutomata STATIC ${IncludeDir}/csd_automata.cpp ${HEADER_FILES})
-#target_sources(CSDAutomata PRIVATE ${HEADER_FILES})
 target_include_directories(CSDAutomata PUBLIC ${IncludeDir})
 
 add_subdirectory(lib/SimpleDataStructure)
 target_link_libraries(CSDAutomata PUBLIC sim_ds)
-#get_target_property(SimDS_INCLUDE_DIR sim_ds PROPERTY ${INTERFACE_INCLUDE_DIRECTORIES})
-#target_include_directories(CSDAutomata PRIVATE ${SimDS_INCLUDE_DIR})
+
 
 link_directories(/usr/local/lib)
 include_directories(/usr/local/include)
-
-
-file(GLOB wrappers XcdatWrapper.hpp MarisaWrapper.hpp DartsCloneWrapper.hpp)
 
 add_executable(daram_build daram_build.cpp)
 target_link_libraries(daram_build CSDAutomata)
@@ -39,19 +34,12 @@ target_link_libraries(daram_build CSDAutomata)
 add_executable(daram_benchmark daram_benchmark.cpp)
 target_link_libraries(daram_benchmark CSDAutomata)
 
-add_executable(experiment experiment.cpp ${wrappers})
-target_link_libraries(experiment CSDAutomata xcdat marisa)
-
 add_executable(convert convert.cpp)
 target_link_libraries(convert CSDAutomata)
 
-add_executable(darts_build darts_build.cpp DartsCloneWrapper.hpp)
-target_link_libraries(darts_build CSDAutomata)
-
-if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+#if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
 	message(STATUS "Enable test CSDAutomata")
     enable_testing()
 	add_subdirectory(test)
-endif()
-
+#endif()
 
