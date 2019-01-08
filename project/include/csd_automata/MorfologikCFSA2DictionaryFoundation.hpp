@@ -269,31 +269,31 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
             // Enumerate parameters
             size_t flags_and_words = origin.is_final_trans(s) | (origin.is_last_trans(s) << 1) | (origin.is_next_set_(s) << 2);
             size_t words = trans.words;
-            flags_and_words |= (words << kNumFlags_);
-            auto sizePW = 1;
+            flags_and_words |= words << kNumFlags_;
+            auto size_fw = 1;
             bool is_large_words = words >> kBitsUpperNodeWords_;
             if (is_large_words) {
                 flags_and_words |= 0x08;
-                sizePW += element_words_lower_size_;
+                size_fw += element_words_lower_size_;
             }
             
-            auto node_size = kSizeNodeSymbol_ + sizePW;
+            auto node_size = kSizeNodeSymbol_ + size_fw;
             bytes_.resize(offset + node_size);
             uint8_t symbol = origin.get_trans_symbol(s);
             // Transfer symbol
             bytes_[offset] = symbol;
             // Transfer flags
-            std::memcpy(&bytes_[offset + kSizeNodeSymbol_], &flags_and_words, sizePW);
+            std::memcpy(&bytes_[offset + kSizeNodeSymbol_], &flags_and_words, size_fw);
             
             // Transfer address
             if (!origin.is_next_set_(s)) {
                 size_t value = transes[origin.get_target_state(s)].offset;
                 while (value > 0x7F) {
-                    bytes_.emplace_back(0x80 | (value & 0x7F));
+                    bytes_.push_back(0x80 | (value & 0x7F));
                     node_size++;
                     value >>= 7;
                 }
-                bytes_.emplace_back(static_cast<uint8_t>(value));
+                bytes_.push_back(static_cast<uint8_t>(value & 0xFF));
                 node_size++;
             }
             
@@ -301,6 +301,7 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
             
         }
         std::cerr << transes[origin.get_dest_state_offset_(0)].offset << std::endl;
+        bytes_.shrink_to_fit();
     }
     
 //    PrintForDebug(std::cout);

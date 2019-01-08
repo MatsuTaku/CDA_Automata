@@ -101,7 +101,10 @@ inline id_type MorfologikFsaDictionary<FoundationType>::Lookup(std::string_view 
     
     size_t state = Base::get_root_state(), trans = 0;
     for (uint8_t c : str) {
-        for (trans = Base::get_first_trans(state); trans != 0 && Base::get_trans_symbol(trans) != c; trans = Base::get_next_trans(trans)) {
+        for (trans = Base::get_first_trans(state);
+             trans != 0 and Base::get_trans_symbol(trans) != c;
+             trans = Base::get_next_trans(trans))
+        {
             words += Base::get_trans_words(trans);
         }
         if (trans == 0) {
@@ -115,7 +118,7 @@ inline id_type MorfologikFsaDictionary<FoundationType>::Lookup(std::string_view 
         state = Base::get_target_state(trans);
     }
     
-    return Base::is_final_trans(trans) ? words : -1;
+    return Base::is_final_trans(trans) ? words : 0;
 }
 
 template <class FoundationType>
@@ -123,8 +126,14 @@ inline std::string MorfologikFsaDictionary<FoundationType>::Access(id_type id) c
     std::string str = "";
     
     size_t counter = id;
-    for (size_t state = Base::get_root_state(), trans = 0; counter > 0; state = Base::get_target_state(trans)) {
-        for (trans = Base::get_first_trans(state); trans != 0 && counter > 0; trans = Base::get_next_trans(trans)) {
+    for (size_t state = Base::get_root_state(), trans = 0;
+         counter > 0;
+         state = Base::get_target_state(trans))
+    {
+        for (trans = Base::get_first_trans(state);
+             trans != 0 and counter > 0;
+             trans = Base::get_next_trans(trans))
+        {
             auto words = Base::get_trans_words(trans);
             if (words < counter) {
                 counter -= words;

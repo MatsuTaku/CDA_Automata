@@ -126,7 +126,7 @@ public:
     
 private:
     size_t num_trans_ = 0;
-    StringsPool strings_map_;
+    StringsPool strings_pool_;
     // If set values in extended storage
     ValueSet values_;
     
@@ -206,7 +206,7 @@ public:
     size_t size_in_bytes() const override {
         auto size = Base::size_in_bytes();
         size += sizeof(num_trans_);
-        size += strings_map_.size_in_bytes();
+        size += strings_pool_.size_in_bytes();
         size += values_.size_in_bytes();
         return size;
     }
@@ -221,7 +221,7 @@ public:
         
         Base::LoadFrom(is);
         num_trans_ = read_val<size_t>(is);
-        strings_map_.LoadFrom(is);
+        strings_pool_.LoadFrom(is);
         values_.LoadFrom(is);
     }
     
@@ -230,7 +230,7 @@ public:
         
         Base::StoreTo(os);
         write_val(num_trans_, os);
-        strings_map_.StoreTo(os);
+        strings_pool_.StoreTo(os);
         values_.StoreTo(os);
     }
     
@@ -241,7 +241,7 @@ public:
         << "#elems:\t" << Base::num_elements() << endl
         << "size:\t" << size_in_bytes() << endl;
         Base::ShowStats(os);
-        os << "\tstrings:\t" << strings_map_.size_in_bytes() << endl;
+        os << "\tstrings:\t" << strings_pool_.size_in_bytes() << endl;
         os << "\tsize values:\t" << values_.size_in_bytes() << endl;
     }
     
@@ -253,7 +253,7 @@ public:
             if (!Base::is_string(i)) {
                 cout << Base::check(i);
             } else {
-                cout << strings_map_.string_view(Base::string_id(i));
+                cout << strings_pool_.string_view(Base::string_id(i));
             }
             if constexpr (kSupportAccess) {
                 cout << '\t' << Base::cum_words(i);
@@ -294,9 +294,9 @@ private:
             } else {
                 // Check label that is indexed string
                 auto str_id = Base::string_id(exp.trans());
-                if (!strings_map_.match(exp.pos_ptr(), exp.text(), str_id)) {
+                if (!strings_pool_.match(exp.pos_ptr(), exp.text(), str_id)) {
 #ifndef NDEBUG
-                    strings_map_.ShowLabels(str_id);
+                    strings_pool_.ShowLabels(str_id);
 #endif
                     return false;
                 }
@@ -342,7 +342,7 @@ LookupLegacy(std::string_view text) const {
                     continue;
             } else {
                 check_type = Base::string_id(nt);
-                if (strings_map_[check_type] != label)
+                if (strings_pool_[check_type] != label)
                     continue;
             }
             
@@ -356,9 +356,9 @@ LookupLegacy(std::string_view text) const {
                 return kSearchError;
         } else {
             size_t str_id = Base::string_id(trans);
-            if (!strings_map_.match(&pos, text, str_id)) {
+            if (!strings_pool_.match(&pos, text, str_id)) {
 #ifndef NDEBUG
-                strings_map_.ShowLabels(str_id);
+                strings_pool_.ShowLabels(str_id);
 #endif
                 return kSearchError;
             }
@@ -392,7 +392,7 @@ Access(id_type key) const {
                 success_trans = check_type == c;
             } else {
                 check_type = Base::string_id(nt);
-                success_trans = uint8_t(strings_map_[check_type]) == c;
+                success_trans = uint8_t(strings_pool_[check_type]) == c;
             }
             if (!success_trans) {
                 if constexpr (kLinkChildren) {
@@ -421,7 +421,7 @@ Access(id_type key) const {
                 if (!is_str_label)
                     route += check_type;
                 else
-                    route += strings_map_.string_view(check_type);
+                    route += strings_pool_.string_view(check_type);
                 
                 next_trans = nt;
                 break;

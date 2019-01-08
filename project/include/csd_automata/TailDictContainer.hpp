@@ -34,16 +34,8 @@ struct TailDictContainer {
         label += c;
     }
     
-    char front() const {
-        return label.front();
-    }
-    
-    std::string_view follows() const {
-        return std::string_view(label).substr(1);
-    }
-    
-    float entropy() const {
-        return float(counter) / label.size();
+    double entropy() const {
+        return double(counter) / label.size();
     }
     
 };

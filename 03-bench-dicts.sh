@@ -214,5 +214,5 @@ if [ $# -ge 1 ] ; then
 fi
 echo 'Threads: '$THREADS
 
-parallel -j $THREADS call ::: $TOOLS ::: $DATASETS
+parallel -j $THREADS call {1} {2} ::: $TOOLS ::: $DATASETS
 

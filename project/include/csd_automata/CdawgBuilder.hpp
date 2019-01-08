@@ -249,7 +249,7 @@ template <class Product>
 void CdawgBuilder::Release(Product& dam) {
     const auto num_elems = num_elements_();
     dam.Base::resize(num_elems, get_num_words());
-    GetSerializedStringsBuilder(tail_dict_).Release(&dam.strings_map_);
+    GetSerializedStringsBuilder(tail_dict_).Release(&dam.strings_pool_);
     
     auto num_trans = 0;
     for (size_t i = 0; i < num_elems; i++) {
@@ -266,7 +266,7 @@ void CdawgBuilder::Release(Product& dam) {
             dam.Base::set_is_final(i, is_final_(i));
             if (is_str_trans) {
                 size_t string_index = get_label_number_(i);
-                size_t string_id = Product::kSelectStrId ? dam.strings_map_.id_rank(string_index) : string_index;
+                size_t string_id = Product::kSelectStrId ? dam.strings_pool_.id_rank(string_index) : string_index;
                 dam.Base::set_string_id(i, string_id);
             } else
                 dam.Base::set_check(i, get_check_(i));
@@ -306,7 +306,7 @@ void CdawgBuilder::CheckEquivalence(Product& dam) {
         if (!is_frozen_(i)) continue;
         auto bn = get_next_(i);
         auto bi = has_label_(i);
-        auto bc = !bi ? get_check_(i) : (Product::kSelectStrId ? dam.strings_map_.id_rank(get_label_number_(i)) : get_label_number_(i));
+        auto bc = !bi ? get_check_(i) : (Product::kSelectStrId ? dam.strings_pool_.id_rank(get_label_number_(i)) : get_label_number_(i));
         auto fn = dam.target_state_(i);
         auto fi = dam.Base::is_string(i);
         auto fc = !fi ? dam.Base::check(i) : dam.Base::string_id(i);

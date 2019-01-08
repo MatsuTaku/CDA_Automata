@@ -23,7 +23,7 @@ public:
     }
     
     static std::string tag() {
-        return "xcdat";
+        return std::string("xcdat") + (Fast ? "-f" : "");
     }
     
     XcdatWrapper() = default;

@@ -31,8 +31,8 @@ int main(int argc, const char* argv[]) {
     int set_type = atoi(argv[3]);
     
 #ifndef NDEBUG
-    set_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2";
-    dict_name = "../../results/jawiki-20181001/jawiki-20181001.morfologik_cfsa2d";
+    set_name = "../../../../results/wikipedia2/wikipedia2.morfologik_cfsa2";
+    dict_name = "../../../../results/wikipedia2/wikipedia2.morfologik_cfsa2d";
     set_type = 1;
 #endif
     

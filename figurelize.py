@@ -16,7 +16,7 @@ if __name__ == '__main__':
 			times = []
 			for line in lines:
 				vals = line.strip().split(',')
-				if len(vals) != 3:
+				if len(vals) < 3:
 					continue
 				label, size, time = vals[0], float(vals[1]), float(vals[2])
 				sizes.append(size)
@@ -31,9 +31,10 @@ if __name__ == '__main__':
 	ax.set_title(title)
 	ax.set_xlabel('size (Byte)')
 	ax.set_ylabel('search time (µs/key)')
+	axis = ax.axis()
+	ax.axis((0, axis[1], 0, axis[3]))
 	ax.legend()
 	figure.show()
 	root, ext = os.path.splitext(argv[1])
 	plot_name = root + '.plot.png'
 	figure.savefig(plot_name)
-	
