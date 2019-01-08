@@ -126,16 +126,16 @@ public:
         std::swap(num_words_, rhs.num_words_);
     }
     
-    void write(std::ostream &os) const {
-        write_vec(bytes_, os);
-        write_val(num_trans_, os);
-        write_val(num_words_, os);
-    }
-    
-    void read(std::istream &is) {
+    void LoadFrom(std::istream &is) {
         bytes_ = read_vec<uint8_t>(is);
         num_trans_ = read_val<size_t>(is);
         num_words_ = read_val<size_t>(is);
+    }
+    
+    void StoreTo(std::ostream& os) const {
+        write_vec(bytes_, os);
+        write_val(num_trans_, os);
+        write_val(num_words_, os);
     }
     
     PlainFSA() = default;

@@ -8,6 +8,7 @@
 #include "DartsCloneWrapper.hpp"
 #include "CentroidWrapper.hpp"
 
+#include "csd_automata/basic.hpp"
 #include "csd_automata/util.hpp"
 
 namespace wrapper {
@@ -108,11 +109,12 @@ template<bool DoExtraction>
 class Benchmarker<wrapper::MarisaWrapper, DoExtraction> {
 public:
     static void benchmark(const std::string fsa_name, const std::string query_name, const std::string results_name) {
-        std::cout << "Bench " << wrapper::MarisaWrapper::name() << " from " << fsa_name << std::endl;
+        using std::cout, std::endl;
+        cout << "Bench " << wrapper::MarisaWrapper::name() << " from " << fsa_name << endl;
         wrapper::MarisaWrapper marisa;
         wrapper::LoadFromFile(marisa, fsa_name.c_str());
         
-        std::cout << "Search benchmark for " << query_name << std::endl;
+        cout << "Search benchmark for " << query_name << endl;
         marisa::Keyset keyset;
         auto ifs = csd_automata::util::GetStreamOrDie<std::ifstream>(query_name);
         wrapper::SetMarisaKeySet(ifs, &keyset);
@@ -125,7 +127,7 @@ public:
                 ++ng;
         }
         if (ng > 0) {
-            std::cout << "Some of queries are not stored!" << std::endl;
+            cout << "Some of queries are not stored!" << endl;
             return;
         }
         
@@ -138,8 +140,8 @@ public:
                 }
             }
         });
-        std::cout << "------" << std::endl
-        << "Lookup time on " << kRuns << " kRuns: " << lookup_time / kRuns / num << " µs/query" << std::endl;
+        cout << "------" << endl
+        << "Lookup time on " << kRuns << " kRuns: " << lookup_time / kRuns / num << " µs/query" << endl;
         
         std::vector<double> times = {lookup_time};
         
@@ -151,12 +153,13 @@ public:
                     }
                 }
             });
-            std::cout << "------" << std::endl
-            << "Access time on " << kRuns << " kRuns: " << access_time / kRuns / num << " µs/query" << std::endl;
+            cout << "------" << endl
+            << "Access time on " << kRuns << " kRuns: " << access_time / kRuns / num << " µs/query" << endl;
             times.push_back(access_time);
         }
         
-        marisa.ShowStatus(std::cout);
+        cout << endl;
+        marisa.ShowStatus(cout);
         
         if (results_name != "") {
             std::ofstream results(results_name, std::ios::app);
@@ -166,7 +169,7 @@ public:
             << times[0] / kRuns / num;
             if constexpr (DoExtraction)
                 results << delim << times[1] / num / kRuns;
-            results << std::endl;
+            results << endl;
         }
     }
 };
@@ -175,11 +178,12 @@ template<>
 class Benchmarker<wrapper::DartsCloneWrapper, false> {
 public:
     static void benchmark(const std::string fsa_name, const std::string query_name, const std::string results_name) {
-        std::cout << "Bench " << wrapper::DartsCloneWrapper::name() << " from " << fsa_name << std::endl;
+        using std::cout, std::endl;
+        cout << "Bench " << wrapper::DartsCloneWrapper::name() << " from " << fsa_name << endl;
         wrapper::DartsCloneWrapper darts;
         wrapper::LoadFromFile(darts, fsa_name.c_str());
         
-        std::cout << "Search benchmark for " << query_name << std::endl;
+        cout << "Search benchmark for " << query_name << endl;
         std::vector<char*> strs;
         size_t num;
         auto sets = csd_automata::util::GetKeySets(query_name);
@@ -203,19 +207,20 @@ public:
                 }
             }
         });
-        std::cout << "------" << std::endl;
-        std::cout << "Lookup time on " << kRuns << " kRuns: " << lookup_time / kRuns / num << " µs/query" << std::endl;
+        cout << "------" << endl;
+        cout << "Lookup time on " << kRuns << " kRuns: " << lookup_time / kRuns / num << " µs/query" << endl;
         
         // Not support access!
         
-        darts.ShowStatus(std::cout);
+        cout << endl;
+        darts.ShowStatus(cout);
         
         if (results_name != "") {
             std::ofstream results(results_name, std::ios::app);
             auto delim = ", ";
             results << wrapper::DartsCloneWrapper::tag() << delim
             << darts.size_in_bytes() << delim
-            << lookup_time / kRuns / num << std::endl;
+            << lookup_time / kRuns / num << endl;
         }
         
         for (auto* str : strs)

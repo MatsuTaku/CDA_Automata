@@ -28,18 +28,8 @@ target_link_libraries(CSDAutomata PUBLIC sim_ds)
 link_directories(/usr/local/lib)
 include_directories(/usr/local/include)
 
-add_executable(daram_build daram_build.cpp)
-target_link_libraries(daram_build CSDAutomata)
+add_subdirectory(tools)
 
-add_executable(daram_benchmark daram_benchmark.cpp)
-target_link_libraries(daram_benchmark CSDAutomata)
-
-add_executable(convert convert.cpp)
-target_link_libraries(convert CSDAutomata)
-
-#if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
-	message(STATUS "Enable test CSDAutomata")
-    enable_testing()
-	add_subdirectory(test)
-#endif()
+enable_testing()
+add_subdirectory(test)
 

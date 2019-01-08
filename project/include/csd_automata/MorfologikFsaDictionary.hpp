@@ -38,8 +38,6 @@ public:
     
     MorfologikFsaDictionary(Base&& fd) noexcept : Base(std::move(fd)) {}
     
-    friend void LoadFromFile(MorfologikFsaDictionary<Base>& self, std::string file_name);
-    
     // MARK: String-Dictionary's functions
     
     /**
@@ -79,13 +77,6 @@ public:
     
     
 };
-
-
-template <class BaseType>
-void LoadFromFile(MorfologikFsaDictionary<BaseType>& self, std::string file_name) {
-    auto ifs = util::GetStreamOrDie<std::ifstream>(file_name);
-    self.LoadFrom(ifs);
-}
 
 
 template <class FoundationType>

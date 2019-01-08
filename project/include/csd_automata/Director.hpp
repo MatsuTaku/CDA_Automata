@@ -46,7 +46,7 @@ int CheckHasMember(const std::string& dataset_name, StringDictionaryType& sd) {
     return 0;
 }
 
-template <class DoubleArrayType>
+template <class DaramType>
 int FullyBuild(const std::string& out_name, const std::string& dataset_name, const std::string& values_name = "") {
     std::cout << "Input dataset: " << dataset_name << std::endl;
 
@@ -66,13 +66,13 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
     PlainFSA pfa;
     if (plain_fsa_stream) {
         std::cout << "Found pfsa file: " << plain_fsa_name << std::endl;
-        pfa.read(plain_fsa_stream);
+        pfa.LoadFrom(plain_fsa_stream);
     } else {
         std::cout << "Build pfa to: " << plain_fsa_name << std::endl;
         auto time_build_pfa = util::MeasureProcessing([&] {
             pfa = fsa_util::BuildPlainFSA(dataset_name);
             std::ofstream pfa_out(plain_fsa_name);
-            pfa.write(pfa_out);
+            pfa.StoreTo(pfa_out);
         });
         std::cout << "\tptime is... " << time_build_pfa << " ms"  << std::endl;
     }
@@ -80,10 +80,10 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
     // Build DoubleArrayAutomata
     std::cout << "Build dam to: " << out_name << std::endl;
     
-    DoubleArrayType da;
+    DaramType da;
     auto time_build_dam = util::MeasureProcessing([&] {
         if (values_name == "") {
-            da = DoubleArrayType(pfa);
+            da = DaramType(pfa);
         } else {
             auto values_stream = util::GetStreamOrDie<std::ifstream>(values_name);
             std::vector<size_t> values;
@@ -91,7 +91,7 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
                 size_t vi = stoi(v);
                 values.emplace_back(vi);
             }
-            da = DoubleArrayType(pfa, ValueSet(values));
+            da = DaramType(pfa, ValueSet(values));
         }
         StoreToFile(da, out_name);
     });

@@ -70,6 +70,22 @@ template <typename T>
 inline size_t size_vec(const std::vector<T>& vec) {
     return sizeof(T) * vec.size() + sizeof(vec.size());
 }
+    
+template <class Product>
+void LoadFromFile(Product& product, const std::string& input_name) {
+    std::ifstream ifs(input_name);
+    if (!ifs.is_open()) {
+        std::cerr << "ERROR Input file not found!: " << input_name << std::endl;
+        return;
+    }
+    product.LoadFrom(ifs);
+}
+
+template <class Product>
+void StoreToFile(const Product& product, const std::string& output_name) {
+    std::ofstream ofs(output_name);
+    product.StoreTo(ofs);
+}
 
 struct MorfologikFileUtils {
     static int32_t read_int(std::istream& is) {

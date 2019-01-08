@@ -40,7 +40,7 @@ inline PlainFSA BuildPlainFSA(const std::string& data_name) {
 inline PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
     auto ifs = util::GetStreamOrDie<std::ifstream>(plain_fsa_name);
     PlainFSA plainFsa;
-    plainFsa.read(ifs);
+    plainFsa.LoadFrom(ifs);
     return plainFsa;
 }
 
@@ -48,7 +48,7 @@ inline void Generate(const std::string& data_name, const std::string& plain_fsa_
     auto plain_fsa = BuildPlainFSA(data_name);
     auto ofs = util::GetStreamOrDie<std::ofstream>(data_name);
     std::cout << "Write PlainFSA into " << plain_fsa_name << std::endl;
-    plain_fsa.write(ofs);
+    plain_fsa.StoreTo(ofs);
 }
 
 }

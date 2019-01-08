@@ -13,6 +13,8 @@ message(STATUS "CXX_FLAGS are ${CMAKE_CXX_FLAGS}")
 message(STATUS "CXX_FLAGS_DEBUG are ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "CXX_FLAGS_RELEASE are ${CMAKE_CXX_FLAGS_RELEASE}")
 
+enable_testing()
+
 link_directories(/usr/local/lib)
 include_directories(/usr/local/include include lib/path_decomposed_tries)
 
