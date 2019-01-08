@@ -40,6 +40,8 @@ public:
     
     void Freeze() {
         terminals_ = sim_ds::SuccinctBitVector<>(b_terminals_);
+        b_terminals_.resize(0);
+        b_terminals_.shrink_to_fit();
     }
     
     /**

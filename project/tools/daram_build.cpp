@@ -16,42 +16,40 @@ void ShowUsage() {
     std::cout << "Usage:"
     << "\t$ dam_build [DATASET] (-o | --output) [OUTPUT]" << std::endl;
 }
+
+struct InputOption {
+    uint8_t binary = 0;
     
+    void access() {
+        binary |= 0b01;
+    }
+    void comp_id() {
+        binary |= 0b10;
+    }
+    void select_id() {
+        binary |= 0b100;
+    }
+    void comp_next() {
+        binary |= 0b1000;
+    }
+    void dac_cwords() {
+        binary |= 0b10000;
+    }
+};
+
 }
 
 int main(int argc, const char* argv[]) {
+    std::string dataset_name = "";
+    std::string dict_name = "";
+    InputOption options;
+    std::string values_name = "";
+    
 #ifdef NDEBUG
     if (argc < 3) {
         std::cerr << "Invalid number of arguments!" << std::endl;
         return -1;
     }
-#endif
-    
-    std::string dataset_name = "";
-    std::string dict_name = "";
-    
-    struct InputOption {
-        uint8_t binary = 0;
-        
-        void access() {
-            binary |= 0b01;
-        }
-        void comp_id() {
-            binary |= 0b10;
-        }
-        void select_id() {
-            binary |= 0b100;
-        }
-        void comp_next() {
-            binary |= 0b1000;
-        }
-        void dac_cwords() {
-            binary |= 0b10000;
-        }
-    };
-    InputOption options;
-    std::string values_name = "";
-    
     for (int i = 1; i < argc; i++) {
         std::string option(argv[i]);
         if (option == "-o" or option == "--output") {
@@ -73,16 +71,16 @@ int main(int argc, const char* argv[]) {
         }
     }
     
-#ifndef NDEBUG
+#else
 //    dataset_name = "../../data-sets/weiss/wikipedia2.dict";
 //    dict_name = "../../results/wikipedia2/wikipedia2.dam";
 //    dataset_name = "../../data-sets/local/enwiki-20181001.dict";
 //    dict_name = "../../results/enwiki-20181001/enwiki-20181001.dam";
-    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
-    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
-//    dataset_name = "../../data-sets/ciura-deorowicz/one.dict";
-//    dict_name = "../../results/one/one.dam";
-    options.binary = 0b00010;
+//    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
+//    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
+    dataset_name = "../../../../data-sets/ciura-deorowicz/full.dict";
+    dict_name = "../../../../results/full/full.dam";
+    options.binary = 0b01110;
 #endif
     
     if (dataset_name == "") {

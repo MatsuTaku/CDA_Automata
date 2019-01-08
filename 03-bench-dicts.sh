@@ -1,80 +1,72 @@
 #!/bin/bash
 
 function dam {
-  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f dam
 
 function damcn {
-  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damcn
 
 function damci {
-  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damci
 
 function damcsi {
-  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damcsi
 
 function damdw {
-  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damdw
 
 function damac {
-  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damac
 
 function morfologik_fsa5d {
-  ./build/experiment $1 $2 1 $3 >$1.bench.stdout 2>&1
+  ./build/sd_experiments $1 $2 1 $3 >$1.bench.stdout 2>&1
 }
 export -f morfologik_fsa5d
 
 function morfologik_cfsa2d {
-  ./build/experiment $1 $2 2 $3 >$1.bench.stdout 2>&1
+  ./build/sd_experiments $1 $2 2 $3 >$1.bench.stdout 2>&1
 }
 export -f morfologik_cfsa2d
 
 function xcdat {
-  ./build/experiment $1 $2 3 $3 >$1.bench.stdout 2>&1
+  ./build/sd_experiments $1 $2 3 $3 >$1.bench.stdout 2>&1
 }
 export -f xcdat
 
 function fxcdat {
-  ./build/experiment $1 $2 4 $3 >$1.bench.stdout 2>&1
+  ./build/sd_experiments $1 $2 4 $3 >$1.bench.stdout 2>&1
 }
 export -f fxcdat
 
 function marisa {
-  ./build/experiment $1 $2 5 $3 >$1.bench.stdout 2>&1
+  ./build/sd_experiments $1 $2 5 $3 >$1.bench.stdout 2>&1
 }
 export -f marisa
 
 function darts {
-  ./build/experiment $1 $2 6 $3 >$1.bench.stdout 2>&1
+  ./build/sd_experiments $1 $2 6 $3 >$1.bench.stdout 2>&1
 }
 export -f darts
 
 function centrp {
 #  ./software/path_decomposed_tries/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
 #  cat $1.stdout >> $1.bench.stdout
-	./build/experiment $1 $2 7 $3 >$1.bench.stdout 2>&1
+	./build/sd_experiments $1 $2 7 $3 >$1.bench.stdout 2>&1
 }
 export -f centrp
 
-
-bench() {
-    dataset_fn=`basename $2 .1000000.rnd_dict`
-	dictname=$RESULTS_DIR/$dataset_fn/$dataset_fn.$1
-	echo "benchmark [$1] $dictname -> $3"
-	$1 $dictname $2 $3
-}
-export -f bench
 
 DARAM_TOOLS="
 dam
@@ -113,41 +105,78 @@ darts
 "
 export DARTS_TOOLS
 
-experiments() {
-	dataset_fn=`basename $1 .1000000.rnd_dict`
-	results_name=$RESULTS_DIR/$dataset_fn/$dataset_fn.$2
-	echo "" > $results_name
-	parallel bench {1} $1 $results_name ::: $3
+
+bench() {
+    dataset_fn=`basename $2 .1000000.rnd_dict`
+	dictname=$RESULTS_DIR/$dataset_fn/$dataset_fn.$1
+	echo "benchmark [$1] $dictname"
+	$1 $dictname $2 $3
 }
-export -f experiments
+export -f bench
 
 daram_results() {
-	experiments $1 daram_results $DARAM_TOOLS 
+	dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.daram_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $DARAM_TOOLS; do
+	    bench $tool $1 $results_path
+    done
 }
 export -f daram_results
 
 morfologik_results() {
-	experiments $1 morfologik_results $MORFOLOGIK_TOOLS
+dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.morfologik_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $MORFOLOGIK_TOOLS; do
+	    bench $tool $1 $results_path
+    done
 }
 export -f morfologik_results
 
 xcdat_results() {
-	experiments $1 xcdat_results $XCDAT_TOOLS
+	dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.xcdat_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $XCDAT_TOOLS; do
+	    bench $tool $1 $results_path
+    done
 }
 export -f xcdat_results
 
 cent_results() {
-	experiments $1 cent_results $CENT_TOOLS
+	dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.cent_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $CENT_TOOLS; do
+	    bench $tool $1 $results_path
+    done
 }
 export -f cent_results
 
 marisa_results() {
-	experiments $1 marisa_results $MARISA_RESULTS
+	dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.marisa_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $MARISA_TOOLS; do
+	    bench $tool $1 $results_path
+    done
 }
 export -f marisa_results
 
 darts_results() {
-	experiments $1 darts_results $DARTS_RESULTS
+	dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.darts_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $DARTS_TOOLS; do
+	    bench $tool $1 $results_path
+    done
 }
 export -f darts_results
 
@@ -185,5 +214,5 @@ if [ $# -ge 1 ] ; then
 fi
 echo 'Threads: '$THREADS
 
-parallel -j $THREADS call {1} {2} ::: $TOOLS ::: $DATASETS
+parallel -j $THREADS call ::: $TOOLS ::: $DATASETS
 

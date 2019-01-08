@@ -24,7 +24,6 @@ target_include_directories(CSDAutomata PUBLIC ${IncludeDir})
 add_subdirectory(lib/SimpleDataStructure)
 target_link_libraries(CSDAutomata PUBLIC sim_ds)
 
-
 link_directories(/usr/local/lib)
 include_directories(/usr/local/include)
 

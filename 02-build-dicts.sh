@@ -1,32 +1,32 @@
 #!/bin/bash
 
 dam() {
-  ./build/project/daram_build $1 -o $2 >$2.stdout 2>&1
+  ./build/project/tools/daram_build $1 -o $2 >$2.stdout 2>&1
 }
 export -f dam
 
 damcn() {
-  ./build/project/daram_build $1 -o $2 --comp-next >$2.stdout 2>&1
+  ./build/project/tools/daram_build $1 -o $2 --comp-next >$2.stdout 2>&1
 }
 export -f damcn
 
 damci() {
-  ./build/project/daram_build $1 -o $2 --comp-id >$2.stdout 2>&1
+  ./build/project/tools/daram_build $1 -o $2 --comp-id >$2.stdout 2>&1
 }
 export -f damci
 
 damcsi() {
-  ./build/project/daram_build $1 -o $2 --comp-id --select-id >$2.stdout 2>&1
+  ./build/project/tools/daram_build $1 -o $2 --comp-id --select-id >$2.stdout 2>&1
 }
 export -f damcsi
 
 damdw() {
-  ./build/project/daram_build $1 -o $2 --dac-cwords >$2.stdout 2>&1
+  ./build/project/tools/daram_build $1 -o $2 --dac-cwords >$2.stdout 2>&1
 }
 export -f damdw
 
 damac() {
-  ./build/project/daram_build $1 -o $2 --access >$2.stdout 2>&1
+  ./build/project/tools/daram_build $1 -o $2 --access >$2.stdout 2>&1
 }
 export -f damac
 
@@ -43,7 +43,7 @@ export -f morfologik_fsa5
 morfologik_fsa5d() {
     orig=${2%d}
     morfologik_fsa5 $1 $orig
-    ./build/project/convert $orig $2 0 >> $2.stdout 2>&1
+    ./build/project/tools/convert $orig $2 0 >> $2.stdout 2>&1
 }
 export -f morfologik_fsa5d
 
@@ -60,7 +60,7 @@ export -f morfologik_cfsa2
 morfologik_cfsa2d() {
     orig=${2%d}
     morfologik_cfsa2 $1 $orig
-    ./build/project/convert $orig $2 1 >> $2.stdout 2>&1
+    ./build/project/tools/convert $orig $2 1 >> $2.stdout 2>&1
 }
 export -f morfologik_cfsa2d
 
