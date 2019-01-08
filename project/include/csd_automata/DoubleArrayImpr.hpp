@@ -21,15 +21,14 @@
 namespace csd_automata {
     
 
-template <bool CompNext, bool UseStrId, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
+template <bool CompNext, bool UseStrId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
 class DoubleArrayImpr : sim_ds::MultipleVector, IOInterface {
 public:
-    using Self = DoubleArrayImpr<CompNext, UseStrId, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
+    using Self = DoubleArrayImpr<CompNext, UseStrId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
     using Base = sim_ds::MultipleVector;
     
     static constexpr bool kCompressNext = CompNext;
     static constexpr bool kUseStrId = UseStrId;
-    static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kCompressStrId = CompId;
     static constexpr bool kHashing = Hashing;
     static constexpr bool kCompressWords = CompWords;
@@ -211,39 +210,27 @@ public:
     
     size_t string_id(size_t index) const {
         assert(kUseStrId);
-        if constexpr (kUnionCheckAndId) {
-            auto id = check(index);
-            if (kCompressStrId and !check_paths_[index]) {
-                return id;
-            } else {
-                auto rank = check_paths_.rank(index);
-                if constexpr (kSelectId)
-                    return id | (check_flow_dac_[rank] << kBitsUpperNext);
-                else
-                    return id | (check_flow_[rank] << kBitsUpperNext);
-            }
+        auto id = check(index);
+        if (kCompressStrId and !check_paths_[index]) {
+            return id;
         } else {
-            assert(!kCompressStrId);
             auto rank = check_paths_.rank(index);
-            return check_flow_[rank];
+            if constexpr (kSelectId)
+                return id | (check_flow_dac_[rank] << kBitsUpperNext);
+            else
+                return id | (check_flow_[rank] << kBitsUpperNext);
         }
     }
     
     void set_string_id(size_t index, size_t str_id) {
         assert(kUseStrId);
-        
-        if constexpr (kUnionCheckAndId) {
-            set_check(index, str_id & 0xff);
-            auto flow = str_id >> kBitsUpperNext;
-            bool has_flow = flow > 0;
-            if constexpr (kCompressStrId)
-                b_check_paths_[index] = has_flow;
-            if (!kCompressStrId or (kCompressStrId and has_flow))
-                b_check_flow_.push_back(flow);
-        } else {
-            assert(!kCompressStrId);
-            b_check_flow_.emplace_back(str_id);
-        }
+        set_check(index, str_id & 0xff);
+        auto flow = str_id >> kBitsUpperNext;
+        bool has_flow = flow > 0;
+        if constexpr (kCompressStrId)
+            b_check_paths_[index] = has_flow;
+        if (!kCompressStrId or (kCompressStrId and has_flow))
+            b_check_flow_.push_back(flow);
     }
     
     size_t cum_words(size_t index) const {
@@ -588,8 +575,8 @@ public:
 };
 
 
-template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-void DoubleArrayImpr<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
+void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
 ShowStats(std::ostream& os) const {
     using std::endl;
     auto codes_name = [](bool use) {
@@ -630,8 +617,8 @@ ShowStats(std::ostream& os) const {
 }
 
     
-template<bool CompNext, bool CompCheck, bool UnionCheckAndId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-void DoubleArrayImpr<CompNext, CompCheck, UnionCheckAndId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
+void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
 ShowSizeMap(std::ostream& os) const {
     auto numElem = num_elements();
     std::vector<size_t> nexts(numElem);

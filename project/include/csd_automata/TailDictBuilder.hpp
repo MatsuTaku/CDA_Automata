@@ -45,7 +45,7 @@ public:
 private:
     explicit TailDictBuilder(const PlainFSA& fsa, bool binary_mode) : orig_fsa_(fsa), label_array_(binary_mode) {}
     
-    void Build(bool merge_suffix, bool divide_front);
+    void Build(bool merge_suffix);
     
     template <class Product>
     void Release(Product& dict);
@@ -74,7 +74,7 @@ private:
     
     void MakeDict_();
     void SetSharing_(bool merge_suffix);
-    void SetUpLabelArray_(bool divide_front);
+    void SetUpLabelArray_();
     
     void ShowMappingOfByteSize_();
     
@@ -83,7 +83,7 @@ private:
 
 // MARK: - Static build function
 
-void TailDictBuilder::Build(bool merge_suffix, bool divide_front) {
+void TailDictBuilder::Build(bool merge_suffix) {
     std::cout << "------ TailDict build bench mark ------" << std::endl;
     
     std::cout << "MakeDict: " << util::MeasureProcessing([&]() {
@@ -94,8 +94,8 @@ void TailDictBuilder::Build(bool merge_suffix, bool divide_front) {
         SetSharing_(merge_suffix);
     }) << "ms" << std::endl;
     
-    std::cout << "SetUpLabelArray: " << util::MeasureProcessing([&, divide_front]() {
-        SetUpLabelArray_(divide_front);
+    std::cout << "SetUpLabelArray: " << util::MeasureProcessing([&]() {
+        SetUpLabelArray_();
     }) << "ms" << std::endl;
     
 //        builder.showMappingOfByteSize();
@@ -199,7 +199,7 @@ void TailDictBuilder::SetSharing_(bool merge_suffix) {
     
 }
 
-void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
+void TailDictBuilder::SetUpLabelArray_() {
     std::sort(str_dicts_.begin(), str_dicts_.end(), [](Container lhs, Container rhs) {
         return (lhs.is_merged != rhs.is_merged ? lhs.is_merged < rhs.is_merged :
 //                lhs.entropy() > rhs.entropy());
@@ -221,7 +221,7 @@ void TailDictBuilder::SetUpLabelArray_(bool divide_front) {
         
         label_array_.SetPopuration(index);
         if (!dict.is_merged) {
-            label_array_.AddString(divide_front ? dict.follows() : dict.label);
+            label_array_.AddString(dict.label);
         }
     }
 }

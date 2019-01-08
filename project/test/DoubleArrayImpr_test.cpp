@@ -30,7 +30,7 @@ TEST(DAFoundationTest, UseDac) {
     auto next_src = RandVector(size);
     auto check_src = RandVector(size);
 
-    DoubleArrayImpr<true, true, true, true, false, false, false, false, false, false, false> fd;
+    DoubleArrayImpr<true, true, true, false, false, false, false, false, false, false> fd;
     fd.resize(size);
 
     std::vector<bool> is_str_ids(size);
@@ -67,7 +67,7 @@ TEST(DAFoundationTest, LookupDict) {
     auto check_src = RandVector(size);
     auto cwords_src = RandVector(size);
     
-    DoubleArrayImpr<false, true, true, false, true, true, true, false, false, false, false> fd;
+    DoubleArrayImpr<false, true, false, true, true, true, false, false, false, false> fd;
     fd.resize(size);
     
     std::vector<bool> is_str_ids(size);

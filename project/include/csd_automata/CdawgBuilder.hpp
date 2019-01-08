@@ -35,7 +35,7 @@ class CdawgBuilder {
 public:
     explicit CdawgBuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa) {}
     
-    void Build(bool binary_mode, bool merge_suffix, bool divide_front);
+    void Build(bool binary_mode, bool merge_suffix);
     
     template <class Product>
     void Release(Product& da);
@@ -232,13 +232,13 @@ private:
 };
 
     
-void CdawgBuilder::Build(bool binary_mode, bool merge_suffix, bool divide_front) {
+void CdawgBuilder::Build(bool binary_mode, bool merge_suffix) {
     ExpandBlock_();
     FreezeTrans_(0);
     set_final_(0, true);
     set_used_next_(0, true);
     
-    tail_dict_.Build(src_fsa_, binary_mode, merge_suffix, divide_front);
+    tail_dict_.Build(src_fsa_, binary_mode, merge_suffix);
     Arrange_(src_fsa_.get_root_state(), 0);
     
     // reset
@@ -264,18 +264,12 @@ void CdawgBuilder::Release(Product& dam) {
             }
             dam.Base::set_is_string(i, is_str_trans);
             dam.Base::set_is_final(i, is_final_(i));
-            if (Product::kUnionCheckAndId) {
-                if (is_str_trans) {
-                    size_t string_index = get_label_number_(i);
-                    size_t string_id = Product::kSelectStrId ? dam.strings_map_.id_rank(string_index) : string_index;
-                    dam.Base::set_string_id(i, string_id);
-                } else
-                    dam.Base::set_check(i, get_check_(i));
-            } else {
+            if (is_str_trans) {
+                size_t string_index = get_label_number_(i);
+                size_t string_id = Product::kSelectStrId ? dam.strings_map_.id_rank(string_index) : string_index;
+                dam.Base::set_string_id(i, string_id);
+            } else
                 dam.Base::set_check(i, get_check_(i));
-                if (is_str_trans)
-                    dam.Base::set_string_id(i, get_label_number_(i));
-            }
             
             if constexpr (Product::kSupportAccess)
                 dam.Base::set_words(i, get_words_(i));

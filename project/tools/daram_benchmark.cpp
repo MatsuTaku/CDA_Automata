@@ -88,9 +88,6 @@ void ProcessMatchDictionary(const std::string dict_name, Process process) {
         case csd_automata::SdLoCnsidDaFsa::kHeader:
             process(csd_automata::SdLoCnsidDaFsa(dict_stream));
             break;
-        case csd_automata::SdLoDwDaFsa::kHeader:
-            process(csd_automata::SdLoDwDaFsa(dict_stream));
-            break;
         default:
             break;
     }

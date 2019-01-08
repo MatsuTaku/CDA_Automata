@@ -71,14 +71,13 @@ private:
 };
 
 
-template<bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-class Cdawg : public StringDictionaryInterface, DoubleArrayImpr<CompressNext, true, UnionCheckAndId, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
+template<bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+class Cdawg : public StringDictionaryInterface, DoubleArrayImpr<CompressNext, true, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
 public:
     static_assert((SelectStrId and CompressStrId) or !SelectStrId, "ERROR: Failed template parameters: SelectStrId and CompressStrId");
     
-    using Self = Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>;
+    using Self = Cdawg<UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>;
     
-    static constexpr bool kUnionCheckAndId = UnionCheckAndId;
     static constexpr bool kUseCumulativeWords = UseCumulativeWords;
     static constexpr bool kLinkChildren = LinkChildren;
     static constexpr bool kCompressStrId = CompressStrId;
@@ -88,8 +87,7 @@ public:
     static constexpr bool kSelectStrId = SelectStrId;
     static constexpr bool kDacWords = DacWords;
     
-    static constexpr id_type kHeader = (kUnionCheckAndId |
-                                        kUseCumulativeWords << 1 |
+    static constexpr id_type kHeader = (kUseCumulativeWords << 1 |
                                         kLinkChildren << 2 |
                                         kCompressStrId << 3 |
                                         kCompressWords << 4 |
@@ -100,11 +98,11 @@ public:
     
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Base = DoubleArrayImpr<kCompressNext, kUseStrId, kUnionCheckAndId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
+    using Base = DoubleArrayImpr<kCompressNext, kUseStrId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
-    using StringsMap = SerializedStrings<kUseBinaryLabel, kSelectStrId>;
+    using StringsPool = SerializedStrings<kUseBinaryLabel, kSelectStrId>;
     
     using BitVector = sim_ds::BitVector;
     
@@ -128,7 +126,7 @@ public:
     
 private:
     size_t num_trans_ = 0;
-    StringsMap strings_map_;
+    StringsPool strings_map_;
     // If set values in extended storage
     ValueSet values_;
     
@@ -145,7 +143,7 @@ public:
     
     explicit Cdawg(const PlainFSA& fsa) {
         Builder builder(fsa);
-        builder.Build(kUseBinaryLabel, kMergeSuffixOfSerializedStrings, !kUnionCheckAndId);
+        builder.Build(kUseBinaryLabel, kMergeSuffixOfSerializedStrings);
         builder.Release(*this);
     }
     
@@ -288,39 +286,20 @@ private:
         for (; exp.pos_on_text() < exp.text().size(); exp.set_pos_on_text(exp.pos_on_text() + 1)) {
             uint8_t c = exp.text()[exp.pos_on_text()];
             exp.set_trans(transition_(exp.trans(), c));
-            if constexpr (kUnionCheckAndId) {
-                if (!Base::is_string(exp.trans())) {
-                    // Check label that is character
-                    uint8_t check = Base::check(exp.trans());
-                    if (check != c)
-                        return false;
-                } else {
-                    // Check label that is indexed string
-                    auto str_id = Base::string_id(exp.trans());
-                    if (!strings_map_.match(exp.pos_ptr(), exp.text(), str_id)) {
-#ifndef NDEBUG
-                        strings_map_.ShowLabels(str_id);
-#endif
-                        return false;
-                    }
-                }
-            } else {
-                uint8_t checkE = Base::check(exp.trans());
-                bool success_trans = checkE == c;
-                if (Base::is_string(exp.trans())) {
-                    // Check label has indexed string
-                    auto str_id = Base::string_id(exp.trans());
-                    exp.set_pos_on_text(exp.pos_on_text() + 1);
-                    bool success_trans_string = strings_map_.match(exp.pos_ptr(), exp.text(), str_id);
-#ifndef NDEBUG
-                    if (!success_trans_string) {
-                        strings_map_.ShowLabels(str_id);
-                    }
-#endif
-                    success_trans &= success_trans_string;
-                }
-                if (!success_trans)
+            if (!Base::is_string(exp.trans())) {
+                // Check label that is character
+                uint8_t check = Base::check(exp.trans());
+                if (check != c)
                     return false;
+            } else {
+                // Check label that is indexed string
+                auto str_id = Base::string_id(exp.trans());
+                if (!strings_map_.match(exp.pos_ptr(), exp.text(), str_id)) {
+#ifndef NDEBUG
+                    strings_map_.ShowLabels(str_id);
+#endif
+                    return false;
+                }
             }
             
             trans_work(exp);
@@ -332,15 +311,15 @@ private:
 };
     
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-void LoadFromFile(Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>& self, std::string file_name) {
+template <bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+void LoadFromFile(Cdawg<UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>& self, std::string file_name) {
     auto ifs = util::GetStreamOrDie<std::ifstream>(file_name);
     self.LoadFrom(ifs);
 }
 
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-id_type Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
+template <bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+id_type Cdawg<UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
 LookupLegacy(std::string_view text) const {
     assert(!kUseCumulativeWords);
     
@@ -357,19 +336,13 @@ LookupLegacy(std::string_view text) const {
             size_t nt = transition_(trans, label);
             size_t check_type;
             
-            if constexpr (kUnionCheckAndId) {
-                if (!Base::is_string(nt)) {
-                    check_type = Base::check(nt);
-                    if (check_type != label)
-                        continue;
-                } else {
-                    check_type = Base::string_id(nt);
-                    if (strings_map_[check_type] != label)
-                        continue;
-                }
-            } else {
+            if (!Base::is_string(nt)) {
                 check_type = Base::check(nt);
                 if (check_type != label)
+                    continue;
+            } else {
+                check_type = Base::string_id(nt);
+                if (strings_map_[check_type] != label)
                     continue;
             }
             
@@ -377,39 +350,18 @@ LookupLegacy(std::string_view text) const {
         }
         
         trans = transition_(trans, c);
-        if constexpr (kUnionCheckAndId) {
-            if (!Base::is_string(trans)) {
-                uint8_t checkE = Base::check(trans);
-                if (checkE != c)
-                    return kSearchError;
-            } else {
-                size_t str_id = Base::string_id(trans);
-                if (!strings_map_.match(&pos, text, str_id)) {
-#ifndef NDEBUG
-                    strings_map_.ShowLabels(str_id);
-#endif
-                    return kSearchError;
-                }
-            }
-        } else {
+        if (!Base::is_string(trans)) {
             uint8_t checkE = Base::check(trans);
-            bool success_trans = checkE == c;
-            
-            if (Base::is_string(trans)) {
-                auto str_id = Base::string_id(trans);
-                if constexpr (!kUnionCheckAndId) {
-                    pos++;
-                }
-                bool success_trans_string = strings_map_.match(&pos, text, str_id);
-                if (!success_trans_string) { // Increment 'pos'
-#ifndef NDEBUG
-                    strings_map_.ShowLabels(str_id);
-#endif
-                }
-                success_trans &= success_trans_string;
-            }
-            if (!success_trans)
+            if (checkE != c)
                 return kSearchError;
+        } else {
+            size_t str_id = Base::string_id(trans);
+            if (!strings_map_.match(&pos, text, str_id)) {
+#ifndef NDEBUG
+                strings_map_.ShowLabels(str_id);
+#endif
+                return kSearchError;
+            }
         }
     }
     
@@ -417,8 +369,8 @@ LookupLegacy(std::string_view text) const {
 }
 
 
-template <bool UnionCheckAndId, bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-std::string Cdawg<UnionCheckAndId, UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
+template <bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
+std::string Cdawg<UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>::
 Access(id_type key) const {
     assert(kSupportAccess);
     
@@ -435,17 +387,12 @@ Access(id_type key) const {
             
             bool success_trans;
             bool is_str_label = Base::is_string(nt);
-            if constexpr (kUnionCheckAndId) {
-                if (!is_str_label) {
-                    check_type = Base::check(nt);
-                    success_trans = check_type == c;
-                } else {
-                    check_type = Base::string_id(nt);
-                    success_trans = uint8_t(strings_map_[check_type]) == c;
-                }
-            } else {
+            if (!is_str_label) {
                 check_type = Base::check(nt);
                 success_trans = check_type == c;
+            } else {
+                check_type = Base::string_id(nt);
+                success_trans = uint8_t(strings_map_[check_type]) == c;
             }
             if (!success_trans) {
                 if constexpr (kLinkChildren) {
@@ -471,18 +418,10 @@ Access(id_type key) const {
             } else {
                 if (Base::is_final(nt))
                     counter--;
-                if constexpr (kUnionCheckAndId) {
-                    if (!is_str_label)
-                        route += check_type;
-                    else
-                        route += strings_map_.string_view(check_type);
-                } else {
+                if (!is_str_label)
                     route += check_type;
-                    if (is_str_label) {
-                        size_t str_id = Base::string_id(nt);
-                        route += strings_map_.string_view(str_id);
-                    }
-                }
+                else
+                    route += strings_map_.string_view(check_type);
                 
                 next_trans = nt;
                 break;

@@ -39,9 +39,9 @@ public:
     TailDict(TailDict&&) = default;
     TailDict& operator=(TailDict&&) = default;
     
-    void Build(const PlainFSA& src_fsa_, bool binary_mode, bool merge_suffix, bool divide_front) {
+    void Build(const PlainFSA& src_fsa_, bool binary_mode, bool merge_suffix) {
         Builder builder(src_fsa_, binary_mode);
-        builder.Build(merge_suffix, divide_front);
+        builder.Build(merge_suffix);
         builder.Release(*this);
     }
     
