@@ -1,32 +1,32 @@
 #!/bin/bash
 
 function dam {
-  ./build/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f dam
 
 function damcn {
-  ./build/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damcn
 
 function damci {
-  ./build/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damci
 
 function damcsi {
-  ./build/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damcsi
 
 function damdw {
-  ./build/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damdw
 
 function damac {
-  ./build/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./build/project/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damac
 
