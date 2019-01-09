@@ -13,30 +13,52 @@
 #include "basic.hpp"
 #include "util.hpp"
 #include "PlainFSA.hpp"
-#include "TailDictContainer.hpp"
 #include "SerializedStringsBuilder.hpp"
 #include "TailDict.hpp"
 
 #include "Director.hpp"
 
+#include "poplar.hpp"
+
 
 namespace csd_automata {
 
 class TailDictBuilder {
-    using Container = TailDictContainer;
-    
     friend class TailDict;
     
     const PlainFSA& orig_fsa_;
     
-    std::vector<Container> str_dicts_;
-    Container* current_dict_ = nullptr;
-    std::vector<size_t> fsa_target_indexes_;
-    std::vector<bool> has_label_bits_;
-    SerializedStringsBuilder label_array_;
+    struct Container {
+        id_type id = -1;
+        // this label
+        std::string label = "";
+        // place at node
+        std::vector<size_t> node_ids;
+        // Data id of included owner
+        id_type owner = -1;
+        // label placed index at array
+        int place = -1;
+        // matched counter
+        size_t counter = 0;
+        
+        bool is_merged() const {
+            return owner != -1;
+        }
+        
+        double entropy() const {
+            return double(counter) / label.size();
+        }
+        
+    };
+    
+    std::vector<Container> containers_;
+    using StringMap = poplar::compact_hash_map<id_type>;
+    StringMap string_map_;
     std::unordered_map<size_t, size_t> state_map_;
     
-    std::vector<size_t> id_map_;
+    std::unordered_map<size_t, size_t> trans_to_label_id_;
+    SerializedStringsBuilder label_array_;
+    
     
 public:
     TailDictBuilder(const TailDictBuilder&) = delete;
@@ -53,17 +75,6 @@ private:
     std::string string_reverse_(std::string text) const {
         reverse(text.begin(), text.end());
         return text;
-    }
-    
-    void UpdateIdMap_() {
-        id_map_ = {};
-        id_map_.resize(str_dicts_.size());
-        for (size_t i = 0, size = str_dicts_.size(); i < size; i++)
-            id_map_[str_dicts_[i].id] = i;
-    }
-    
-    Container& dict_from_id_(size_t id) {
-        return str_dicts_[id_map_[id]];
     }
     
     // Recursive function
@@ -98,15 +109,13 @@ void TailDictBuilder::Build(bool merge_suffix) {
         SetUpLabelArray_();
     }) << "ms" << std::endl;
     
-//        builder.showMappingOfByteSize();
+//    builder.showMappingOfByteSize();
 }
     
     
 template <class Product>
 void TailDictBuilder::Release(Product& dict) {
-    dict.str_dicts_ = str_dicts_;
-    dict.fsa_target_indexes_ = fsa_target_indexes_;
-    dict.has_label_bits_ = has_label_bits_;
+    dict.trans_to_label_id_ = std::move(trans_to_label_id_);
     dict.label_array_ = std::move(label_array_);
 }
 
@@ -122,107 +131,111 @@ void TailDictBuilder::LabelArrange_(size_t state) {
         return;
     }
     
-    state_map_.insert(std::make_pair(state, 0));
+    state_map_.insert({state, 0});
     
     for (auto trans = first_trans; trans != 0; trans = orig_fsa_.get_next_trans(trans)) {
-        auto labelTrans = trans;
-        if (orig_fsa_.is_straight_state(labelTrans)) {
-            auto index = labelTrans / PlainFSA::kSizeTrans;
-            NewFace_();
-            current_dict_->push_label(orig_fsa_.get_trans_symbol(labelTrans));
+        auto label_trans = trans;
+        if (orig_fsa_.is_straight_state(label_trans)) {
+            auto index = label_trans / PlainFSA::kSizeTrans;
+            std::string label_on_path;
+            label_on_path += orig_fsa_.get_trans_symbol(label_trans);
             do {
-                labelTrans = orig_fsa_.get_target_state(labelTrans);
-                current_dict_->push_label(orig_fsa_.get_trans_symbol(labelTrans));
-            } while (orig_fsa_.is_straight_state(labelTrans));
-            SaveStrDict_(index);
+                label_trans = orig_fsa_.get_target_state(label_trans);
+                label_on_path.push_back(orig_fsa_.get_trans_symbol(label_trans));
+            } while (orig_fsa_.is_straight_state(label_trans));
+            auto cr = poplar::make_char_range(label_on_path);
+            auto* id_ptr = string_map_.find(cr);
+            if (id_ptr == nullptr) {
+                auto id = containers_.size();
+                auto* id_ptr = string_map_.update(cr);
+                *id_ptr = id;
+                Container container;
+                container.id = id;
+                container.label = label_on_path;
+                container.node_ids.push_back(index);
+                container.counter = 1;
+                containers_.push_back(container);
+            } else {
+                auto& container = containers_[*id_ptr];
+                assert(container.id == *id_ptr);
+                container.node_ids.push_back(index);
+                container.counter++;
+            }
         }
-        
-        LabelArrange_(orig_fsa_.get_target_state(labelTrans));
+        LabelArrange_(orig_fsa_.get_target_state(label_trans));
     }
-    
-}
-
-void TailDictBuilder::NewFace_() {
-    Container dict;
-    dict.id = str_dicts_.size();
-    str_dicts_.push_back(dict);
-    current_dict_ = &str_dicts_.back();
-}
-
-void TailDictBuilder::SaveStrDict_(size_t index) {
-    has_label_bits_[index] = true;
-    current_dict_->node_id = index;
-    current_dict_->counter = 1;
 }
 
 void TailDictBuilder::MakeDict_() {
-    fsa_target_indexes_.resize(orig_fsa_.get_num_elements());
-    has_label_bits_.resize(orig_fsa_.get_num_elements());
     LabelArrange_(orig_fsa_.get_root_state());
+    // clear memory
+    string_map_ = StringMap();
+    state_map_ = {};
 }
 
 void TailDictBuilder::SetSharing_(bool merge_suffix) {
-    std::sort(str_dicts_.begin(), str_dicts_.end(), [](Container& lhs, Container& rhs) {
+    std::sort(containers_.begin(), containers_.end(), [](Container& lhs, Container& rhs) {
         return std::lexicographical_compare(lhs.label.rbegin(), lhs.label.rend(), rhs.label.rbegin(), rhs.label.rend());
     });
     
-    auto dummy = Container();
-    Container* owner = &dummy;
-    for (auto i = str_dicts_.size(); i > 0; --i) {
-        auto &cur = str_dicts_[i - 1];
-        if (cur.label.size() == 0) {
+    Container dummy;
+    Container* prev = &dummy;
+    for (auto itr = containers_.rbegin(); itr != containers_.rend(); ++itr) {
+        auto& cur = *itr;
+        if (cur.label == "") {
             std::cerr << "label is empty!" << std::endl;;
             continue;
         }
-        auto match = 0;
-        auto owner_label_len = owner->label.length();
+        auto matches = 0;
+        auto owner_label_len = prev->label.length();
         auto label_len = cur.label.length();
-        while ((owner_label_len > match and label_len > match) and
-               owner->label[owner_label_len - match - 1] == cur.label[label_len - match - 1]) {
-            ++match;
+        while ((owner_label_len > matches and label_len > matches) and
+               prev->label[owner_label_len - matches - 1] == cur.label[label_len - matches - 1]) {
+            ++matches;
         }
-        if (match > 0 and match == owner_label_len) {
+        if (matches > 0 and matches == owner_label_len) {
             // sharing
-            cur.is_merged = true;
-            cur.enabled = false;
-            cur.owner = owner->id;
-            owner->counter++;
-        } else if (merge_suffix and (match > 0 and match == label_len)) {
-            // merge
-            cur.is_merged = true;
-            cur.owner = owner->id;
-            owner->counter++;
+            assert(false);
+        } else if (merge_suffix and (matches > 0 and matches == label_len)) {
+            // merge suffix
+            cur.owner = prev->id;
+            prev->counter += cur.counter;
         } else {
-            owner = &cur;
+            prev = &cur;
         }
     }
     
 }
 
 void TailDictBuilder::SetUpLabelArray_() {
-    std::sort(str_dicts_.begin(), str_dicts_.end(), [](Container lhs, Container rhs) {
-        return (lhs.is_merged != rhs.is_merged ? lhs.is_merged < rhs.is_merged :
-//                lhs.entropy() > rhs.entropy());
+    std::sort(containers_.begin(), containers_.end(), [](auto lhs, auto rhs) {
+        return (lhs.is_merged() != rhs.is_merged() ? lhs.is_merged() < rhs.is_merged() :
                 lhs.counter > rhs.counter);
     });
-    UpdateIdMap_();
-    auto count = 0;
-    for (auto& dict : str_dicts_) {
+    std::unordered_map<id_type, size_t> owner_map;
+    size_t i = 0;
+    for (; i < containers_.size() and !containers_[i].is_merged(); i++) {
+        auto& container = containers_[i];
         auto index = label_array_.size();
-        if (dict.is_merged) {
-            auto owner_dict = dict_from_id_(dict.owner);
-            if (owner_dict.place == -1) {
-                abort();
-            }
-            index = owner_dict.place + owner_dict.label.size() - dict.label.size();
+        container.place = index;
+        for (auto node : container.node_ids) {
+            trans_to_label_id_.insert({node, index});
         }
-        dict.place = index;
-        fsa_target_indexes_[dict.node_id] = count++;
-        
         label_array_.SetPopuration(index);
-        if (!dict.is_merged) {
-            label_array_.AddString(dict.label);
+        label_array_.AddString(container.label);
+        
+        owner_map.insert({container.id, i});
+    }
+    for (; i < containers_.size(); ++i) {
+        auto& container = containers_[i];
+        auto& owner = containers_[owner_map[container.owner]];
+        assert(owner.place != -1);
+        auto index = owner.place + owner.label.size() - container.label.size();
+        container.place = index;
+        for (auto node : container.node_ids) {
+            trans_to_label_id_.insert({node, index});
         }
+        label_array_.SetPopuration(index);
     }
 }
 
@@ -230,8 +243,8 @@ void TailDictBuilder::SetUpLabelArray_() {
 
 void TailDictBuilder::ShowMappingOfByteSize_() {
     size_t counts[4] = {0, 0, 0, 0};
-    for (auto& dict : str_dicts_) {
-        if (dict.is_merged)
+    for (auto& dict : containers_) {
+        if (dict.is_merged())
             continue;
         auto size = sim_ds::calc::SizeFitsInBytes(dict.place);
         if (size == 0) continue;

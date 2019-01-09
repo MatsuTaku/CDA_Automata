@@ -1,12 +1,9 @@
-[submodule "array-fsa/lib/SimDS"]
-	path = array-fsa/lib/SimDS
-	url = git@github.com:MatsuTaku/SimpleDataStructure.git
-[submodule "array-fsa/test/lib/googletest"]
-	path = array-fsa/test/lib/googletest
-	url = git@github.com:google/googletest
 [submodule "project/lib/SimpleDataStructure"]
 	path = project/lib/SimpleDataStructure
 	url = git@github.com:MatsuTaku/SimpleDataStructure.git
+[submodule "project/lib/poplar-trie"]
+	path = project/lib/poplar-trie
+	url = git@github.com:kampersanda/poplar-trie.git
 [submodule "lib/path_decomposed_tries"]
 	path = lib/path_decomposed_tries
 	url = git@github.com:ot/path_decomposed_tries.git

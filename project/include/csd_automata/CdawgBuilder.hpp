@@ -242,7 +242,7 @@ void CdawgBuilder::Build(bool binary_mode, bool merge_suffix) {
     Arrange_(src_fsa_.get_root_state(), 0);
     
     // reset
-    state_map_ = std::unordered_map<size_t, size_t>();
+    state_map_ = {};
 }
 
 template <class Product>
@@ -268,8 +268,9 @@ void CdawgBuilder::Release(Product& dam) {
                 size_t string_index = get_label_number_(i);
                 size_t string_id = Product::kSelectStrId ? dam.strings_pool_.id_rank(string_index) : string_index;
                 dam.Base::set_string_id(i, string_id);
-            } else
+            } else {
                 dam.Base::set_check(i, get_check_(i));
+            }
             
             if constexpr (Product::kSupportAccess)
                 dam.Base::set_words(i, get_words_(i));
@@ -520,9 +521,10 @@ void CdawgBuilder::Arrange_(size_t state, size_t index) {
         set_check_(child_index, symbol);
         auto trans_index = trans / PlainFSA::kSizeTrans;
         auto label_trans = trans;
-        if (tail_dict_.is_label_source(trans_index)) {
+        size_t label_id = 0;
+        if (tail_dict_.check_label_codes(trans_index, &label_id)) {
             set_has_label_(child_index);
-            set_label_index_(child_index, tail_dict_.start_pos(trans_index));
+            set_label_index_(child_index, label_id);
             
             while (src_fsa_.is_straight_state(label_trans)) {
                 label_trans = src_fsa_.get_target_state(label_trans);

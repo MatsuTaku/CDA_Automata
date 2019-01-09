@@ -39,7 +39,3 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
 	add_test(NAME ${TEST_SOURCE_NAME} COMMAND ${TEST_SOURCE_NAME})
 endforeach()
 
-#add_executable(CSDAutomata_test ${TEST_SOURCES})
-#target_link_libraries(CSDAutomata_test gtest_main CSDAutomata)
-#add_test(NAME CSDAutomata_test COMMAND CSDAutomata_test)
-

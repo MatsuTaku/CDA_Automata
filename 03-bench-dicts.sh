@@ -187,12 +187,12 @@ export -f call
 
 TOOLS="
 daram_results
-morfologik_results
-darts_results
-xcdat_results
-marisa_results
 cent_results
 "
+#morfologik_results
+#darts_results
+#xcdat_results
+#marisa_results
 
 DATASET_DIR=data-sets
 DATASETS=`find $DATASET_DIR -name '*.1000000.rnd_dict'`

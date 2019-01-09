@@ -72,15 +72,15 @@ int main(int argc, const char* argv[]) {
     }
     
 #else
-//    dataset_name = "../../data-sets/weiss/wikipedia2.dict";
-//    dict_name = "../../results/wikipedia2/wikipedia2.dam";
-//    dataset_name = "../../data-sets/local/enwiki-20181001.dict";
-//    dict_name = "../../results/enwiki-20181001/enwiki-20181001.dam";
-//    dataset_name = "../../data-sets/local/jawiki-20181001.dict";
-//    dict_name = "../../results/jawiki-20181001/jawiki-20181001.dam";
-    dataset_name = "../../../../data-sets/ciura-deorowicz/full.dict";
-    dict_name = "../../../../results/full/full.dam";
-    options.binary = 0b01110;
+//    dataset_name = "../../../../data-sets/weiss/wikipedia2.dict";
+//    dict_name = "../../../../results/wikipedia2/wikipedia2.dam";
+//    dataset_name = "../../../../data-sets/local/enwiki-20181001.dict";
+//    dict_name = "../../../../results/enwiki-20181001/enwiki-20181001.dam";
+    dataset_name = "../../../../data-sets/local/jawiki-20181001.dict";
+    dict_name = "../../../../results/jawiki-20181001/jawiki-20181001.dam";
+//    dataset_name = "../../../../data-sets/ciura-deorowicz/full.dict";
+//    dict_name = "../../../../results/full/full.dam";
+    options.binary = 0b00000;
 #endif
     
     if (dataset_name == "") {

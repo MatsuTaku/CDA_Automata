@@ -24,7 +24,7 @@ namespace director {
 
 // May throw Exceptions
 template <class StringDictionaryType>
-int CheckHasMember(const std::string& dataset_name, StringDictionaryType& sd) {
+int CheckHasMember(StringDictionaryType& sd, const std::string& dataset_name) {
     std::cout << std::endl << "Check membering ... ";
     auto ifs = util::GetStreamOrDie<std::ifstream>(dataset_name);
     
@@ -98,7 +98,7 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
     std::cout << "Build in: " << time_build_dam << " ms" << std::endl;
     
     // Check membered all sets
-    if (CheckHasMember(dataset_name, da) == -1) {
+    if (CheckHasMember(da, dataset_name) == -1) {
         std::cerr << "Failure to build String Dictionary!" << std::endl;
     }
     

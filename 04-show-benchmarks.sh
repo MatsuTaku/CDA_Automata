@@ -22,8 +22,8 @@ for dataset in $DATASETS; do
 		$results_fn.morfologik_results \
 		$results_fn.marisa_results \
 		$results_fn.cent_results \
-		$results_fn.xcdat_results
-	#	$results_fn.darts_results
+		$results_fn.xcdat_results \
+#		$results_fn.darts_results
 done
 
 open `find $RESULTS_DIR -name '*.plot.png'`
