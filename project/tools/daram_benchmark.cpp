@@ -13,7 +13,7 @@ namespace {
 void ShowUsage() {
     std::cout
     << "Usage" << std::endl
-    << "$ daram_benchmark [daram_dict] [dataset]" << std::endl;
+    << "$ daram_benchmark [daram_dict] [dataset] (results_file)" << std::endl;
 }
 
 template <class DaramDictionary>
@@ -27,11 +27,11 @@ void BenchmarkDictionary(const DaramDictionary& dict, const std::string dataset_
 #endif
     
     // warmup
-    bool buf = 0;
+    bool buf = true;
     for (auto& text : keyset) {
         buf &= dict.Accept(text);
     }
-    std::cout << (buf ? "All keys are stored!" : "Some keys aren't stored!!!");
+    std::cout << (buf ? "All keys are stored!" : "Some keys aren't stored!!!") << std::endl;
 
     std::cout << "Search benchmark from input: " << dataset_name << std::endl;
     std::cout << "------" << std::endl
@@ -102,19 +102,17 @@ void Benchmark(const std::string dict_name, const std::string dataset_name, cons
 }
 
 int main(int argc, char* argv[]) {
+    
+    std::string dict_name = "";
+    std::string dataset_name = "";
+    std::string results_name = "";
+    
 #ifdef NDEBUG
     if (argc != 3 and argc != 4) {
         std::cout << "ERROR: Invalid number of  arguments!: " << argc << std::endl;
         ShowUsage();
         exit(EXIT_FAILURE);
     }
-#endif
-    
-    std::string dict_name;
-    std::string dataset_name;
-    std::string results_name;
-    
-#ifdef NDEBUG
     dict_name = argv[1];
     dataset_name = argv[2];
     results_name = argv[3];

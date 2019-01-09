@@ -18,6 +18,8 @@ endif()
 
 enable_testing()
 
+add_subdirectory(project)
+
 link_directories(/usr/local/lib)
 include_directories(/usr/local/include include lib/path_decomposed_tries)
 
@@ -25,9 +27,7 @@ find_package(Boost 1.42.0 COMPONENTS unit_test_framework iostreams system thread
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-add_subdirectory(project)
-
-set(SUCCINCT_USE_POPCNT ON)
+option(SUCCINCT_USE_POPCNT ON)
 add_subdirectory(lib/path_decomposed_tries/succinct EXCLUDE_FROM_ALL)
 
 message(STATUS "Make SDExperiments")
