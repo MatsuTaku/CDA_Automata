@@ -1,9 +1,9 @@
-[submodule "project/lib/SimpleDataStructure"]
-	path = project/lib/SimpleDataStructure
+[submodule "daram/lib/SimpleDataStructure"]
+	path = daram/lib/SimpleDataStructure
 	url = git@github.com:MatsuTaku/SimpleDataStructure.git
-[submodule "project/lib/poplar-trie"]
-	path = project/lib/poplar-trie
+[submodule "daram/lib/poplar-trie"]
+	path = daram/lib/poplar-trie
 	url = git@github.com:kampersanda/poplar-trie.git
-[submodule "lib/path_decomposed_tries"]
-	path = lib/path_decomposed_tries
+[submodule "experiments/lib/path_decomposed_tries"]
+	path = experiments/lib/path_decomposed_tries
 	url = git@github.com:ot/path_decomposed_tries.git

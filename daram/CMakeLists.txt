@@ -24,7 +24,10 @@ file(GLOB HEADER_FILES ${DARAM_INCLUDE_DIR}/csd_automata.hpp ${DARAM_INCLUDE_DIR
 add_library(CSDAutomata STATIC ${DARAM_INCLUDE_DIR}/csd_automata.cpp ${HEADER_FILES})
 target_include_directories(CSDAutomata PUBLIC ${DARAM_INCLUDE_DIR})
 
-add_subdirectory(lib/poplar-trie)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/poplar_config.hpp.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/include/poplar/poplar_config.hpp
+)
 set(POPLAR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/include")
 target_include_directories(CSDAutomata PUBLIC ${POPLAR_INCLUDE_DIR})
 

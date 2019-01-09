@@ -1,69 +1,69 @@
 #!/bin/bash
 
 function dam {
-  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./daram/build/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f dam
 
 function damcn {
-  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./daram/build/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damcn
 
 function damci {
-  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./daram/build/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damci
 
 function damcsi {
-  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./daram/build/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damcsi
 
 function damdw {
-  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./daram/build/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damdw
 
 function damac {
-  ./build/project/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
+  ./daram/build/tools/daram_benchmark $1 $2 $3 >$1.bench.stdout 2>&1
 }
 export -f damac
 
 function morfologik_fsa5d {
-  ./build/sd_experiments $1 $2 1 $3 >$1.bench.stdout 2>&1
+  ./experiments/build/sd_experiments $1 $2 1 $3 >$1.bench.stdout 2>&1
 }
 export -f morfologik_fsa5d
 
 function morfologik_cfsa2d {
-  ./build/sd_experiments $1 $2 2 $3 >$1.bench.stdout 2>&1
+  ./experiments/build/sd_experiments $1 $2 2 $3 >$1.bench.stdout 2>&1
 }
 export -f morfologik_cfsa2d
 
 function xcdat {
-  ./build/sd_experiments $1 $2 3 $3 >$1.bench.stdout 2>&1
+  ./experiments/build/sd_experiments $1 $2 3 $3 >$1.bench.stdout 2>&1
 }
 export -f xcdat
 
 function fxcdat {
-  ./build/sd_experiments $1 $2 4 $3 >$1.bench.stdout 2>&1
+  ./experiments/build/sd_experiments $1 $2 4 $3 >$1.bench.stdout 2>&1
 }
 export -f fxcdat
 
 function marisa {
-  ./build/sd_experiments $1 $2 5 $3 >$1.bench.stdout 2>&1
+  ./experiments/build/sd_experiments $1 $2 5 $3 >$1.bench.stdout 2>&1
 }
 export -f marisa
 
 function darts {
-  ./build/sd_experiments $1 $2 6 $3 >$1.bench.stdout 2>&1
+  ./experiments/build/sd_experiments $1 $2 6 $3 >$1.bench.stdout 2>&1
 }
 export -f darts
 
 function centrp {
 #  ./software/path_decomposed_tries/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
 #  cat $1.stdout >> $1.bench.stdout
-	./build/sd_experiments $1 $2 7 $3 >$1.bench.stdout 2>&1
+	./experiments/build/sd_experiments $1 $2 7 $3 >$1.bench.stdout 2>&1
 }
 export -f centrp
 

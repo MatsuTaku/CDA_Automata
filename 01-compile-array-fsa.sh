@@ -1,8 +1,13 @@
 #!/bin/bash
 
-DIR_ROOT=$(dirname $0)
+cd $(dirname $0)/daram
+mkdir build
+cd build
+cmake ..
+make
+ctest
 
-cd $DIR_ROOT
+cd ../../experiments
 mkdir build
 cd build
 cmake ..
