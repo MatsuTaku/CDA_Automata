@@ -20,7 +20,7 @@ set(DARAM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(GLOB HEADER_FILES ${DARAM_INCLUDE_DIR}/csd_automata.hpp ${DARAM_INCLUDE_DIR}/csd_automata/*.hpp)
 
-# Build Interface Library
+# Build library for xcode development
 add_library(CSDAutomata STATIC ${DARAM_INCLUDE_DIR}/csd_automata.cpp ${HEADER_FILES})
 target_include_directories(CSDAutomata PUBLIC ${DARAM_INCLUDE_DIR})
 

@@ -47,7 +47,7 @@ int main(int argc, const char* argv[]) {
     
 #ifdef NDEBUG
     if (argc < 3) {
-        std::cerr << "Invalid number of arguments!" << std::endl;
+        ShowUsage();
         return -1;
     }
     for (int i = 1; i < argc; i++) {
@@ -78,9 +78,9 @@ int main(int argc, const char* argv[]) {
 //    dict_name = "../../../../results/enwiki-20181001/enwiki-20181001.dam";
     dataset_name = "../../../../data-sets/local/jawiki-20181001.dict";
     dict_name = "../../../../results/jawiki-20181001/jawiki-20181001.dam";
-//    dataset_name = "../../../../data-sets/ciura-deorowicz/full.dict";
-//    dict_name = "../../../../results/full/full.dam";
-    options.binary = 0b00000;
+//    dataset_name = "../../../../data-sets/ciura-deorowicz/sample.dict";
+//    dict_name = "../../../../results/sample/sample.dam";
+    options.binary = 0b01110;
 #endif
     
     if (dataset_name == "") {
