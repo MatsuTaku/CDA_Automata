@@ -87,14 +87,14 @@ public:
     static constexpr bool kSelectStrId = SelectStrId;
     static constexpr bool kDacWords = DacWords;
     
-    static constexpr id_type kHeader = (kUseCumulativeWords << 1 |
-                                        kLinkChildren << 2 |
-                                        kCompressStrId << 3 |
-                                        kCompressWords << 4 |
-                                        kSupportAccess << 5 |
-                                        kCompressNext << 6 |
-                                        kSelectStrId << 7 |
-                                        kDacWords << 8);
+    static constexpr id_type kHeader = (kUseCumulativeWords |
+                                        kLinkChildren << 1 |
+                                        kCompressStrId << 2 |
+                                        kCompressWords << 3 |
+                                        kSupportAccess << 4 |
+                                        kCompressNext << 5 |
+                                        kSelectStrId << 6 |
+                                        kDacWords << 7);
     
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;

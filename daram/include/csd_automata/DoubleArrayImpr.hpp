@@ -38,19 +38,19 @@ public:
     static constexpr bool kSelectId = SelectId;
     static constexpr bool kDacWords = DacWords;
     
-    enum Bits : size_t {
-        kFlags = !kCompressNext ? (kCompressStrId ? 2 : 1) : 0,
-        kFlagsExtend = kCompressNext ? (kCompressStrId ? 2 : 1) : 0,
-        kBitsUpperNext = 8,
-        kBitsUpperWords = kPlainWords ? 4 : 8,
-    };
-    enum Mask : Base::storage_type {
-        kMaskIsFinal = 0b01,
-        kMaskIsStrId = 0b10,
-        kMaskFlags = sim_ds::bit_util::width_mask<kFlags>,
-        kMaskUpperNext = sim_ds::bit_util::width_mask<kBitsUpperNext>,
-        kMaskUpperWords = sim_ds::bit_util::width_mask<kBitsUpperWords>,
-    };
+    // num of bits
+    static constexpr size_t kFlags = !kCompressNext ? (kCompressStrId ? 2 : 1) : 0;
+    static constexpr size_t kFlagsExtend = kCompressNext ? (kCompressStrId ? 2 : 1) : 0;
+    static constexpr size_t kBitsUpperNext = 8;
+    static constexpr size_t kBitsUpperWords = kPlainWords ? 4 : 8;
+    
+    // mask
+    static constexpr Base::storage_type kMaskIsFinal = 0b01;
+    static constexpr Base::storage_type kMaskIsStrId = 0b10;
+    static constexpr Base::storage_type kMaskFlags = (kFlags == 0) ? 0 : sim_ds::bit_util::width_mask<kFlags>;
+    static constexpr Base::storage_type kMaskUpperNext = sim_ds::bit_util::width_mask<kBitsUpperNext>;
+    static constexpr Base::storage_type kMaskUpperWords = sim_ds::bit_util::width_mask<kBitsUpperWords>;
+
     enum ElementNumber : size_t {
         kElementIdCheck = 0,
         kElementIdNext = 1,

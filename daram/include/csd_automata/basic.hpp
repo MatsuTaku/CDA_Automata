@@ -23,12 +23,10 @@
 #include <limits>
 #include <chrono>
 
-#include "sim_ds/basic.hpp"
-
 namespace csd_automata {
 
 
-using id_type = sim_ds::id_type;
+using id_type = size_t;
 
 
 
