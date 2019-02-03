@@ -65,9 +65,9 @@ public:
     }
     
     template <class T>
-    void CheckEquivalence(T &fsa);
+    void CheckEquivalence(const T &fsa) const;
     
-    void ShowMapping(bool show_density);
+    void ShowMapping(bool show_density) const;
     
 protected:
     const PlainFSA& src_fsa_;
@@ -150,7 +150,7 @@ protected:
 // MARK: - public
 
 template <class T>
-inline void DawgBuilder::CheckEquivalence(T &fsa) {
+inline void DawgBuilder::CheckEquivalence(const T &fsa) const {
     auto tab = "\t";
     for (auto i = 0; i < num_elements_(); i++) {
         if (!is_frozen_(i)) continue;
@@ -176,7 +176,7 @@ inline void DawgBuilder::CheckEquivalence(T &fsa) {
     }
 }
 
-inline void DawgBuilder::ShowMapping(bool show_density) {
+inline void DawgBuilder::ShowMapping(bool show_density) const {
     auto tab = "\t";
     
     std::vector<size_t> next_map;

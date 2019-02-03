@@ -76,13 +76,13 @@ private:
     RankSupportBitVector check_paths_;
     FitVector check_flow_;
     DacVector check_flow_dac_;
-    // Enable ar NextCheck<N, C, true, true, CW>
+    // Used on mapping
     RankSupportBitVector words_paths_;
     FitVector words_flow_;
     RankSupportBitVector cum_words_paths_;
     FitVector cum_words_flow_;
     DacVector cum_words_dacs_;
-    // If use LinkChildren
+    // Used on practical extraction
     RankSupportBitVector has_brother_bits_;
     std::vector<uint8_t> brother_;
     RankSupportBitVector is_state_bits_;
@@ -114,12 +114,19 @@ private:
      */
     uint8_t unmasked_flags_(size_t index) const {
         assert(!kCompressNext);
-        return Base::bytes_[offset_(index) + kElementPositionNext]; // Fastest extraction
+        return Base::bytes_[Base::offset_(index) + kElementPositionNext]; // Fastest extraction
     }
         
 public:
     DoubleArrayImpr() = default;
-        
+    ~DoubleArrayImpr() = default;
+    
+    DoubleArrayImpr(const DoubleArrayImpr&) = delete;
+    DoubleArrayImpr& operator=(const DoubleArrayImpr&) = delete;
+    
+    DoubleArrayImpr(DoubleArrayImpr&&) noexcept = default;
+    DoubleArrayImpr& operator=(DoubleArrayImpr&&) noexcept = default;
+    
     size_t next(size_t index) const {
         size_t ne = Base::get_(Base::offset_(index) + kElementPositionNext, Base::element_table_[kElementIdNext].size); // Faster extraction
         if constexpr (!kCompressNext) {
@@ -180,11 +187,10 @@ public:
     
     bool is_string(size_t index) const {
         if constexpr (kCompressStrId) {
-            if constexpr (!kCompressNext) {
+            if constexpr (!kCompressNext)
                 return static_cast<bool>(unmasked_flags_(index) & kMaskIsStrId);
-            } else {
+            else
                 return flags_bits_[index * kFlagsExtend + 1];
-            }
         } else {
             return check_paths_[index];
         }
@@ -216,21 +222,24 @@ public:
         } else {
             auto rank = check_paths_.rank(index);
             if constexpr (kSelectId)
-                return id | (check_flow_dac_[rank] << kBitsUpperNext);
+                return id | (check_flow_dac_[rank] << 8);
             else
-                return id | (check_flow_[rank] << kBitsUpperNext);
+                return id | (check_flow_[rank] << 8);
         }
     }
     
     void set_string_id(size_t index, size_t str_id) {
         assert(kUseStrId);
         set_check(index, str_id & 0xff);
-        auto flow = str_id >> kBitsUpperNext;
-        bool has_flow = flow > 0;
-        if constexpr (kCompressStrId)
+        auto flow = str_id >> 8;
+        if constexpr (kCompressStrId) {
+            bool has_flow = flow > 0;
             b_check_paths_[index] = has_flow;
-        if (!kCompressStrId or (kCompressStrId and has_flow))
+            if (has_flow)
+                b_check_flow_.push_back(flow);
+        } else {
             b_check_flow_.push_back(flow);
+        }
     }
     
     size_t cum_words(size_t index) const {
@@ -242,17 +251,17 @@ public:
             } else {
                 if constexpr (kPlainWords) {
                     size_t cw = front_byte_of_element_<kElementIdCWords>(index) & kMaskUpperWords;
-                    if (!cum_words_paths_[index])
+                    if (not cum_words_paths_[index]) {
                         return cw;
-                    else {
+                    } else {
                         auto rank = cum_words_paths_.rank(index);
                         return cw | (cum_words_flow_[rank] << kBitsUpperWords);
                     }
                 } else {
                     size_t cw = front_byte_of_element_<kElementIdCWords>(index);
-                    if (!cum_words_paths_[index])
+                    if (not cum_words_paths_[index]) {
                         return cw;
-                    else {
+                    } else {
                         auto rank = cum_words_paths_.rank(index);
                         return cw | (cum_words_flow_[rank] << kBitsUpperWords);
                     }
@@ -348,7 +357,7 @@ public:
     }
     
     void set_brother(size_t index, uint8_t bro) {
-        brother_.emplace_back(bro);
+        brother_.push_back(bro);
     }
     
     bool is_state(size_t index) const {
@@ -367,7 +376,7 @@ public:
     }
     
     void set_eldest(size_t index, uint8_t eldest) {
-        eldest_.emplace_back(eldest);
+        eldest_.push_back(eldest);
     }
     
     size_t num_elements() const {
@@ -378,8 +387,8 @@ public:
     
     // First. Set size of elements
     void resize(size_t size, size_t words = 0) {
-        auto nextSize = sim_ds::calc::SizeFitsInBytes(size << kFlags);
-        std::vector<size_t> element_sizes = {1, kCompressNext ? 1 : nextSize};
+        auto next_size = sim_ds::calc::SizeFitsInBytes(size << kFlags);
+        std::vector<size_t> element_sizes = {1, kCompressNext ? 1 : next_size};
         if constexpr (kHashing) {
             if constexpr (kCompressWords and !kDacWords) {
                 element_sizes.push_back(1);
@@ -409,7 +418,7 @@ public:
     }
     
     // Finaly. Serialize flows.
-    void Build() {
+    void Freeze() {
         if constexpr (kCompressNext) {
             next_paths_ = RankSupportBitVector(b_next_paths_);
             next_flow_ = DacVector(b_next_flow_);
@@ -568,72 +577,122 @@ public:
         }
     }
     
-    void ShowStats(std::ostream& os) const override;
+    void ShowStats(std::ostream& os) const override {
+        using std::endl;
+        auto codes_name = [](bool use) {
+            return use ? "Comp" : "Plain";
+        };
+        os << "--- Stat of " << "DoubleArrayImpr N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
+        os << "size:\t" << Self::size_in_bytes() << endl;
+        os << "\tbytes:\t" << Base::size_in_bytes() << endl;
+        os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+        os << "\tcheck:\t" << num_elements() + check_paths_.size_in_bytes() + (!kSelectId ? check_flow_.size_in_bytes() : check_flow_dac_.size_in_bytes()) << endl;
+        if constexpr (kHashing) {
+            size_t cWordsSize;
+            if constexpr (kPlainWords) {
+                size_t wordsSize;
+                if constexpr (kCumulatesWords) {
+                    wordsSize = num_elements() / 2 + words_paths_.size_in_bytes() + words_flow_.size_in_bytes();
+                    cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes());
+                } else {
+                    wordsSize = num_elements() * Base::element_size(kElementIdWords);
+                    cWordsSize = num_elements() * Base::element_size(kElementIdCWords);
+                }
+                os << "\twords:\t" << wordsSize << endl;
+            } else {
+                cWordsSize = (kCumulatesWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
+                                                 num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
+                              (num_elements() * Base::element_size(kElementIdCWords)));
+            }
+            os << "\tcum_words:\t" << cWordsSize << endl;
+            
+            os << "---  ---" << endl;
+        }
+        if constexpr (kLinkChildren) {
+            os << "\tbrother:\t" << has_brother_bits_.size_in_bytes() + size_vec(brother_) << endl;
+            os << "\teldest:\t" << is_state_bits_.size_in_bytes() + size_vec(eldest_) << endl;
+            os << "---  ---" << endl;
+        }
+        //        showSizeMap(os);
+    }
     
-    void ShowSizeMap(std::ostream& os) const;
+    void ShowSizeMap(std::ostream& os) const {
+        auto numElem = num_elements();
+        std::vector<size_t> nexts(numElem);
+        for (auto i = 0; i < numElem; i++)
+            nexts[i] = next(i) >> (!kCompressNext ? 1 : 0);
+        
+        auto showList = [&](const std::vector<size_t>& list) {
+            using std::endl;
+            os << "-- " << "Next Map" << " --" << endl;
+            for (auto c : list)
+                os << c << "\t" << endl;
+            os << "/ " << numElem << endl;
+        };
+    }
     
 };
 
 
-template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
-ShowStats(std::ostream& os) const {
-    using std::endl;
-    auto codes_name = [](bool use) {
-        return use ? "Comp" : "Plain";
-    };
-    os << "--- Stat of " << "DoubleArrayImpr N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
-    os << "size:\t" << Self::size_in_bytes() << endl;
-    os << "\tbytes:\t" << Base::size_in_bytes() << endl;
-    os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
-    os << "\tcheck:\t" << num_elements() + check_paths_.size_in_bytes() + (!kSelectId ? check_flow_.size_in_bytes() : check_flow_dac_.size_in_bytes()) << endl;
-    if constexpr (kHashing) {
-        size_t cWordsSize;
-        if constexpr (kPlainWords) {
-            size_t wordsSize;
-            if constexpr (kCumulatesWords) {
-                wordsSize = num_elements() / 2 + words_paths_.size_in_bytes() + words_flow_.size_in_bytes();
-                cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes());
-            } else {
-                wordsSize = num_elements() * Base::element_size(kElementIdWords);
-                cWordsSize = num_elements() * Base::element_size(kElementIdCWords);
-            }
-            os << "\twords:\t" << wordsSize << endl;
-        } else {
-            cWordsSize = (kCumulatesWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
-                                             num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
-                          (num_elements() * Base::element_size(kElementIdCWords)));
-        }
-        os << "\tcum_words:\t" << cWordsSize << endl;
-        
-        os << "---  ---" << endl;
-    }
-    if constexpr (kLinkChildren) {
-        os << "\tbrother:\t" << has_brother_bits_.size_in_bytes() + size_vec(brother_) << endl;
-        os << "\teldest:\t" << is_state_bits_.size_in_bytes() + size_vec(eldest_) << endl;
-        os << "---  ---" << endl;
-    }
-    //        showSizeMap(os);
-}
+//template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
+//void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+//ShowStats(std::ostream& os) const {
+//    using std::endl;
+//    auto codes_name = [](bool use) {
+//        return use ? "Comp" : "Plain";
+//    };
+//    os << "--- Stat of " << "DoubleArrayImpr N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
+//    os << "size:\t" << Self::size_in_bytes() << endl;
+//    os << "\tbytes:\t" << Base::size_in_bytes() << endl;
+//    os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
+//    os << "\tcheck:\t" << num_elements() + check_paths_.size_in_bytes() + (!kSelectId ? check_flow_.size_in_bytes() : check_flow_dac_.size_in_bytes()) << endl;
+//    if constexpr (kHashing) {
+//        size_t cWordsSize;
+//        if constexpr (kPlainWords) {
+//            size_t wordsSize;
+//            if constexpr (kCumulatesWords) {
+//                wordsSize = num_elements() / 2 + words_paths_.size_in_bytes() + words_flow_.size_in_bytes();
+//                cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes());
+//            } else {
+//                wordsSize = num_elements() * Base::element_size(kElementIdWords);
+//                cWordsSize = num_elements() * Base::element_size(kElementIdCWords);
+//            }
+//            os << "\twords:\t" << wordsSize << endl;
+//        } else {
+//            cWordsSize = (kCumulatesWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
+//                                             num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
+//                          (num_elements() * Base::element_size(kElementIdCWords)));
+//        }
+//        os << "\tcum_words:\t" << cWordsSize << endl;
+//
+//        os << "---  ---" << endl;
+//    }
+//    if constexpr (kLinkChildren) {
+//        os << "\tbrother:\t" << has_brother_bits_.size_in_bytes() + size_vec(brother_) << endl;
+//        os << "\teldest:\t" << is_state_bits_.size_in_bytes() + size_vec(eldest_) << endl;
+//        os << "---  ---" << endl;
+//    }
+//    //        showSizeMap(os);
+//}
 
     
-template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
-ShowSizeMap(std::ostream& os) const {
-    auto numElem = num_elements();
-    std::vector<size_t> nexts(numElem);
-    for (auto i = 0; i < numElem; i++)
-        nexts[i] = next(i) >> (!kCompressNext ? 1 : 0);
-    
-    auto showList = [&](const std::vector<size_t>& list) {
-        using std::endl;
-        os << "-- " << "Next Map" << " --" << endl;
-        for (auto c : list)
-            os << c << "\t" << endl;
-        os << "/ " << numElem << endl;
-    };
-    
-}
+//template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
+//void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+//ShowSizeMap(std::ostream& os) const {
+//    auto numElem = num_elements();
+//    std::vector<size_t> nexts(numElem);
+//    for (auto i = 0; i < numElem; i++)
+//        nexts[i] = next(i) >> (!kCompressNext ? 1 : 0);
+//
+//    auto showList = [&](const std::vector<size_t>& list) {
+//        using std::endl;
+//        os << "-- " << "Next Map" << " --" << endl;
+//        for (auto c : list)
+//            os << c << "\t" << endl;
+//        os << "/ " << numElem << endl;
+//    };
+//
+//}
     
 }
 

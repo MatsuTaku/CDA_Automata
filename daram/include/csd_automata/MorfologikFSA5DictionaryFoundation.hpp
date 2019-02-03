@@ -264,7 +264,7 @@ MorfologikFSA5DictionaryFoundation::MorfologikFSA5DictionaryFoundation(const Mor
     }
     
     for (size_t t = 0; t < set.bytes_.size(); t = set.skip_trans_(t)) {
-        nodes[set.get_target_state(t)].parents.emplace_back(t);
+        nodes[set.get_target_state(t)].parents.push_back(t);
     }
     
     for (size_t state = 0; state < set.bytes_.size(); state = set.skip_trans_(state)) {

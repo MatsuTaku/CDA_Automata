@@ -14,21 +14,9 @@
 
 namespace csd_automata::fsa_util {
 
-template <class Fsa>
-bool SetFSAFromFile(const char* fsa_name, Fsa& fsa) {
-    std::ifstream ifs(fsa_name);
-    if (!ifs) {
-        std::cout << "Not found FSA: " << fsa_name << std::endl;
-        return false;
-    }
-    
-    fsa = Fsa(ifs);
-    return true;
-}
-
 // Might throw DataNotFoundException
-inline PlainFSA BuildPlainFSA(const std::string& data_name) {
-    auto ifs = util::GetStreamOrDie<std::ifstream>(data_name);
+inline PlainFSA make_plain_fsa(const std::string& keyset_name) {
+    auto ifs = util::GetStreamOrDie<std::ifstream>(keyset_name);
     
     PlainFSABuilder builder;
     for (std::string line; getline(ifs, line);)
@@ -37,7 +25,7 @@ inline PlainFSA BuildPlainFSA(const std::string& data_name) {
     return builder.release();
 }
 
-inline PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
+inline PlainFSA read_plain_fsa(const std::string& plain_fsa_name) {
     auto ifs = util::GetStreamOrDie<std::ifstream>(plain_fsa_name);
     PlainFSA plainFsa;
     plainFsa.LoadFrom(ifs);
@@ -45,7 +33,7 @@ inline PlainFSA ReadPlainFSA(const std::string& plain_fsa_name) {
 }
 
 inline void Generate(const std::string& data_name, const std::string& plain_fsa_name) {
-    auto plain_fsa = BuildPlainFSA(data_name);
+    auto plain_fsa = make_plain_fsa(data_name);
     auto ofs = util::GetStreamOrDie<std::ofstream>(data_name);
     std::cout << "Write PlainFSA into " << plain_fsa_name << std::endl;
     plain_fsa.StoreTo(ofs);

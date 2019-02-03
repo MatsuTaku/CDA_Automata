@@ -35,7 +35,7 @@ public:
         if (terminals_.size() < length)
             b_terminals_.resize(length);
         b_terminals_[length - 1] = true;
-        ids_.emplace_back(id);
+        ids_.push_back(id);
     }
     
     void Freeze() {

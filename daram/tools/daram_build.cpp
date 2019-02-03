@@ -64,8 +64,6 @@ int main(int argc, const char* argv[]) {
             options.comp_next();
         } else if (option == "--dac-cwords") {
             options.dac_cwords();
-        } else if (option == "--values") {
-            values_name = argv[++i];
         } else {
             dataset_name = argv[i];
         }
@@ -76,11 +74,13 @@ int main(int argc, const char* argv[]) {
 //    dict_name = "../../../../results/wikipedia2/wikipedia2.dam";
 //    dataset_name = "../../../../data-sets/local/enwiki-20181001.dict";
 //    dict_name = "../../../../results/enwiki-20181001/enwiki-20181001.dam";
-    dataset_name = "../../../../data-sets/local/jawiki-20181001.dict";
-    dict_name = "../../../../results/jawiki-20181001/jawiki-20181001.dam";
-//    dataset_name = "../../../../data-sets/ciura-deorowicz/sample.dict";
-//    dict_name = "../../../../results/sample/sample.dam";
-    options.binary = 0b01110;
+//    dataset_name = "../../../../data-sets/local/jawiki-20181001.dict";
+//    dict_name = "../../../../results/jawiki-20181001/jawiki-20181001.dam";
+//    dataset_name = "../../../../data-sets/local/indochina-2004.dict";
+//    dict_name = "../../../../results/indochina-2004/indochina-2004.dam";
+    dataset_name = "../../../../data-sets/ciura-deorowicz/enable.dict";
+    dict_name = "../../../../results/enable/enable.dam";
+    options.binary = 0b10000;
 #endif
     
     if (dataset_name == "") {
@@ -96,19 +96,19 @@ int main(int argc, const char* argv[]) {
     
     switch (options.binary) {
         case 0b00000: // Recomended
-            return director::FullyBuild<SdLoDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdLoDaFsa>(dict_name, dataset_name);
         case 0b00010: // Comparations
-            return director::FullyBuild<SdLoCidDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdLoCidDaFsa>(dict_name, dataset_name);
         case 0b00110: // Comparations
-            return director::FullyBuild<SdLoCsidDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdLoCsidDaFsa>(dict_name, dataset_name);
         case 0b01110: // Comparations
-            return director::FullyBuild<SdLoCnsidDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdLoCnsidDaFsa>(dict_name, dataset_name);
         case 0b01000: // Comparations
-            return director::FullyBuild<SdLoCnDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdLoCnDaFsa>(dict_name, dataset_name);
         case 0b10000: // Comparations
-            return director::FullyBuild<SdLoDwDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdLoDwDaFsa>(dict_name, dataset_name);
         case 0b00001: // supporting ACCESS
-            return director::FullyBuild<SdDaFsa>(dict_name, dataset_name, values_name);
+            return director::FullyBuild<SdDaFsa>(dict_name, dataset_name);
         default:
             break;
     }

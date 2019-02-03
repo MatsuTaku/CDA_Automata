@@ -24,7 +24,7 @@ namespace director {
 
 // May throw Exceptions
 template <class StringDictionaryType>
-int CheckHasMember(StringDictionaryType& sd, const std::string& dataset_name) {
+bool CheckHasMember(StringDictionaryType& sd, const std::string& dataset_name) {
     std::cout << std::endl << "Check membering ... ";
     auto ifs = util::GetStreamOrDie<std::ifstream>(dataset_name);
     
@@ -37,13 +37,21 @@ int CheckHasMember(StringDictionaryType& sd, const std::string& dataset_name) {
         if (!sd.Accept(line)) {
             std::cerr << "Doesn't stored string: " << line << std::endl;
             sd.PrintForDebug(std::cerr);
-            return -1;
+            return false;
         }
     }
     std::cout << "SUCCESS for all queries!" << std::endl
     << "Num of queries: " << count << std::endl
     << "Average query length: " << float(length) / count << std::endl;
-    return 0;
+    return true;
+}
+    
+template <class Daram>
+Daram make_daram(const std::string& keyset_name) {
+    auto pfa = fsa_util::make_plain_fsa(keyset_name);
+    using Builder = typename Daram::Builder;
+    Builder builder(pfa);
+    return DaramType(builder);
 }
 
 template <class DaramType>
@@ -70,37 +78,30 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
     } else {
         std::cout << "Build pfa to: " << plain_fsa_name << std::endl;
         auto time_build_pfa = util::MeasureProcessing([&] {
-            pfa = fsa_util::BuildPlainFSA(dataset_name);
+            pfa = fsa_util::make_plain_fsa(dataset_name);
             std::ofstream pfa_out(plain_fsa_name);
             pfa.StoreTo(pfa_out);
         });
-        std::cout << "\tptime is... " << time_build_pfa << " ms"  << std::endl;
+        std::cout << "\tptime is... " << time_build_pfa << " ms" << std::endl;
     }
     
-    // Build DoubleArrayAutomata
-    std::cout << "Build dam to: " << out_name << std::endl;
-    
+    // Build DoubleArrayAutomataDictionary
+    std::cout << "Build daram..." << std::endl;
     DaramType da;
     auto time_build_dam = util::MeasureProcessing([&] {
-        if (values_name == "") {
-            da = DaramType(pfa);
-        } else {
-            auto values_stream = util::GetStreamOrDie<std::ifstream>(values_name);
-            std::vector<size_t> values;
-            for (std::string v; std::getline(values_stream, v);) {
-                size_t vi = stoi(v);
-                values.emplace_back(vi);
-            }
-            da = DaramType(pfa, ValueSet(values));
-        }
-        StoreToFile(da, out_name);
+        using Builder = typename DaramType::Builder;
+        Builder builder(pfa);
+        da = DaramType(builder);
     });
-    std::cout << "Build in: " << time_build_dam << " ms" << std::endl;
+    std::cout << "Build daram in: " << time_build_dam << " ms" << std::endl;
     
-    // Check membered all sets
-    if (CheckHasMember(da, dataset_name) == -1) {
+    // Check membered all keys
+    if (not CheckHasMember(da, dataset_name)) {
         std::cerr << "Failure to build String Dictionary!" << std::endl;
     }
+    
+    std::cout << "Save dictionary to: " << out_name << std::endl;
+    StoreToFile(da, out_name);
     
     std::cout << std::endl;
     da.ShowStats(std::cout);
