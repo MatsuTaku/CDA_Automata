@@ -104,10 +104,8 @@ public:
     static constexpr bool kUseBinaryLabel = false;
     using StringsPool = SerializedStrings<kUseBinaryLabel, kSelectStrId>;
     
-    using BitVector = sim_ds::BitVector;
-    
-    using Builder = CdawgBuilder;
-    friend class CdawgBuilder;
+    using Builder = CdawgBuilder<Self>;
+    friend class CdawgBuilder<Self>;
     
     static constexpr size_t kSearchError = 0;
     
@@ -127,35 +125,78 @@ public:
 private:
     size_t num_trans_ = 0;
     StringsPool strings_pool_;
-    // If set values in extended storage
-    ValueSet values_;
     
 public:
     Cdawg() = default;
     
-    explicit Cdawg(const Builder& builder) {
-        builder.Release(*this);
-    }
-    
-    explicit Cdawg(const Builder& builder, ValueSet&& values) : Cdawg(builder) {
-        values_ = std::move(values);
-    }
-    
-    explicit Cdawg(const PlainFSA& fsa) {
-        Builder builder(fsa);
-        builder.Build(kUseBinaryLabel, kMergeSuffixOfSerializedStrings);
-        builder.Release(*this);
-    }
-    
-    explicit Cdawg(const PlainFSA& fsa, ValueSet&& values) : Cdawg(fsa) {
-        values_ = std::move(values);
+    explicit Cdawg(Builder& builder) {
+        const auto num_elems = builder.num_elements_();
+        Base::resize(num_elems, builder.get_num_words());
+        assert(malloc_zone_check(nullptr));
+        strings_pool_ = StringsPool(GetSerializedStringsBuilder(builder.tail_dict_));
+        assert(malloc_zone_check(nullptr));
+        
+        auto num_trans = 0;
+        for (size_t i = 0; i < num_elems; i++) {
+            if (builder.is_frozen_(i)) {
+                num_trans++;
+                
+                auto is_str_trans = builder.has_label_(i);
+                if constexpr (!kCompressNext) {
+                    Base::set_next(i, builder.get_next_(i));
+                } else {
+                    Base::set_next(i, builder.get_next_(i) ^ i);
+                }
+                Base::set_is_string(i, is_str_trans);
+                Base::set_is_final(i, builder.is_final_(i));
+                if (is_str_trans) {
+                    size_t string_index = builder.get_label_number_(i);
+                    size_t string_id = kSelectStrId ? strings_pool_.id_rank(string_index) : string_index;
+                    Base::set_string_id(i, string_id);
+                } else {
+                    Base::set_check(i, builder.get_check_(i));
+                }
+                
+                if constexpr (kSupportAccess)
+                    Base::set_words(i, builder.get_words_(i));
+                if constexpr (kUseCumulativeWords)
+                    Base::set_cum_words(i, builder.get_cum_words_(i));
+                
+                if constexpr (kLinkChildren) {
+                    bool has_bro = builder.has_brother_(i);
+                    Base::set_has_brother(i, has_bro);
+                    if (has_bro)
+                        Base::set_brother(i, builder.get_brother_(i));
+                }
+            }
+            
+            if constexpr (kLinkChildren) {
+                bool is_state = builder.is_used_next_(i);
+                Base::set_is_state(i, is_state);
+                if (is_state)
+                    Base::set_eldest(i, builder.get_eldest_(i));
+            }
+        }
+        Base::Freeze();
+        assert(malloc_zone_check(nullptr));
+        
+        num_trans_ = num_trans;
+        
+        builder.CheckEquivalence(*this);
+        assert(malloc_zone_check(nullptr));
     }
     
     explicit Cdawg(std::istream& is) {
         LoadFrom(is);
     }
     
-    friend void LoadFromFile(Self& self, std::string file_name);
+    ~Cdawg() = default;
+    
+    Cdawg(const Cdawg&) = delete;
+    Cdawg& operator=(const Cdawg&) = delete;
+    
+    Cdawg(Cdawg&&) noexcept = default;
+    Cdawg& operator=(Cdawg&&) noexcept = default;
     
     bool Accept(std::string_view text) const override {
         Explorer explorer(text);
@@ -207,7 +248,6 @@ public:
         auto size = Base::size_in_bytes();
         size += sizeof(num_trans_);
         size += strings_pool_.size_in_bytes();
-        size += values_.size_in_bytes();
         return size;
     }
     
@@ -222,7 +262,6 @@ public:
         Base::LoadFrom(is);
         num_trans_ = read_val<size_t>(is);
         strings_pool_.LoadFrom(is);
-        values_.LoadFrom(is);
     }
     
     void StoreTo(std::ostream& os) const override {
@@ -231,7 +270,6 @@ public:
         Base::StoreTo(os);
         write_val(num_trans_, os);
         strings_pool_.StoreTo(os);
-        values_.StoreTo(os);
     }
     
     void ShowStats(std::ostream& os) const override {
@@ -242,7 +280,6 @@ public:
         << "size:\t" << size_in_bytes() << endl;
         Base::ShowStats(os);
         os << "\tstrings:\t" << strings_pool_.size_in_bytes() << endl;
-        os << "\tsize values:\t" << values_.size_in_bytes() << endl;
     }
     
     void PrintForDebug(std::ostream& os) const {
@@ -264,11 +301,10 @@ public:
     
 private:
     size_t target_state_(size_t index) const {
-        if constexpr (!kCompressNext) {
+        if constexpr (!kCompressNext)
             return Base::next(index);
-        } else {
+        else
             return Base::next(index) ^ index;
-        }
     }
     
     size_t transition_(size_t prev_trans, uint8_t label) const {
@@ -309,13 +345,6 @@ private:
     }
     
 };
-    
-
-template <bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-void LoadFromFile(Cdawg<UseCumulativeWords, LinkChildren, CompressStrId, CompressWords, SupportAccess, CompressNext, SelectStrId, DacWords>& self, std::string file_name) {
-    auto ifs = util::GetStreamOrDie<std::ifstream>(file_name);
-    self.LoadFrom(ifs);
-}
 
 
 template <bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>

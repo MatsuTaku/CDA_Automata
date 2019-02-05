@@ -91,18 +91,18 @@ export -f darts
 
 
 TOOLS="
+damdw
 dam
 damcn
 damci
 damcsi
-damdw
 morfologik_fsa5d
 morfologik_cfsa2d
-centrp
 darts
 xcdat
 fxcdat
 marisa
+centrp
 "
 #damac
 

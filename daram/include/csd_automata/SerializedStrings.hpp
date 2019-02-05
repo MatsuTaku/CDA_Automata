@@ -14,8 +14,93 @@
 
 namespace csd_automata {
 
+
+template <bool IsBinaryMode, bool SelectAccess> class SerializedStrings;
+
+class SerializedStringsBuilder {
+    using char_type = char;
+    using BitVector = sim_ds::BitVector;
+    
+    static constexpr char_type kEndLabel = '\0';
+    
+    bool binary_mode_;
+    
+    std::vector<char_type> bytes_;
+    BitVector boundary_flags_;
+    BitVector popuration_flags_;
+    
+public:
+    SerializedStringsBuilder() = default;
+    
+    SerializedStringsBuilder(bool binary_mode) : binary_mode_(binary_mode) {}
+    
+    SerializedStringsBuilder(const SerializedStringsBuilder&) = delete;
+    SerializedStringsBuilder& operator=(const SerializedStringsBuilder&) = delete;
+    
+    SerializedStringsBuilder(SerializedStringsBuilder&&) = default;
+    SerializedStringsBuilder& operator=(SerializedStringsBuilder&&) = default;
+    
+    // MARK: For build
+    
+    void AddString(std::string_view str) {
+        assert(str.size() > 0);
+        for (auto c : str) {
+            bytes_.push_back(static_cast<char_type>(c));
+        }
+        if (binary_mode_) {
+            boundary_flags_.resize(bytes_.size());
+            boundary_flags_[bytes_.size() - 1] = true;
+        } else {
+            bytes_.push_back(kEndLabel);
+        }
+    }
+    
+    void SetPopuration(size_t index) {
+        if (popuration_flags_.size() < index + 1)
+            popuration_flags_.resize(index + 1);
+        popuration_flags_[index] = true;
+    }
+    
+    template <bool IsBinaryMode, bool SelectAccess>
+    void Release(SerializedStrings<IsBinaryMode, SelectAccess>& product) {
+        assert(IsBinaryMode == binary_mode_);
+        if (IsBinaryMode != binary_mode_) {
+            std::cout << "StringArray error type of binary mode!!" << std::endl;
+            abort();
+        }
+        product.bytes_ = move(bytes_);
+        if (SelectAccess) {
+            product.popuration_flags_ = sim_ds::SuccinctBitVector<>(popuration_flags_);
+        }
+        if (IsBinaryMode) {
+            product.boundary_flags_ = boundary_flags_;
+        }
+    }
+    
+    // MARK: Parameter
+    
+    bool is_binary_mode() const {
+        return binary_mode_;
+    }
+    
+    auto operator[](size_t index) const {
+        return bytes_[index];
+    }
+    
+    auto size() const {
+        return bytes_.size();
+    }
+    
+    bool is_back_at(size_t index) const {
+        return binary_mode_ ? boundary_flags_[index] : bytes_[index + 1] == kEndLabel;
+    }
+    
+};
+
+
 template<bool IsBinaryMode, bool SelectAccess>
 class SerializedStrings : IOInterface {
+    using Self = SerializedStrings<IsBinaryMode, SelectAccess>;
     using char_type = char;
     using Storage = std::vector<char_type>;
     using BitVector = sim_ds::BitVector;
@@ -29,7 +114,9 @@ class SerializedStrings : IOInterface {
     friend class SerializedStringsBuilder;
     
 public:
-    // MARK: Constructor
+    explicit SerializedStrings(SerializedStringsBuilder& builder) {
+        builder.Release(*this);
+    }
     
     explicit SerializedStrings(std::istream& is) {
         LoadFrom(is);

@@ -45,7 +45,7 @@ TEST(DAFoundationTest, UseDac) {
             fd.set_string_id(i, check);
         }
     }
-    fd.Build();
+    fd.Freeze();
 
     for (auto i = 0; i < size; i++) {
         EXPECT_EQ(fd.next(i), next_src[i]);
@@ -84,7 +84,7 @@ TEST(DAFoundationTest, LookupDict) {
         }
         fd.set_cum_words(i, cwords_src[i]);
     }
-    fd.Build();
+    fd.Freeze();
     
     for (auto i = 0; i < size; i++) {
         EXPECT_EQ(fd.next(i), next_src[i]);

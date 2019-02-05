@@ -68,7 +68,7 @@ std::vector<std::string> GetKeySets(const std::string queryName) {
     auto ifs = GetStreamOrDie<std::ifstream>(queryName);
     std::vector<std::string> strs;
     for (std::string line; std::getline(ifs, line);)
-        strs.emplace_back(line);
+        strs.push_back(line);
     return strs;
 }
 

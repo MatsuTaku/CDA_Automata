@@ -31,7 +31,7 @@ public:
     
     Dawg() = default;
     
-    Dawg(const DawgBuilder& builder) {
+    Dawg(DawgBuilder& builder) {
         Build(builder);
     }
     
@@ -134,7 +134,7 @@ private:
     
     void BuildBitArray_() {
         if constexpr (!CompressNext) return;
-        fd_.Build();
+        fd_.Freeze();
     }
     
     // MARK: parameter

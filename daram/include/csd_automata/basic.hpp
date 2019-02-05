@@ -22,6 +22,7 @@
 #include <fstream>
 #include <limits>
 #include <chrono>
+#include <malloc/malloc.h>
 
 namespace csd_automata {
 
