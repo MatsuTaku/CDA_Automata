@@ -59,8 +59,8 @@ public:
         os << "io_size:   " << size_in_bytes() << endl;
     }
     
-    void PrintForDebug(std::ostream& os) const {
-        
+    void PrintForDebug(std::ostream& os) {
+        ShowStats(os);
     }
     
 private:

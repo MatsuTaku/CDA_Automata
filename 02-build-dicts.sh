@@ -98,17 +98,25 @@ damcsi
 damdw
 morfologik_fsa5d
 morfologik_cfsa2d
+centrp
 darts
 xcdat
 fxcdat
 marisa
-centrp
 "
 #damac
 
 DATASET_DIR=data-sets
 
-DATASETS=`find $DATASET_DIR -name '*.dict' -not -name '*.1000000.dict'`
+DATASETS_LOCAL=`find $DATASET_DIR/local -name '*.dict' -not -name '*.1000000.dict'`
+DATASETS_CIURA=`find $DATASET_DIR/ciura-deorowicz -name '*.dict' -not -name '*.1000000.dict'`
+DATASETS_WEISS=`find $DATASET_DIR/weiss -name '*.dict' -not -name '*.1000000.dict'`
+DATASETS="
+$DATASETS_LOCAL 
+$DATASETS_WEISS
+"
+#$DATASETS_CIURA 
+
 echo '------Build list------'
 for f in $DATASETS ; do
 	echo $f

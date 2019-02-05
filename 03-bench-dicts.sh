@@ -61,8 +61,8 @@ function darts {
 export -f darts
 
 function centrp {
-#  ./software/path_decomposed_tries/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
-#  cat $1.stdout >> $1.bench.stdout
+  #./software/path_decomposed_tries/tries_perftest centroid_repair measure $1 $2 >$1.bench.stdout 2>&1
+  #cat $1.stdout >> $1.bench.stdout
 	./experiments/build/sd_experiments $1 $2 7 $3 >$1.bench.stdout 2>&1
 }
 export -f centrp
@@ -187,15 +187,22 @@ export -f call
 
 TOOLS="
 daram_results
-cent_results
 morfologik_results
+cent_results
 darts_results
 xcdat_results
 marisa_results
 "
 
 DATASET_DIR=data-sets
-DATASETS=`find $DATASET_DIR -name '*.1000000.rnd_dict'`
+DATASETS_LOCAL=`find $DATASET_DIR/local -name '*.1000000.rnd_dict'`
+DATASETS_CIURA=`find $DATASET_DIR/ciura-deorowicz -name '*.1000000.rnd_dict'`
+DATASETS_WEISS=`find $DATASET_DIR/weiss -name '*.1000000.rnd_dict'`
+DATASETS="
+$DATASETS_LOCAL
+$DATASETS_WEISS
+"
+#$DATASETS_CIURA
 
 RESULTS_DIR=results
 export RESULTS_DIR

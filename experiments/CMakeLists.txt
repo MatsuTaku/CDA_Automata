@@ -24,7 +24,6 @@ set(Daram_INCLUDE_DIRS
 )
 
 set(SUCCINCT_USE_POPCNT ON)
-set(SUCCINCT_USE_INTRINSICS ON)
 add_subdirectory(lib/path_decomposed_tries/succinct EXCLUDE_FROM_ALL)
 
 find_package(Boost 1.42.0 COMPONENTS 

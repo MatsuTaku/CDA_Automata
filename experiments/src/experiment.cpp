@@ -251,14 +251,14 @@ public:
                 }
             }
         });
-        if (ng > 0) {
-            dict.PrintForDebug(cout);
-            return;
-        }
         
         cout << "Search time: " << mic_sec / num << " µs/query" << endl
         << "OK: " << num - ng << endl
         << "NG: " << ng << endl;
+        if (ng > 0) {
+            dict.PrintForDebug(cout);
+            return;
+        }
         
         auto lookup_time = csd_automata::util::MeasureProcessingMicro([&] {
             for (auto r = 0; r < kRuns; r++) {
@@ -313,10 +313,13 @@ int main(int argc, const char* argv[]) {
     std::string results_name = argv[4];
     
 #ifndef NDEBUG
-    dict_name = "../../results/jawiki-20181001/jawiki-20181001.centrp";
-    query_name = "../../data-sets/local/jawiki-20181001.dict";
+//    dict_name = "../../../results/jawiki-20181001/jawiki-20181001.centrp";
+//    query_name = "../../../data-sets/local/jawiki-20181001.dict";
+//    results_name = "../../../results/jawiki-20181001/jawiki-20181001.cent_results";
+    dict_name = "../../../results/enable/enable.centrp";
+    query_name = "../../../data-sets/ciura-deorowicz/enable.dict";
+    results_name = "../../../results/enable/enable.cent_results";
     type = 7;
-    results_name = "../../results/jawiki-20181001/jawiki-20181001.cent_results";
 #endif
     
     switch (type) {
