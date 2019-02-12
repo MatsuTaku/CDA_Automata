@@ -31,9 +31,7 @@ protected:
     struct Range {
         size_t begin;
         size_t end;
-        size_t length() const {
-            return end - begin;
-        }
+        size_t length() const {return end - begin;}
         
         void press_size(size_t size) {
             begin += size;
@@ -41,7 +39,7 @@ protected:
         void append_size(size_t size) {
             end += size;
         }
-        void close_to_end() {
+        void close_to_begin() {
             end = begin;
         }
     };
@@ -56,48 +54,52 @@ protected:
     
     size_t num_words_ = 0;
     
-    bool is_last_trans_(size_t trans) const {
-        return static_cast<bool>(bytes_[trans] & 1);
-    }
-    bool is_final_trans_(size_t trans) const {
-        return static_cast<bool>(bytes_[trans] & 2);
-    }
-    uint8_t get_symbol_(size_t trans) const {
-        return bytes_[trans + 1];
-    }
+    bool is_last_trans_(size_t trans) const {return static_cast<bool>(bytes_[trans] & 1);}
+    
+    bool is_final_trans_(size_t trans) const {return static_cast<bool>(bytes_[trans] & 2);}
+    
+    uint8_t get_symbol_(size_t trans) const {return bytes_[trans + 1];}
+    
     size_t get_target_(size_t trans) const {
         size_t target = 0;
         std::memcpy(&target, &bytes_[trans + 2], PlainFSA::kSizeAddr);
         return target;
     }
-    size_t get_store_(size_t trans) const {
+    
+    size_t get_words_(size_t trans) const {
         size_t store = 0;
         std::memcpy(&store, &bytes_[trans + 2 + PlainFSA::kSizeAddr], PlainFSA::kSizeAddr);
         return store;
     }
-    bool is_invalid_trans_(size_t trans) const {
-        return static_cast<bool>(bytes_[trans] & 0x80);
-    }
+    
+    bool is_invalid_trans_(size_t trans) const {return static_cast<bool>(bytes_[trans] & 0x80);}
+    
     void set_final_flag_(size_t trans, bool is_final) {
         if (is_final) { bytes_[trans + 0] |= 2; }
         else { bytes_[trans + 0] &= ~2; }
     }
+    
     void set_symbol_(size_t trans, char symbol) {
         bytes_[trans + 1] = static_cast<uint8_t>(symbol);
     }
+    
     void set_target_(size_t arc, size_t target) {
         std::memcpy(&bytes_[arc + 2], &target, PlainFSA::kSizeAddr);
     }
-    void set_store_(size_t arc, size_t store) {
+    
+    void set_words_(size_t arc, size_t store) {
         std::memcpy(&bytes_[arc + 2 + PlainFSA::kSizeAddr], &store, PlainFSA::kSizeAddr);
     }
+    
     void set_is_multi_src_state_(size_t trans, bool is_multi_src) {
         if (is_multi_src) { bytes_[trans] |= 4; }
         else { bytes_[trans] &= ~4; }
     }
+    
     void set_invalid_flag_(size_t trans) {
         bytes_[trans] |= 0x80;
     }
+    
     void clear_trans_(size_t trans) {
         bytes_[trans] = static_cast<uint8_t>(0);
     }
@@ -141,7 +143,7 @@ void PlainFSABuilder::add(const std::string& str) {
         for (size_t i = active_len_ - 1; i > lcp; --i) {
             const auto state = freeze_state_(active_path_[i]);
             set_target_(active_path_[i - 1].end - kSizeTrans, state);
-            active_path_[i].close_to_end();
+            active_path_[i].close_to_begin();
         }
     }
     
@@ -152,19 +154,19 @@ void PlainFSABuilder::add(const std::string& str) {
         set_final_flag_(trans, is_final);
         set_symbol_(trans, str[i]);
         set_target_(trans, !is_final ? active_path_[i + 1].begin : 0);
-        set_store_(trans, 0);
+        set_words_(trans, 0);
         active_path_[i].end = trans + kSizeTrans;
     }
     
-    // Set store, that is number of suffixes exist after transition.
+    // Set 'words' that is number of suffixes exist after transition.
     auto counter = 0;
     for (auto i = 0; i < str.length(); i++) {
         const auto trans = active_path_[i].end - kSizeTrans;
-        const auto store = get_store_(trans);
-        if (store > 0 && store == counter)
+        const auto words = get_words_(trans);
+        if (words > 0 && words == counter)
             break;
-        set_store_(trans, store + 1);
-        counter = store + 1;
+        set_words_(trans, words + 1);
+        counter = words + 1;
     }
     
     active_len_ = str.length();
@@ -264,6 +266,7 @@ size_t PlainFSABuilder::hash_(Range range) const {
     }
     return h;
 }
+
 size_t PlainFSABuilder::serialize_(const Range& range) {
     const auto new_state = bytes_.size();
     auto len = range.length();
@@ -272,6 +275,7 @@ size_t PlainFSABuilder::serialize_(const Range& range) {
     
     return new_state;
 }
+
 bool PlainFSABuilder::equivalent_(size_t lhs_begin, Range rhs) const {
     const auto len = rhs.length();
     if (lhs_begin + len > bytes_.size()) {

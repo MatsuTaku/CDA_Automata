@@ -103,6 +103,7 @@ public:
     
     void print_for_debug(std::ostream& os, size_t startIndex = 0) const {
         using std::endl;
+        const char tab = '\t';
         
         os << "\tS\tF\tL\tM\tP" << endl;
         for (size_t i = startIndex; i < bytes_.size();) {
@@ -110,11 +111,11 @@ public:
                 i += kSizeTrans * 0x100;
                 continue;
             }
-            os << i << "\t"
-            << get_trans_symbol(i) << "\t"
-            << is_final_trans(i) << "\t"
-            << is_last_trans(i) << "\t"
-            << is_multi_src_state(i) << "\t"
+            os << tab << i << tab
+            << get_trans_symbol(i) << tab
+            << is_final_trans(i) << tab
+            << is_last_trans(i) << tab
+            << is_multi_src_state(i) << tab
             << get_target_state(i) << endl;
             i += kSizeTrans;
         }

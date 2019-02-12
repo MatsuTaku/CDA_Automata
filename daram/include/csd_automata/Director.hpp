@@ -46,8 +46,8 @@ bool CheckHasMember(StringDictionaryType& sd, const std::string& dataset_name) {
     return true;
 }
     
-template <class Daram>
-Daram make_daram(const std::string& keyset_name) {
+template <class DaramType>
+DaramType make_daram(const std::string& keyset_name) {
     auto pfa = fsa_util::make_plain_fsa(keyset_name);
     using Builder = typename Daram::Builder;
     Builder builder(pfa);
@@ -57,32 +57,23 @@ Daram make_daram(const std::string& keyset_name) {
 template <class DaramType>
 int FullyBuild(const std::string& out_name, const std::string& dataset_name, const std::string& values_name = "") {
     std::cout << "Input dataset: " << dataset_name << std::endl;
-
-    // Extract base name of dataset
-    std::string base_name = out_name;
-    auto da_ext = extension::kExtensionDoubleArrayAutomata;
-    // If baseName's extension is same as '.dam'...
-    if (base_name.size() > da_ext.size() and
-        base_name.substr(base_name.size() - da_ext.size()) == da_ext) {
-        base_name.erase(base_name.end() - da_ext.size(), base_name.end());
-    }
     
     // Union extension of plain FSA to base name
-    auto plain_fsa_name = std::string(base_name) + extension::kExtensionPlainFSA;
+    auto plain_fsa_name = dataset_name + extension::kExtensionPlainFSA;
     // Build plain FSA if needed
     std::ifstream plain_fsa_stream(plain_fsa_name);
     PlainFSA pfa;
     if (plain_fsa_stream) {
-        std::cout << "Found pfsa file: " << plain_fsa_name << std::endl;
+        std::cout << "Found .pfsa file: " << plain_fsa_name << std::endl;
         pfa.LoadFrom(plain_fsa_stream);
     } else {
-        std::cout << "Build pfa to: " << plain_fsa_name << std::endl;
+        std::cout << "Build pfsa. Cache to: " << plain_fsa_name << std::endl;
         auto time_build_pfa = util::MeasureProcessing([&] {
             pfa = fsa_util::make_plain_fsa(dataset_name);
             std::ofstream pfa_out(plain_fsa_name);
             pfa.StoreTo(pfa_out);
         });
-        std::cout << "\tptime is... " << time_build_pfa << " ms" << std::endl;
+        std::cout << "\tin... " << time_build_pfa << " ms" << std::endl;
     }
     
     // Build DoubleArrayAutomataDictionary
@@ -93,7 +84,7 @@ int FullyBuild(const std::string& out_name, const std::string& dataset_name, con
         Builder builder(pfa);
         da = DaramType(builder);
     });
-    std::cout << "Build daram in: " << time_build_dam << " ms" << std::endl;
+    std::cout << "\tin... " << time_build_dam << " ms" << std::endl;
     
     // Check membered all keys
     if (not CheckHasMember(da, dataset_name)) {

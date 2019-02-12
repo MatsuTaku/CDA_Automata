@@ -78,9 +78,9 @@ int main(int argc, const char* argv[]) {
 //    dict_name = "../../../../results/jawiki-20181001/jawiki-20181001.dam";
 //    dataset_name = "../../../../data-sets/local/indochina-2004.dict";
 //    dict_name = "../../../../results/indochina-2004/indochina-2004.dam";
-    dataset_name = "../../../../data-sets/ciura-deorowicz/enable.dict";
-    dict_name = "../../../../results/enable/enable.dam";
-    options.binary = 0b10000;
+    dataset_name = "../../../../data-sets/ciura-deorowicz/sample.dict";
+    dict_name = "../../../../results/sample/sample.dam";
+    options.binary = 0b00000;
 #endif
     
     if (dataset_name == "") {
