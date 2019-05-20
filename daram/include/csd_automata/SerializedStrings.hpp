@@ -68,7 +68,7 @@ public:
             std::cout << "StringArray error type of binary mode!!" << std::endl;
             abort();
         }
-        product.bytes_ = move(bytes_);
+        product.storage_ = move(bytes_);
         if (SelectAccess) {
             product.popuration_flags_ = sim_ds::SuccinctBitVector<>(popuration_flags_);
         }
@@ -113,6 +113,11 @@ class SerializedStrings : IOInterface {
     
     friend class SerializedStringsBuilder;
     
+private:
+    Storage storage_;
+    BitVector boundary_flags_;
+    SuccinctBitVector popuration_flags_;
+    
 public:
     explicit SerializedStrings(SerializedStringsBuilder& builder) {
         builder.Release(*this);
@@ -122,24 +127,34 @@ public:
         LoadFrom(is);
     }
     
+    SerializedStrings() = default;
+    ~SerializedStrings() = default;
+    
+    SerializedStrings(const SerializedStrings&) = delete;
+    SerializedStrings& operator=(const SerializedStrings&) = delete;
+    
+    SerializedStrings(SerializedStrings&&) noexcept = default;
+    SerializedStrings& operator=(SerializedStrings&&) noexcept = default;
+    
     // MARK: Property
     
-    char_type operator[](size_t index) const {
-        return bytes_[index];
+    char_type char_at(size_t index) const {
+        return storage_[index];
     }
     
     bool is_back_at(size_t index) const {
         if constexpr (kIsBinaryMode) {
             return boundary_flags_[index];
-        } else
-            return bytes_[index + 1] == kEndLabel;
+        } else {
+            return storage_[index + 1] == kEndLabel;
+        }
     }
     
     bool match(size_t* pos, std::string_view str, size_t str_id) const {
         size_t str_index = !kSelectAccess ? str_id : index_select(str_id);
         for (; *pos < str.size(); ++*pos, str_index++) {
-            auto str_c = static_cast<char>(str[*pos]);
-            auto store_c = bytes_[str_index];
+            auto str_c = static_cast<char_type>(str[*pos]);
+            auto store_c = storage_[str_index];
             if (str_c != store_c)
                 return false;
             if (is_back_at(str_index))
@@ -148,28 +163,19 @@ public:
         return false;
     }
     
-    std::string string(size_t id) const {
-        std::string s;
-        size_t index = !kSelectAccess ? id : index_select(id);
-        for (char c = bytes_[index]; c != kEndLabel; c = bytes_[++index]) {
-            s.push_back(c);
-        }
-        return s;
-    }
-    
-    std::basic_string_view<char_type> string_view(size_t id) const {
+    std::basic_string_view<char_type> operator[](size_t id) const {
         size_t index = !kSelectAccess ? id : index_select(id);
         size_t i = index;
         if constexpr (kIsBinaryMode) {
             while (!boundary_flags_[i++]);
         } else {
-            while (bytes_[++i] != kEndLabel);
+            while (storage_[++i] != kEndLabel);
         }
-        return std::basic_string_view<char_type>(&bytes_[index], i - index);
+        return std::basic_string_view<char_type>(&storage_[index], i - index);
     }
     
     size_t size() const {
-        return bytes_.size();
+        return storage_.size();
     }
     
     size_t index_select(size_t id) const {
@@ -183,7 +189,7 @@ public:
     // MARK: IO
     
     size_t size_in_bytes() const override {
-        auto size = size_vec(bytes_);
+        auto size = size_vec(storage_);
         if constexpr (kIsBinaryMode)
             size += boundary_flags_.size_in_bytes();
         if constexpr (kSelectAccess)
@@ -192,7 +198,7 @@ public:
     }
     
     void LoadFrom(std::istream& is) override {
-        bytes_ = read_vec<char>(is);
+        storage_ = read_vec<char>(is);
         if constexpr (kIsBinaryMode)
             boundary_flags_.Read(is);
         if constexpr (kSelectAccess)
@@ -200,7 +206,7 @@ public:
     }
     
     void StoreTo(std::ostream& os) const override {
-        write_vec(bytes_, os);
+        write_vec(storage_, os);
         if constexpr (kIsBinaryMode)
             boundary_flags_.Write(os);
         if constexpr (kSelectAccess)
@@ -212,40 +218,24 @@ public:
     void ShowLabels(size_t id) const {
         auto index = kSelectAccess ? index_select(id) : id;
         auto from = index >= 32 ? index - 32 : 0;
-        auto to = index < bytes_.size() - 32 ? index + 32 : bytes_.size() - 1;
-        std::cout << std::endl << "\tindex: " << (from + to) / 2 << ", text: " << string_view(id) << std::endl;
+        auto to = index < storage_.size() - 32 ? index + 32 : storage_.size() - 1;
+        std::cout << std::endl << "\tindex: " << (from + to) / 2 << ", text: " << operator[](id) << std::endl;
         std::cout << from << " ... " << index << " ... " << to << std::endl;
         for (auto i = from; i <= to; i++) {
             std::cout << (i == index ? '|' : ' ');
         }
         std::cout << std::endl;
         for (auto i = from; i <= to; i++) {
-            if (i < 0 or i >= bytes_.size())
+            if (i < 0 or i >= storage_.size())
                 std::cout << ' ';
             else {
-                auto c =  bytes_[i];
+                auto c =  storage_[i];
                 if (c == '\0') c = ' ';
                 std::cout << c;
             }
         }
         std::cout << std::endl;
     }
-    
-    // MARK: Copy guard
-    
-    SerializedStrings() = default;
-    ~SerializedStrings() = default;
-    
-    SerializedStrings(const SerializedStrings&) = delete;
-    SerializedStrings& operator=(const SerializedStrings&) = delete;
-    
-    SerializedStrings(SerializedStrings&&) noexcept = default;
-    SerializedStrings& operator=(SerializedStrings&&) noexcept = default;
-    
-private:
-    Storage bytes_;
-    BitVector boundary_flags_;
-    SuccinctBitVector popuration_flags_;
     
 };
     

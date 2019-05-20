@@ -290,7 +290,7 @@ public:
             if (!Base::is_string(i)) {
                 cout << Base::check(i);
             } else {
-                cout << strings_pool_.string_view(Base::string_id(i));
+                cout << strings_pool_[Base::string_id(i)];
             }
             if constexpr (kSupportAccess) {
                 cout << '\t' << Base::cum_words(i);
@@ -421,7 +421,7 @@ Access(id_type key) const {
                 success_trans = check_type == c;
             } else {
                 check_type = Base::string_id(nt);
-                success_trans = uint8_t(strings_pool_[check_type]) == c;
+                success_trans = uint8_t(strings_pool_.char_at(check_type)) == c;
             }
             if (!success_trans) {
                 if constexpr (kLinkChildren) {
@@ -450,7 +450,7 @@ Access(id_type key) const {
                 if (!is_str_label)
                     route += check_type;
                 else
-                    route += strings_pool_.string_view(check_type);
+                    route += strings_pool_[check_type];
                 
                 next_trans = nt;
                 break;

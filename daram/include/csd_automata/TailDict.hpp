@@ -41,7 +41,7 @@ private:
     
     friend class TailDict;
     
-    using StringMap = poplar::compact_hash_map<id_type>;
+    using StringMap = poplar::compact_fkhash_map<id_type>;
     using StateMap = std::unordered_map<size_t, size_t>;
     
 public:

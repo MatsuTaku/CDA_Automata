@@ -41,31 +41,22 @@ public:
         state_map_ = std::unordered_map<size_t, size_t>();
     }
     
-    bool is_final_(size_t index) const {
-        return static_cast<bool>(bytes_[offset_(index)] & 1);
-    }
-    bool is_frozen_(size_t index) const {
-        return static_cast<bool>(bytes_[offset_(index)] & 2);
-    }
-    bool is_used_next_(size_t index) const {
-        return static_cast<bool>(bytes_[offset_(index)] & 4);
-    }
-    size_t get_target_state_(size_t index) const {
-        return index ^ get_next_(index);
-    }
-    size_t get_next_(size_t index) const {
-        return get_address_(offset_(index) + 1);
-    }
-    virtual uint8_t get_check_(size_t index) const {
-        return bytes_[offset_(index) + 1 + kAddrSize];
-    }
+    bool is_final_(size_t index) const {return static_cast<bool>(bytes_[offset_(index)] & 1);}
     
-    size_t num_elements_() const {
-        return bytes_.size() / kElemSize;
-    }
+    bool is_frozen_(size_t index) const {return static_cast<bool>(bytes_[offset_(index)] & 2);}
+    
+    bool is_used_next_(size_t index) const {return static_cast<bool>(bytes_[offset_(index)] & 4);}
+    
+    size_t get_target_state_(size_t index) const {return index ^ get_next_(index);}
+    
+    size_t get_next_(size_t index) const {return get_address_(offset_(index) + 1);}
+    
+    virtual uint8_t get_check_(size_t index) const {return bytes_[offset_(index) + 1 + kAddrSize];}
+    
+    size_t num_elements_() const {return bytes_.size() / kElemSize;}
     
     template <class T>
-    void CheckEquivalence(const T &fsa) const;
+    void CheckEquivalence(const T& fsa) const;
     
     void ShowMapping(bool show_density) const;
     
@@ -76,14 +67,9 @@ protected:
     std::unordered_map<size_t, size_t> state_map_;
     size_t unfrozen_head_ = 0;
     
-    // MARK: of array
-    size_t index_(size_t offset) const {
-        return offset / kElemSize;
-    }
-    // MARK: of codes
-    size_t offset_(size_t index) const {
-        return index * kElemSize;
-    }
+    size_t index_(size_t offset) const {return offset / kElemSize;}
+    
+    size_t offset_(size_t index) const {return index * kElemSize;}
     
     size_t get_address_(size_t offset) const {
         size_t v = 0;
@@ -93,12 +79,9 @@ protected:
     }
     
     // MARK: Getters
-    size_t get_succ_(size_t index) const {
-        return get_address_(offset_(index) + 1) ^ index;
-    }
-    size_t get_pred_(size_t index) const {
-        return get_address_(offset_(index) + 1 + kAddrSize) ^ index;
-    }
+    size_t get_succ_(size_t index) const {return get_address_(offset_(index) + 1) ^ index;}
+    
+    size_t get_pred_(size_t index) const {return get_address_(offset_(index) + 1 + kAddrSize) ^ index;}
     
     // MARK: Setters
     void set_final_(size_t index, bool is_final) {
@@ -106,26 +89,32 @@ protected:
         if (is_final) { bytes_[offset] |= 1; }
         else { bytes_[offset] &= ~1; }
     }
+    
     void set_frozen_(size_t index, bool is_frozen) {
         auto offset = offset_(index);
         if (is_frozen) { bytes_[offset] |= 2; }
         else { bytes_[offset] &= ~2; }
     }
+    
     void set_used_next_(size_t index, bool is_used_next) {
         auto offset = offset_(index);
         if (is_used_next) { bytes_[offset] |= 4; }
         else { bytes_[offset] &= ~4; }
     }
+    
     void set_next_(size_t index, size_t next) {
         std::memcpy(&bytes_[offset_(index) + 1], &next, kAddrSize);
     }
+    
     virtual void set_check_(size_t index, uint8_t check) {
         bytes_[offset_(index) + 1 + kAddrSize] = check;
     }
+    
     void set_succ_(size_t index, size_t succ) {
         auto v = index ^ succ;
         std::memcpy(&bytes_[offset_(index) + 1], &v, kAddrSize);
     }
+    
     void set_pred_(size_t index, size_t pred) {
         auto v = index ^ pred;
         std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &v, kAddrSize);

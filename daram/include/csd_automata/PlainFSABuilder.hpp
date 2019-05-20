@@ -16,7 +16,7 @@ public:
     
     PlainFSABuilder();
     
-    void add(const std::string &str);
+    void add(const std::string& str);
     PlainFSA release();
     
     ~PlainFSABuilder() = default;
