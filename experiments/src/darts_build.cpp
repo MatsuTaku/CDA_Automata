@@ -13,8 +13,10 @@ int main(int argc, const char* argv[]) {
     auto output_name = argv[2];
     
 #ifndef NDEBUG
-    dataset_name = "../../../data-sets/weiss/wikipedia.dict";
-    output_name = "../../../results/wikipedia/wikipedia.darts";
+    dataset_name = "../../../data-sets/ciura-deorowicz/dimacs.dict";
+    output_name = "../../../results/dimacs/dimacs.darts";
+//    dataset_name = "../../../data-sets/weiss/wikipedia.dict";
+//    output_name = "../../../results/wikipedia/wikipedia.darts";
 #endif
     
     std::cout << "Build darts from: " << dataset_name << std::endl;

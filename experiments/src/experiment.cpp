@@ -7,6 +7,7 @@
 #include "MarisaWrapper.hpp"
 #include "DartsCloneWrapper.hpp"
 #include "CentroidWrapper.hpp"
+#include "SamcWrapper.hpp"
 
 #include "csd_automata/basic.hpp"
 #include "csd_automata/util.hpp"
@@ -46,7 +47,8 @@ public:
         auto num = queries.size();
         auto ng = 0;
         // warm up
-        auto mic_sec = csd_automata::util::MeasureProcessingMicro([&] {
+        using csd_automata::util::MeasureProcessingMicro;
+        auto mic_sec = MeasureProcessingMicro([&] {
             for (const auto& str : queries) {
                 if (!dict.Accept(str)) {
                     ++ng;
@@ -62,7 +64,10 @@ public:
         << "OK: " << num - ng << endl
         << "NG: " << ng << endl;
         
-        auto lookup_time = csd_automata::util::MeasureProcessingMicro([&] {
+        std::vector<size_t> values(queries.size());
+        for (auto i = 0; i < queries.size(); i++)
+            values[i] = dict.Lookup(queries[i]);
+        auto lookup_time = MeasureProcessingMicro([&] {
             for (auto r = 0; r < kRuns; r++) {
                 auto id = 0; // never used
                 for (auto i = 0; i < queries.size(); i++) {
@@ -76,11 +81,11 @@ public:
         std::vector<double> times = {lookup_time};
         
         if (DoExtraction) {
-            auto access_time = csd_automata::util::MeasureProcessingMicro([&] {
+            auto access_time = MeasureProcessingMicro([&] {
                 for (auto r = 0; r < kRuns; r++) {
                     std::string extracted = ""; // never used
-                    for (size_t i = 0; i < queries.size(); i++) {
-                        extracted = dict.Access(i + 1);
+                    for (auto v : values) {
+                        extracted = dict.Access(v);
                     }
                 }
             });
@@ -131,7 +136,8 @@ public:
             return;
         }
         
-        auto lookup_time = csd_automata::util::MeasureProcessingMicro([&] {
+        using csd_automata::util::MeasureProcessingMicro;
+        auto lookup_time = MeasureProcessingMicro([&] {
             for (auto r = 0; r < kRuns; r++) {
                 size_t id = 0;
                 for (auto i = 0; i < keyset.size(); i++) {
@@ -146,7 +152,7 @@ public:
         std::vector<double> times = {lookup_time};
         
         if constexpr (DoExtraction) {
-            auto access_time = csd_automata::util::MeasureProcessingMicro([&] {
+            auto access_time = MeasureProcessingMicro([&] {
                 for (auto r = 0; r < kRuns; r++) {
                     for (auto i = 0; i < keyset.size(); i++) {
                         marisa.Access(agent);
@@ -199,7 +205,8 @@ public:
             values[i] = darts.Lookup(strs[i]);
         }
         
-        auto lookup_time = csd_automata::util::MeasureProcessingMicro([&] {
+        using csd_automata::util::MeasureProcessingMicro;
+        auto lookup_time = MeasureProcessingMicro([&] {
             for (auto r = 0; r < kRuns; r++) {
                 size_t id = 0; // never used
                 for (auto i = 0; i < num; i++) {
@@ -316,10 +323,13 @@ int main(int argc, const char* argv[]) {
 //    dict_name = "../../../results/jawiki-20181001/jawiki-20181001.centrp";
 //    query_name = "../../../data-sets/local/jawiki-20181001.dict";
 //    results_name = "../../../results/jawiki-20181001/jawiki-20181001.cent_results";
-    dict_name = "../../../results/enable/enable.centrp";
-    query_name = "../../../data-sets/ciura-deorowicz/enable.dict";
-    results_name = "../../../results/enable/enable.cent_results";
-    type = 7;
+//    dict_name = "../../../results/enable/enable.centrp";
+//    query_name = "../../../data-sets/ciura-deorowicz/enable.dict";
+//    results_name = "../../../results/enable/enable.cent_results";
+    dict_name = "../../../results/deutsch/deutsch.samc";
+    query_name = "../../../data-sets/ciura-deorowicz/deutsch.dict";
+    results_name = "../../../results/deutsch/deutsch.samc_results";
+    type = 8;
 #endif
     
     switch (type) {
@@ -343,6 +353,9 @@ int main(int argc, const char* argv[]) {
             break;
         case 7:
             Benchmarker<wrapper::CentroidWrapper, true>::benchmark(dict_name, query_name, results_name);
+            break;
+        case 8:
+            Benchmarker<wrapper::SamcWrapper, true>::benchmark(dict_name, query_name, results_name);
             break;
         default:
             std::cerr << "type is invalid value: " << type << std::endl;

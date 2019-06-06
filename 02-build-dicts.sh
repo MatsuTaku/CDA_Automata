@@ -89,13 +89,14 @@ darts() {
 }
 export -f darts
 
+samc() {
+  ./experiments/build/samc_build $1 $2 >$2.stdout 2>&1
+}
+export -f samc
+
 
 TOOLS="
-damdw
 dam
-damcn
-damci
-damcsi
 morfologik_fsa5d
 morfologik_cfsa2d
 darts
@@ -104,7 +105,12 @@ fxcdat
 marisa
 centrp
 "
+#damdw
+#damcn
+#damci
+#damcsi
 #damac
+#samc
 
 DATASET_DIR=data-sets
 
@@ -113,8 +119,8 @@ DATASETS_CIURA=`find $DATASET_DIR/ciura-deorowicz -name '*.dict' -not -name '*.1
 DATASETS_WEISS=`find $DATASET_DIR/weiss -name '*.dict' -not -name '*.1000000.dict'`
 DATASETS="
 $DATASETS_LOCAL 
-$DATASETS_WEISS
 "
+#$DATASETS_WEISS
 #$DATASETS_CIURA 
 
 echo '------Build list------'

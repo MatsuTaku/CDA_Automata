@@ -26,7 +26,7 @@ set(Daram_INCLUDE_DIRS
 set(SUCCINCT_USE_POPCNT ON)
 add_subdirectory(lib/path_decomposed_tries/succinct EXCLUDE_FROM_ALL)
 
-find_package(Boost 1.42.0 COMPONENTS 
+find_package(Boost 1.53.0 COMPONENTS
 	unit_test_framework iostreams system thread filesystem REQUIRED)
 
 include_directories(include ${Daram_INCLUDE_DIRS} /usr/local/include lib/path_decomposed_tries ${Boost_INCLUDE_DIRS})
@@ -43,4 +43,6 @@ add_executable(sd_experiments src/experiment.cpp ${WRAPPERS})
 target_link_libraries(sd_experiments xcdat marisa succinct ${Boost_LIBRARIES})
 
 add_executable(darts_build src/darts_build.cpp include/DartsCloneWrapper.hpp)
+
+add_executable(samc_build src/samc_build.cpp include/SamcWrapper.hpp)
 

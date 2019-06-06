@@ -67,6 +67,11 @@ function centrp {
 }
 export -f centrp
 
+function samc {
+  ./experiments/build/sd_experiments $1 $2 8 $3 >$1.bench.stdout 2>&1
+}
+export -f samc
+
 
 DARAM_TOOLS="
 dam
@@ -104,6 +109,11 @@ DARTS_TOOLS="
 darts
 "
 export DARTS_TOOLS
+
+SAMC_TOOLS="
+samc
+"
+export SAMC_TOOLS
 
 
 bench() {
@@ -180,6 +190,17 @@ darts_results() {
 }
 export -f darts_results
 
+samc_results() {
+	dataset_fn=`basename $1 .1000000.rnd_dict`
+	results_path=$RESULTS_DIR/$dataset_fn/$dataset_fn.samc_results
+	echo -n > $results_path
+    echo "Experiments for each species -> ${results_path}"
+    for tool in $SAMC_TOOLS; do
+	    bench $tool $1 $results_path
+    done
+}
+export -f samc_results
+
 call() {
 	$1 $2
 }
@@ -193,6 +214,7 @@ darts_results
 xcdat_results
 marisa_results
 "
+#samc_results
 
 DATASET_DIR=data-sets
 DATASETS_LOCAL=`find $DATASET_DIR/local -name '*.1000000.rnd_dict'`
@@ -200,8 +222,8 @@ DATASETS_CIURA=`find $DATASET_DIR/ciura-deorowicz -name '*.1000000.rnd_dict'`
 DATASETS_WEISS=`find $DATASET_DIR/weiss -name '*.1000000.rnd_dict'`
 DATASETS="
 $DATASETS_LOCAL
-$DATASETS_WEISS
 "
+#$DATASETS_WEISS
 #$DATASETS_CIURA
 
 RESULTS_DIR=results

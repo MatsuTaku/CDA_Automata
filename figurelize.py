@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import matplotlib.pyplot as plt
 import numpy
 import sys
@@ -5,6 +7,9 @@ import os.path
 
 if __name__ == '__main__':
 	argv = sys.argv
+	if len(argv) <= 1:
+		print("Input error!: ", argv)
+		exit()
 
 	figure = plt.figure()
 	ax = figure.add_subplot(1,1,1)
