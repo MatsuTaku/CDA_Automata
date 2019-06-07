@@ -12,11 +12,9 @@ endif ()
 include(CheckSSE4_2)
 if(BUILTIN_POPCNT)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang|Intel")
-        set(CMAKE_CXX_FLAGS "-msse4.2 -march=native ${CMAKE_CXX_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     endif()
 endif()
-
-enable_testing()
 
 set(Daram_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/../daram/include
@@ -26,8 +24,8 @@ set(Daram_INCLUDE_DIRS
 set(SUCCINCT_USE_POPCNT ON)
 add_subdirectory(lib/path_decomposed_tries/succinct EXCLUDE_FROM_ALL)
 
-find_package(Boost 1.53.0 COMPONENTS
-	unit_test_framework iostreams system thread filesystem REQUIRED)
+find_package(Boost 1.53.0 REQUIRED
+    COMPONENTS unit_test_framework iostreams system thread filesystem)
 
 include_directories(include ${Daram_INCLUDE_DIRS} /usr/local/include lib/path_decomposed_tries ${Boost_INCLUDE_DIRS})
 link_directories(/usr/local/lib ${Boost_LIBRARY_DIRS})
