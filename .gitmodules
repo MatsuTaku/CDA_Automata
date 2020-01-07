@@ -4,6 +4,3 @@
 [submodule "daram/lib/poplar-trie"]
 	path = daram/lib/poplar-trie
 	url = git@github.com:kampersanda/poplar-trie.git
-[submodule "experiments/lib/path_decomposed_tries"]
-	path = experiments/lib/path_decomposed_tries
-	url = git@github.com:ot/path_decomposed_tries.git
