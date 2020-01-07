@@ -12,7 +12,7 @@
 #include "IOInterface.hpp"
 #include "CdawgBuilder.hpp"
 
-#include "DoubleArrayImpr.hpp"
+#include "DoubleArrayImpl.hpp"
 #include "sim_ds/BitVector.hpp"
 #include "SerializedStrings.hpp"
 #include "ValueSet.hpp"
@@ -72,7 +72,7 @@ private:
 
 
 template<bool UseCumulativeWords, bool LinkChildren, bool CompressStrId, bool CompressWords, bool SupportAccess, bool CompressNext, bool SelectStrId, bool DacWords>
-class Cdawg : public StringDictionaryInterface, DoubleArrayImpr<CompressNext, true, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
+class Cdawg : public StringDictionaryInterface, DoubleArrayImpl<CompressNext, true, CompressStrId, true, CompressWords, UseCumulativeWords, SupportAccess, LinkChildren, SelectStrId, DacWords> {
 public:
     static_assert((SelectStrId and CompressStrId) or !SelectStrId, "ERROR: Failed template parameters: SelectStrId and CompressStrId");
     
@@ -98,7 +98,7 @@ public:
     
     static constexpr bool kUseStrId = true;
     static constexpr bool kHashing = true;
-    using Base = DoubleArrayImpr<kCompressNext, kUseStrId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
+    using Base = DoubleArrayImpl<kCompressNext, kUseStrId, kCompressStrId, kHashing, kCompressWords, kUseCumulativeWords, kSupportAccess, kLinkChildren, kSelectStrId, kDacWords>;
     
     static constexpr bool kMergeSuffixOfSerializedStrings = true;
     static constexpr bool kUseBinaryLabel = false;
@@ -132,9 +132,7 @@ public:
     explicit Cdawg(Builder& builder) {
         const auto num_elems = builder.num_elements_();
         Base::resize(num_elems, builder.get_num_words());
-        assert(malloc_zone_check(nullptr));
         strings_pool_ = StringsPool(GetSerializedStringsBuilder(builder.tail_dict_));
-        assert(malloc_zone_check(nullptr));
         
         auto num_trans = 0;
         for (size_t i = 0; i < num_elems; i++) {
@@ -178,12 +176,10 @@ public:
             }
         }
         Base::Freeze();
-        assert(malloc_zone_check(nullptr));
         
         num_trans_ = num_trans;
         
         builder.CheckEquivalence(*this);
-        assert(malloc_zone_check(nullptr));
     }
     
     explicit Cdawg(std::istream& is) {

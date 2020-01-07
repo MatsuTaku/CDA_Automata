@@ -20,9 +20,18 @@ public:
     
     DawgBuilder(const DawgBuilder&) = delete;
     DawgBuilder& operator=(const DawgBuilder&) = delete;
-    
+
+    /*
+     * | flags(0000,has_bro,0,used_next,frozen,final) |
+     * | next,succ(4byte)                             |
+     * | check,pred(4byte)                            |
+     * | words(4byte)                                 |
+     * | c-words(4byte)                               |
+     * | bro(1byte)                                   |
+     * | eld(1byte)                                   |
+     */
     static constexpr size_t kAddrSize = 4;
-    static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 3;
+    static constexpr size_t kElemSize = 1 + kAddrSize * 4 + 2;
 
     static constexpr size_t kBlockSize = 0x100;
     static constexpr size_t kFreeBytes = 0x10 * kBlockSize * kElemSize; // like darts-clone
@@ -52,8 +61,18 @@ public:
     size_t get_next_(size_t index) const {return get_address_(offset_(index) + 1);}
     
     virtual uint8_t get_check_(size_t index) const {return bytes_[offset_(index) + 1 + kAddrSize];}
-    
-    size_t num_elements_() const {return bytes_.size() / kElemSize;}
+
+  	size_t get_words_(size_t index) const {return get_address_(offset_(index) + 1 + kAddrSize * 2);}
+
+  	size_t get_cum_words_(size_t index) const {return get_address_(offset_(index) + 1 + kAddrSize * 3);}
+
+  	bool has_brother_(size_t index) const {return static_cast<bool>(bytes_[offset_(index)] & 16);}
+
+  	uint8_t get_brother_(size_t index) const {return bytes_[offset_(index) + 1 + kAddrSize * 4];}
+
+  	uint8_t get_eldest_(size_t index) const {return bytes_[offset_(index) + 2 + kAddrSize * 4];}
+
+  	size_t num_elements_() const {return bytes_.size() / kElemSize;}
     
     template <class T>
     void CheckEquivalence(const T& fsa) const;
@@ -66,6 +85,22 @@ protected:
     std::vector<uint8_t> bytes_;
     std::unordered_map<size_t, size_t> state_map_;
     size_t unfrozen_head_ = 0;
+
+    struct _Unit {
+    	union Addr {
+    		uint32_t real;
+    		uint32_t virt;
+    	};
+		Addr next;
+		Addr check;
+		bool is_final: 1;
+		bool is_frozen: 1;
+		bool is_used_next: 1;
+		bool has_sibling: 1;
+		uint8_t brother;
+		uint8_t eldest;
+    };
+    std::vector<_Unit> container_;
     
     size_t index_(size_t offset) const {return offset / kElemSize;}
     
@@ -77,13 +112,7 @@ protected:
             v |= bytes_[offset + i] << (8 * i);
         return v;
     }
-    
-    // MARK: Getters
-    size_t get_succ_(size_t index) const {return get_address_(offset_(index) + 1) ^ index;}
-    
-    size_t get_pred_(size_t index) const {return get_address_(offset_(index) + 1 + kAddrSize) ^ index;}
-    
-    // MARK: Setters
+
     void set_final_(size_t index, bool is_final) {
         auto offset = offset_(index);
         if (is_final) { bytes_[offset] |= 1; }
@@ -109,16 +138,39 @@ protected:
     virtual void set_check_(size_t index, uint8_t check) {
         bytes_[offset_(index) + 1 + kAddrSize] = check;
     }
-    
-    void set_succ_(size_t index, size_t succ) {
-        auto v = index ^ succ;
-        std::memcpy(&bytes_[offset_(index) + 1], &v, kAddrSize);
+
+	size_t get_succ_(size_t index) const {return get_address_(offset_(index) + 1) ^ index;}
+
+	size_t get_pred_(size_t index) const {return get_address_(offset_(index) + 1 + kAddrSize) ^ index;}
+
+	void set_succ_(size_t index, size_t succ) {
+	  auto v = index ^ succ;
+	  std::memcpy(&bytes_[offset_(index) + 1], &v, kAddrSize);
+	}
+
+	void set_pred_(size_t index, size_t pred) {
+	  *reinterpret_cast<uint32_t*>(bytes_.data()+offset_(index)+1+kAddrSize) = index ^ pred;
+	}
+
+    void set_words_(size_t index, size_t words) {
+      *reinterpret_cast<uint32_t*>(bytes_.data()+offset_(index)+1+kAddrSize*2) = words;
     }
-    
-    void set_pred_(size_t index, size_t pred) {
-        auto v = index ^ pred;
-        std::memcpy(&bytes_[offset_(index) + 1 + kAddrSize], &v, kAddrSize);
+
+	void set_cum_words_(size_t index, size_t c_words) {
+	  *reinterpret_cast<uint32_t*>(bytes_.data()+offset_(index)+1+kAddrSize*3) = c_words;
+	}
+
+	void set_has_brother_(size_t index) {
+	  bytes_[offset_(index)] |= 16;
     }
+
+    void set_brother_(size_t index, uint8_t bro) {
+      bytes_[offset_(index)+1+kAddrSize*4] = bro;
+    }
+
+	void set_eldest_(size_t index, uint8_t eld) {
+	  bytes_[offset_(index)+1+kAddrSize*4+1] = eld;
+	}
     
     // MARK: methods
     

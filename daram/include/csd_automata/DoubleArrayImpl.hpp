@@ -1,5 +1,5 @@
 //
-//  DoubleArrayImpr.hpp
+//  DoubleArrayImpl.hpp
 //  ArrayFSA
 //
 //  Created by 松本拓真 on 2018/01/13.
@@ -22,9 +22,9 @@ namespace csd_automata {
     
 
 template <bool CompNext, bool UseStrId, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-class DoubleArrayImpr : sim_ds::MultipleVector, IOInterface {
+class DoubleArrayImpl : sim_ds::MultipleVector, IOInterface {
 public:
-    using Self = DoubleArrayImpr<CompNext, UseStrId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
+    using Self = DoubleArrayImpl<CompNext, UseStrId, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>;
     using Base = sim_ds::MultipleVector;
     
     static constexpr bool kCompressNext = CompNext;
@@ -32,7 +32,7 @@ public:
     static constexpr bool kCompressStrId = CompId;
     static constexpr bool kHashing = Hashing;
     static constexpr bool kCompressWords = CompWords;
-    static constexpr bool kCumulatesWords = CumuWords;
+    static constexpr bool kCumulativeWords = CumuWords;
     static constexpr bool kPlainWords = PlainWords;
     static constexpr bool kLinkChildren = LinkChildren;
     static constexpr bool kSelectId = SelectId;
@@ -118,14 +118,14 @@ private:
     }
         
 public:
-    DoubleArrayImpr() = default;
-    ~DoubleArrayImpr() = default;
+    DoubleArrayImpl() = default;
+    ~DoubleArrayImpl() = default;
     
-    DoubleArrayImpr(const DoubleArrayImpr&) = delete;
-    DoubleArrayImpr& operator=(const DoubleArrayImpr&) = delete;
+    DoubleArrayImpl(const DoubleArrayImpl&) = delete;
+    DoubleArrayImpl& operator=(const DoubleArrayImpl&) = delete;
     
-    DoubleArrayImpr(DoubleArrayImpr&&) noexcept = default;
-    DoubleArrayImpr& operator=(DoubleArrayImpr&&) noexcept = default;
+    DoubleArrayImpl(DoubleArrayImpl&&) noexcept = default;
+    DoubleArrayImpl& operator=(DoubleArrayImpl&&) noexcept = default;
     
     size_t next(size_t index) const {
         size_t ne = Base::get_(Base::offset_(index) + kElementPositionNext, Base::element_table_[kElementIdNext].size); // Faster extraction
@@ -244,7 +244,7 @@ public:
     
     size_t cum_words(size_t index) const {
         assert(kHashing);
-        assert(kCumulatesWords);
+        assert(kCumulativeWords);
         if constexpr (kCompressWords) {
             if constexpr (kDacWords) {
                 return cum_words_dacs_[index];
@@ -274,7 +274,7 @@ public:
     
     void set_cum_words(size_t index, size_t cw) {
         assert(kHashing);
-        assert(kCumulatesWords);
+        assert(kCumulativeWords);
         
         if constexpr (kCompressWords) {
             if constexpr (kDacWords) {
@@ -487,7 +487,7 @@ public:
                 size += words_paths_.size_in_bytes();
                 size += words_flow_.size_in_bytes();
             }
-            if constexpr (kCumulatesWords) {
+            if constexpr (kCumulativeWords) {
                 if constexpr (kDacWords) {
                     size += cum_words_dacs_.size_in_bytes();
                 } else {
@@ -524,7 +524,7 @@ public:
                 words_paths_.Read(is);
                 words_flow_ = FitVector(is);
             }
-            if constexpr (kCumulatesWords) {
+            if constexpr (kCumulativeWords) {
                 if constexpr (kDacWords)
                     cum_words_dacs_.Read(is);
                 else {
@@ -560,7 +560,7 @@ public:
                 words_paths_.Write(os);
                 words_flow_.Write(os);
             }
-            if constexpr (kCumulatesWords) {
+            if constexpr (kCumulativeWords) {
                 if constexpr (kDacWords) {
                     cum_words_dacs_.Write(os);
                 } else {
@@ -582,7 +582,7 @@ public:
         auto codes_name = [](bool use) {
             return use ? "Comp" : "Plain";
         };
-        os << "--- Stat of " << "DoubleArrayImpr N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
+        os << "--- Stat of " << "DoubleArrayImpl N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
         os << "size:\t" << Self::size_in_bytes() << endl;
         os << "\tbytes:\t" << Base::size_in_bytes() << endl;
         os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
@@ -591,7 +591,7 @@ public:
             size_t cWordsSize;
             if constexpr (kPlainWords) {
                 size_t wordsSize;
-                if constexpr (kCumulatesWords) {
+                if constexpr (kCumulativeWords) {
                     wordsSize = num_elements() / 2 + words_paths_.size_in_bytes() + words_flow_.size_in_bytes();
                     cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes());
                 } else {
@@ -600,9 +600,9 @@ public:
                 }
                 os << "\twords:\t" << wordsSize << endl;
             } else {
-                cWordsSize = (kCumulatesWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
-                                                 num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
-                              (num_elements() * Base::element_size(kElementIdCWords)));
+                cWordsSize = (kCumulativeWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
+												  num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
+							  (num_elements() * Base::element_size(kElementIdCWords)));
             }
             os << "\tcum_words:\t" << cWordsSize << endl;
             
@@ -635,13 +635,13 @@ public:
 
 
 //template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-//void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+//void DoubleArrayImpl<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
 //ShowStats(std::ostream& os) const {
 //    using std::endl;
 //    auto codes_name = [](bool use) {
 //        return use ? "Comp" : "Plain";
 //    };
-//    os << "--- Stat of " << "DoubleArrayImpr N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
+//    os << "--- Stat of " << "DoubleArrayImpl N:" << codes_name(kCompressNext) << "|C:" << codes_name(kUseStrId) << " ---" << endl;
 //    os << "size:\t" << Self::size_in_bytes() << endl;
 //    os << "\tbytes:\t" << Base::size_in_bytes() << endl;
 //    os << "\tnext:\t" << num_elements() * Base::element_size(kElementIdNext) + next_paths_.size_in_bytes() +  next_flow_.size_in_bytes() << endl;
@@ -650,7 +650,7 @@ public:
 //        size_t cWordsSize;
 //        if constexpr (kPlainWords) {
 //            size_t wordsSize;
-//            if constexpr (kCumulatesWords) {
+//            if constexpr (kCumulativeWords) {
 //                wordsSize = num_elements() / 2 + words_paths_.size_in_bytes() + words_flow_.size_in_bytes();
 //                cWordsSize = (kDacWords ? cum_words_dacs_.size_in_bytes() : num_elements() / 2 + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes());
 //            } else {
@@ -659,7 +659,7 @@ public:
 //            }
 //            os << "\twords:\t" << wordsSize << endl;
 //        } else {
-//            cWordsSize = (kCumulatesWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
+//            cWordsSize = (kCumulativeWords ? (kDacWords ? cum_words_dacs_.size_in_bytes() :
 //                                             num_elements() + cum_words_paths_.size_in_bytes() + cum_words_flow_.size_in_bytes()) :
 //                          (num_elements() * Base::element_size(kElementIdCWords)));
 //        }
@@ -677,7 +677,7 @@ public:
 
     
 //template<bool CompNext, bool CompCheck, bool CompId, bool Hashing, bool CompWords, bool CumuWords, bool PlainWords, bool LinkChildren, bool SelectId, bool DacWords>
-//void DoubleArrayImpr<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
+//void DoubleArrayImpl<CompNext, CompCheck, CompId, Hashing, CompWords, CumuWords, PlainWords, LinkChildren, SelectId, DacWords>::
 //ShowSizeMap(std::ostream& os) const {
 //    auto numElem = num_elements();
 //    std::vector<size_t> nexts(numElem);

@@ -36,7 +36,6 @@ class CdawgBuilder {
     
 public:
     explicit CdawgBuilder(const PlainFSA& src_fsa) : src_fsa_(src_fsa), tail_dict_(src_fsa) {
-        assert(malloc_zone_check(nullptr));
         ExpandBlock_();
         FreezeTrans_(0);
         set_final_(0, true);
