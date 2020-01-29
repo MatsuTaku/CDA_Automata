@@ -11,6 +11,7 @@
 #include "csd_automata/Dawg.hpp"
 #include "csd_automata/Cdawg.hpp"
 #include "csd_automata/MorfologikFsaDictionary.hpp"
+#include "csd_automata/fsa_util.hpp"
 
 namespace csd_automata {
 

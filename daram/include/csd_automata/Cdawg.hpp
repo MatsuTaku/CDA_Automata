@@ -209,7 +209,7 @@ public:
             Explorer explorer(text);
             size_t counter = 0;
             bool traversed = Traverse_(explorer, [&](auto& exp) {
-                counter += Base::cum_words(exp.trans());
+                counter += this->cum_words(exp.trans());
                 bool is_final_trans = Base::is_final(exp.trans());
                 if (is_final_trans)
                     ++counter;
