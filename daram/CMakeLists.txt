@@ -20,19 +20,18 @@ set(DARAM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(GLOB HEADER_FILES ${DARAM_INCLUDE_DIR}/csd_automata.hpp ${DARAM_INCLUDE_DIR}/csd_automata/*.hpp)
 
-# Build library for xcode development
-add_library(CSDAutomata STATIC ${DARAM_INCLUDE_DIR}/csd_automata.cpp ${HEADER_FILES})
-target_include_directories(CSDAutomata PUBLIC ${DARAM_INCLUDE_DIR})
+add_library(CSDAutomata INTERFACE)
+target_include_directories(CSDAutomata INTERFACE ${DARAM_INCLUDE_DIR})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/SimpleDataStructure EXCLUDE_FROM_ALL)
-target_link_libraries(CSDAutomata sim_ds)
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/SimpleDataStructure EXCLUDE_FROM_ALL)
+target_link_libraries(CSDAutomata INTERFACE sim_ds)
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/poplar_config.hpp.in
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/include/poplar/poplar_config.hpp
 )
 set(POPLAR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/include")
-target_include_directories(CSDAutomata PUBLIC ${POPLAR_INCLUDE_DIR})
+target_include_directories(CSDAutomata INTERFACE ${POPLAR_INCLUDE_DIR})
 
 message(STATUS "Make Daram")
 message(STATUS "BUILD_TYPE is ${CMAKE_BUILD_TYPE}")
