@@ -9,12 +9,13 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <string>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstdint>
 #include <cmath>
 #include <memory>
 #include <sstream>
@@ -22,7 +23,6 @@
 #include <fstream>
 #include <limits>
 #include <chrono>
-#include <malloc/malloc.h>
 
 namespace csd_automata {
 

@@ -13,8 +13,8 @@ int main(int argc, const char* argv[]) {
     auto output_name = argv[2];
     
 #ifndef NDEBUG
-    dataset_name = "../../../data-sets/ciura-deorowicz/deutsch.dict";
-    output_name = "../../../results/deutsch/deutsch.samc";
+    dataset_name = "../../../data-sets/ciura-deorowicz/scrable.dict";
+    output_name = "../../../results/scrable/scrable.samc";
 //    dataset_name = "../../../data-sets/local/jawiki-20181001.dict";
 //    output_name = "../../../results/jawiki-20181001/jawiki-20181001.samc";
 //    dataset_name = "../../../data-sets/weiss/wikipedia.dict";

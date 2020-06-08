@@ -7,13 +7,13 @@
 #ifndef SamcWrapper_hpp
 #define SamcWrapper_hpp
 
-#include "sim_ds/Samc.hpp"
+#include "sim_ds/string_util/Samc.hpp"
 #include "csd_automata/util.hpp"
 
 namespace wrapper {
 
 class SamcWrapper {
-    using Samc = sim_ds::SamcDict<>;
+    using Samc = sim_ds::SamcDict<uint32_t>;
     
 public:
     static std::string name() {
@@ -31,7 +31,10 @@ public:
         for (std::string s; std::getline(is, s);) {
             trie.insert(s, 1);
         }
-        samc_ = Samc(trie);
+        auto build_time = csd_automata::util::MeasureProcessingMicro([&]() {
+            samc_ = Samc(trie);
+        });
+        std::cout << "\tBuild time: " << std::fixed << std::setprecision(2) << build_time / 1000000 << " s" << std::endl;
     }
     
     friend void LoadFromFile(SamcWrapper& self, std::string file_name);

@@ -16,9 +16,9 @@ namespace csd_automata {
     
 class MorfologikCFSA2DictionaryFoundation {
     
-    const size_t kNumFlags_ = 4;
-    const size_t kSizeNodeSymbol_ = 1;
-    const size_t kBitsUpperNodeWords_ = 4;
+    static constexpr size_t kNumFlags_ = 4;
+    static constexpr size_t kSizeNodeSymbol_ = 1;
+    static constexpr size_t kBitsUpperNodeWords_ = 4;
     
     size_t element_words_lower_size_ = 4;
     std::vector<uint8_t> bytes_;

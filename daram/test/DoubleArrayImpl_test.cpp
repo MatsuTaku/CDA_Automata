@@ -6,7 +6,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "csd_automata/DoubleArrayImpr.hpp"
+#include "csd_automata/DoubleArrayImpl.hpp"
 
 using namespace csd_automata;
 
@@ -30,7 +30,7 @@ TEST(DAFoundationTest, UseDac) {
     auto next_src = RandVector(size);
     auto check_src = RandVector(size);
 
-    DoubleArrayImpr<true, true, true, false, false, false, false, false, false, false> fd;
+    DoubleArrayImpl<true, true, true, false, false, false, false, false, false, false> fd;
     fd.resize(size);
 
     std::vector<bool> is_str_ids(size);
@@ -66,8 +66,8 @@ TEST(DAFoundationTest, LookupDict) {
     auto next_src = RandVector(size);
     auto check_src = RandVector(size);
     auto cwords_src = RandVector(size);
-    
-    DoubleArrayImpr<false, true, false, true, true, true, false, false, false, false> fd;
+
+    DoubleArrayImpl<false, true, false, true, true, true, false, false, false, false> fd;
     fd.resize(size);
     
     std::vector<bool> is_str_ids(size);

@@ -60,14 +60,12 @@ private:
         auto build_time = util::MeasureProcessing([&]() {
             Build();
         });
-        assert(malloc_zone_check(nullptr));
         
         std::cout << "Build string pool as 'Tail' in... " << build_time << "ms" << std::endl;
     }
     
     void Build() {
         LabelArrange_(orig_fsa_.get_root_state(), std::make_shared<StringMap>(), std::make_shared<StateMap>());
-        assert(malloc_zone_check(nullptr));
         
         std::sort(label_container_.begin(), label_container_.end(), [](auto& lhs, auto& rhs) {
             return std::lexicographical_compare(lhs.label.rbegin(), lhs.label.rend(), rhs.label.rbegin(), rhs.label.rend());
@@ -97,7 +95,6 @@ private:
                 }
             }
         }
-        assert(malloc_zone_check(nullptr));
         
         std::sort(label_container_.begin(), label_container_.end(), [](auto& lhs, auto& rhs) {
             return (lhs.is_merged() != rhs.is_merged() ? lhs.is_merged() < rhs.is_merged() :

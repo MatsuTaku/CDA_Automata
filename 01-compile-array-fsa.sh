@@ -1,14 +1,18 @@
-#!/bin/bash
+#!/bin/bash -e
 
 cd $(dirname $0)/daram
-mkdir build
+if [[ ! -d build ]]; then
+    mkdir build
+fi
 cd build
 cmake ..
 make
 ctest
 
 cd ../../experiments
-mkdir build
+if [[ ! -d build ]]; then
+    mkdir build
+fi
 cd build
 cmake ..
 make

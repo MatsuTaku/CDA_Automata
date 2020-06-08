@@ -10,18 +10,21 @@
 
 #include "StringDictionaryInterface.hpp"
 #include "IOInterface.hpp"
-#include "DoubleArrayImpr.hpp"
+#include "DoubleArrayImpl.hpp"
 #include "sim_ds/BitVector.hpp"
 
 #include "DawgBuilder.hpp"
 
 namespace csd_automata {
 
-template<bool CompressNext>
-class Dawg : public StringDictionaryInterface, public IOInterface {
-public:
+template<bool CompressNext, bool Hashing, bool CompressWords, bool CumulativeWords>
+class Dawg : public StringDictionaryInterface, private DoubleArrayImpl<CompressNext, false, false, Hashing, CompressWords, CumulativeWords, false, false, false, false> {
+	using _base = DoubleArrayImpl<CompressNext, false, false, Hashing, CompressWords, CumulativeWords, false, false, false, false>;
+ public:
     static constexpr bool kCompressNext = CompressNext;
-    using foundation_type = DoubleArrayImpr<CompressNext, false, false, false, false, false, false, false, false, false>;
+    static constexpr bool kHashing = Hashing;
+    static constexpr bool kCompressWords = CompressWords;
+  	static constexpr bool kCumulativeWords = CumulativeWords;
     using BitVector = sim_ds::BitVector;
     
     static std::string name() {
@@ -39,7 +42,27 @@ public:
         LoadFrom(is);
     }
     
-    void Build(DawgBuilder& builder);
+    void Build(DawgBuilder& builder) {
+	  builder.Build();
+
+	  const auto numElem = builder.num_elements_();
+	  set_num_elements_(numElem);
+
+	  auto numTrans = 0;
+	  for (auto i = 0; i < numElem; i++) {
+		if (!builder.is_frozen_(i))
+		  continue;
+
+		set_check_(i, builder.get_check_(i));
+		set_next_and_is_final_(i, builder.get_next_(i), builder.is_final_(i));
+
+		numTrans++;
+	  }
+	  set_num_trans_(numTrans);
+	  BuildBitArray_();
+
+	  builder.CheckEquivalence(*this);
+	}
     
     // MARK: - getter
     
@@ -64,7 +87,7 @@ public:
     // MARK: - ByteData method
     
     size_t size_in_bytes() const override {
-        auto size = fd_.size_in_bytes();
+        auto size = _base::size_in_bytes();
         if constexpr (CompressNext)
             size += is_final_bits_.size_in_bytes();
         size += sizeof(num_trans_);
@@ -72,14 +95,14 @@ public:
     }
     
     void LoadFrom(std::istream& is) override {
-        fd_.LoadFrom(is);
+        _base::LoadFrom(is);
         if constexpr (CompressNext)
             is_final_bits_.Read(is);
         num_trans_ = read_val<size_t>(is);
     }
     
     void StoreTo(std::ostream& os) const override {
-        fd_.StoreTo(os);
+        _base::StoreTo(os);
         if constexpr (CompressNext)
             is_final_bits_.Write(os);
         write_val(num_trans_, os);
@@ -89,10 +112,10 @@ public:
         using std::endl;
         os << "--- Stat of " << name() << " ---" << endl;
         os << "#trans: " << num_trans_ << endl;
-        os << "#elems: " << fd_.num_elements() << endl;
+        os << "#elems: " << _base::num_elements() << endl;
         os << "size:   " << size_in_bytes() << endl;
         os << "size is final:   " << is_final_bits_.size_in_bytes() << endl;
-        fd_.ShowStats(os);
+        _base::ShowStats(os);
     }
     
     void PrintForDebug(std::ostream& os) const {
@@ -100,14 +123,13 @@ public:
     }
     
 private:
-    foundation_type fd_;
     BitVector is_final_bits_;
     size_t num_trans_ = 0;
     
     // MARK: - Protocol setting
     
     void set_num_elements_(size_t num) {
-        fd_.resize(num);
+        _base::resize(num);
         if (kCompressNext) {
             is_final_bits_.resize(num);
         }
@@ -120,21 +142,21 @@ private:
     // MARK: for build
     
     void set_check_(size_t index, uint8_t check) {
-        fd_.set_check(index, check);
+        _base::set_check(index, check);
     }
     
     void set_next_and_is_final_(size_t index, size_t next, bool isFinal) {
         if constexpr (CompressNext) {
-            fd_.set_next(index, next);
+            _base::set_next(index, next);
             is_final_bits_[index] = isFinal;
         } else {
-            fd_.set_next(index, (next << 1) | isFinal);
+            _base::set_next(index, (next << 1) | isFinal);
         }
     }
     
     void BuildBitArray_() {
         if constexpr (!CompressNext) return;
-        fd_.Freeze();
+        _base::Freeze();
     }
     
     // MARK: parameter
@@ -145,55 +167,23 @@ private:
     
     auto next_(size_t index) const {
         if constexpr (CompressNext)
-            return fd_.next(index);
+            return _base::next(index);
         else
-            return fd_.next(index) >> 1;
+            return _base::next(index) >> 1;
     }
     
     auto check_(size_t index) const {
-        return fd_.check(index);
+        return _base::check(index);
     }
     
     auto is_final_(size_t index) const {
         if constexpr (CompressNext)
             return is_final_bits_[index];
         else
-            return static_cast<bool>(fd_.next(index) & 1);
-    }
-    
-    size_t words_(size_t index) const {
-        return -1;
-    }
-    
-    size_t cum_words_(size_t index) const {
-        return -1;
+            return static_cast<bool>(_base::next(index) & 1);
     }
     
 };
-
-
-template<bool CompressNext>
-inline void Dawg<CompressNext>::Build(DawgBuilder& builder) {
-    builder.Build();
-    
-    const auto numElem = builder.num_elements_();
-    set_num_elements_(numElem);
-    
-    auto numTrans = 0;
-    for (auto i = 0; i < numElem; i++) {
-        if (!builder.is_frozen_(i))
-            continue;
-        
-        set_check_(i, builder.get_check_(i));
-        set_next_and_is_final_(i, builder.get_next_(i), builder.is_final_(i));
-        
-        numTrans++;
-    }
-    set_num_trans_(numTrans);
-    BuildBitArray_();
-    
-    builder.CheckEquivalence(*this);
-}
 
 }
 

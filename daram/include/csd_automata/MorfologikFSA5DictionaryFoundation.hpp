@@ -167,9 +167,9 @@ public:
 private:
     size_t node_data_length_ = 0;
     
-    const size_t kNumParams_ = 4;
-    const size_t kSizeElementSymbol_ = 1;
-    const size_t kSizeElementWordsUpperBits_ = 4;
+    static constexpr size_t kNumParams_ = 4;
+    static constexpr size_t kSizeElementSymbol_ = 1;
+    static constexpr size_t kSizeElementWordsUpperBits_ = 4;
     size_t element_words_lower_size_ = 4;
     size_t element_address_size_ = 4;
     

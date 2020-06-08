@@ -15,13 +15,17 @@
 
 namespace csd_automata {
 
-using DaFsa = Dawg<false>;
-using DaFsaDac = Dawg<true>;
+using DaFsa = Dawg<false, false, false, false>;
+using DaFsaDac = Dawg<true, false, false, false>;
 
 // Recomended
 using Daram = Cdawg<true, false, false, true, false, false, false, false>;
 
 // For Experiments
+// DAWG
+using SdDaDawg = Dawg<false, true, false, false>;
+using SdDaDawgCW = Dawg<false, true, false, true>;
+// CDAWG
 using SdDaFsa = Cdawg<true, true, false, true, true, false, false, false>;
 using SdLoDaFsa = Cdawg<true, false, false, true, false, false, false, false>;
 using SdLoCnDaFsa = Cdawg<true, false, false, true, false, true, false, false>;
