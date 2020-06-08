@@ -375,8 +375,8 @@ void CdawgBuilder<Product>::CheckEquivalence(const Product& dam) const {
         auto bi = has_label_(i);
         auto bc = !bi ? get_check_(i) : (Product::kSelectStrId ? dam.strings_pool_.id_rank(get_label_number_(i)) : get_label_number_(i));
         auto fn = dam.target_state_(i);
-        auto fi = dam.Base::is_string(i);
-        auto fc = !fi ? dam.Base::check(i) : dam.Base::string_id(i);
+        auto fi = dam.is_string(i);
+        auto fc = !fi ? dam.check(i) : dam.string_id(i);
         if (bn == fn && bc == fc && bi == fi)
             continue;
         
@@ -388,7 +388,7 @@ void CdawgBuilder<Product>::CheckEquivalence(const Product& dam) const {
             cout << "check: " << bc << tab << fc << endl;
         cout << "is-str: " << bi << tab << fi << endl;
         if (bi != fi) {
-            cout << "accept: " << is_final_(i) << tab << dam.Base::is_final(i) << endl;
+            cout << "accept: " << is_final_(i) << tab << dam.is_final(i) << endl;
             sim_ds::ShowAsBinary(bc, 4);
             sim_ds::ShowAsBinary(fc, 4);
         }

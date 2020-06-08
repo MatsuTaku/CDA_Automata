@@ -394,7 +394,8 @@ public:
                 element_sizes.push_back(1);
             } else {
                 auto words_size = sim_ds::calc::SizeFitsInBytes(words);
-                if constexpr (kPlainWords)
+                element_sizes.push_back(words_size);
+                if constexpr (kPlainWords and kCumulativeWords)
                     element_sizes.push_back(words_size);
             }
         }
