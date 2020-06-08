@@ -7,7 +7,7 @@
 #ifndef SamcWrapper_hpp
 #define SamcWrapper_hpp
 
-#include "sim_ds/Samc.hpp"
+#include "sim_ds/string_util/Samc.hpp"
 #include "csd_automata/util.hpp"
 
 namespace wrapper {

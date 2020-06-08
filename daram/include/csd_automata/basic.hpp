@@ -14,8 +14,8 @@
 #include <map>
 #include <unordered_map>
 #include <string>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstdint>
 #include <cmath>
 #include <memory>
 #include <sstream>

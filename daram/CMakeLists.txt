@@ -32,8 +32,6 @@ message(STATUS "CXX_FLAGS_RELEASE   are ${CMAKE_CXX_FLAGS_RELEASE}")
 
 add_subdirectory(tools)
 
-if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
-    enable_testing()
-    add_subdirectory(test)
-endif()
+enable_testing()
+add_subdirectory(test)
 

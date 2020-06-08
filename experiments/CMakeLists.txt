@@ -24,9 +24,10 @@ set(Daram_INCLUDE_DIRS
 set(SUCCINCT_USE_INTRINSICS ON)
 set(SUCCINCT_USE_POPCNT ON)
 add_subdirectory(lib/path_decomposed_tries/succinct EXCLUDE_FROM_ALL)
+target_include_directories(succinct INTERFACE lib/path_decomposed_tries)
 
-find_package(Boost 1.53.0 REQUIRED
-    COMPONENTS unit_test_framework iostreams system thread filesystem)
+set(Boost_NO_BOOST_CMAKE ON)
+find_package(Boost 1.53.0 REQUIRED)
 
 include_directories(include ${Daram_INCLUDE_DIRS} /usr/local/include lib/path_decomposed_tries ${Boost_INCLUDE_DIRS})
 link_directories(/usr/local/lib ${Boost_LIBRARY_DIRS})
