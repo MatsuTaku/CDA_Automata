@@ -4,6 +4,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 project(Daram CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -14,15 +15,10 @@ set(DARAM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_library(CSDAutomata INTERFACE)
 target_include_directories(CSDAutomata INTERFACE ${DARAM_INCLUDE_DIR})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/SimpleDataStructure EXCLUDE_FROM_ALL)
+if(NOT TARGET sim_ds)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/SimpleDataStructure EXCLUDE_FROM_ALL)
+endif()
 target_link_libraries(CSDAutomata INTERFACE sim_ds)
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/poplar_config.hpp.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/include/poplar/poplar_config.hpp
-)
-set(POPLAR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/poplar-trie/include")
-target_include_directories(CSDAutomata INTERFACE ${POPLAR_INCLUDE_DIR})
 
 message(STATUS "Make Daram")
 message(STATUS "BUILD_TYPE          is  ${CMAKE_BUILD_TYPE}")
