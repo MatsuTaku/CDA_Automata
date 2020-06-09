@@ -226,14 +226,14 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
     };
     std::unordered_map<size_t, Trans> transes;
     
-    const std::function<size_t(size_t)> dfs = [&origin, &dfs, &transes](size_t state) {
+    auto dfs = [&origin, &transes](auto& dfs, size_t state) -> size_t {
         size_t count_words = 0;
         for (auto t = origin.get_first_trans(state); t != 0; t = origin.get_next_trans(t)) {
             auto it = transes.find(t);
             if (it != transes.end()) {
                 count_words += it->second.words;
             } else {
-                size_t word = dfs(origin.get_target_state(t));
+                size_t word = dfs(dfs, origin.get_target_state(t));
                 if (origin.is_final_trans(t))
                     word++;
                 transes[t].words = word;
@@ -244,7 +244,7 @@ MorfologikCFSA2DictionaryFoundation::MorfologikCFSA2DictionaryFoundation(const M
         return count_words;
     };
     
-    auto total_words = dfs(origin.get_root_state());
+    auto total_words = dfs(dfs, origin.get_root_state());
     element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(total_words >> kBitsUpperNodeWords_);
     
     for (size_t s = 0; s < origin.bytes_.size(); s = origin.skip_trans_(s)) {

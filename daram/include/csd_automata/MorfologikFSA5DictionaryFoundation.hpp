@@ -216,14 +216,14 @@ MorfologikFSA5DictionaryFoundation::MorfologikFSA5DictionaryFoundation(const Mor
     
     std::unordered_map<size_t, Node> nodes;
     
-    const std::function<size_t(size_t)> dfs = [&set, &dfs, &nodes](size_t state) {
+    auto dfs = [&set, &nodes](auto& dfs, size_t state) -> size_t {
         size_t count_words = 0;
         for (auto t = set.get_first_trans(state); t != 0; t = set.get_next_trans(t)) {
             auto it = nodes.find(t);
             if (it != nodes.end()) {
                 count_words += it->second.words;
             } else {
-                size_t words = dfs(set.get_target_state(t));
+                size_t words = dfs(dfs, set.get_target_state(t));
                 if (set.is_final_trans(t))
                     words++;
                 nodes[t].words = words;
@@ -234,7 +234,7 @@ MorfologikFSA5DictionaryFoundation::MorfologikFSA5DictionaryFoundation(const Mor
         return count_words;
     };
     
-    auto total_words = dfs(set.get_root_state());
+    auto total_words = dfs(dfs, set.get_root_state());
     element_words_lower_size_ = sim_ds::calc::SizeFitsInBytes(total_words >> kSizeElementWordsUpperBits_);
     
     auto upper_new_size = set.bytes_.size() + set.get_num_trans() * element_words_lower_size_;

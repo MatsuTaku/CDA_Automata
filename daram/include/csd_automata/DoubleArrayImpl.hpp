@@ -104,9 +104,9 @@ private:
     /*******************************************/
     
     template <size_t Id>
-    Base::storage_type front_byte_of_element_(size_t index) const {
-        auto relative_pos = Base::element_table_[Id].pos;
-        return Base::bytes_[Base::offset_(index) + relative_pos]; // Faster extraction
+    uint8_t front_byte_of_element_(size_t index) const {
+        auto relative_pos = Base::element_(Id).pos;
+        return Base::byte_(Base::offset_(index) + relative_pos); // Faster extraction
     }
     
     /**
@@ -114,7 +114,7 @@ private:
      */
     uint8_t unmasked_flags_(size_t index) const {
         assert(!kCompressNext);
-        return Base::bytes_[Base::offset_(index) + kElementPositionNext]; // Fastest extraction
+        return Base::byte_(Base::offset_(index) + kElementPositionNext); // Fastest extraction
     }
         
 public:
