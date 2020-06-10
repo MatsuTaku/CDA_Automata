@@ -55,13 +55,11 @@ public:
     
 private:
     explicit TailDictBuilder(const PlainFSA& fsa, bool binary_mode) : orig_fsa_(fsa), serialized_strings_(binary_mode) {
-        std::cout << "------ TailDict build bench mark ------" << std::endl;
-        
+//        std::cout << "------ TailDict build bench mark ------" << std::endl;
         auto build_time = util::MeasureProcessing([&]() {
             Build();
         });
-        
-        std::cout << "Build string pool as 'Tail' in... " << build_time << "ms" << std::endl;
+//        std::cout << "Build string pool as 'Tail' in... " << build_time << "ms" << std::endl;
     }
     
     void Build() {
