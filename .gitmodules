@@ -1,6 +1,0 @@
-[submodule "daram/lib/SimpleDataStructure"]
-	path = daram/lib/SimpleDataStructure
-	url = git@github.com:MatsuTaku/SimpleDataStructure.git
-[submodule "experiments/lib/path_decomposed_tries"]
-	path = experiments/lib/path_decomposed_tries
-	url = https://github.com/ot/path_decomposed_tries.git
