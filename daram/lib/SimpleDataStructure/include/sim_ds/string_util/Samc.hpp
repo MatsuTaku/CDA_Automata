@@ -142,6 +142,9 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
   node_queue.emplace(0, explorer);
   head_ = {0,1};
 
+  std::array<uint64_t, 64> cnt_table{};
+  std::array<uint64_t, 64> time_table{};
+
   for (size_t depth = 0; ; ++depth) {
     if (node_queue.empty())
       break;
@@ -180,7 +183,16 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
       auto indices_height = 1 + *minmaxelms.second - *minmaxelms.first;
       if (empty_bv.size() < max_height + indices_height)
         empty_bv.resize(max_height + indices_height, true);
+
+      auto start = std::chrono::high_resolution_clock::now();
       auto y_front = !LegacyBuild ? y_check_(indices, empty_bv) : y_check_legacy_(indices, empty_bv);
+      auto end = std::chrono::high_resolution_clock::now();
+      {
+        auto logn = bit_util::popcnt64(indices.size());
+        cnt_table[logn]++;
+        time_table[logn] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+      }
+
       const size_t prev_height = head_[depth+1]-head_[depth];
       auto code = prev_height + y_front;
       code_table_[depth][c] = code;
@@ -212,6 +224,12 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
   storage_.resize(head_.back(), kEmptyChar);
   for (auto i_c : storage_map)
     storage_[i_c.first] = i_c.second;
+
+  std::cerr << " - Tree stats of trie for construction - " << std::endl;
+  std::cerr << "\tcount\ty-check_time[s]" << std::endl;
+  for (int i = 1; i < 64; i++) {
+    std::cerr << i << "] " << cnt_table[i] << "\t" << (double)time_table[i] / 1000000 << std::endl;
+  }
 
 }
 
