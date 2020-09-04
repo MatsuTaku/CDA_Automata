@@ -270,7 +270,7 @@ _SamcImpl<CodeType, LegacyBuild>::y_check_legacy_(const std::vector<size_t>& ind
     for (auto id:indices) {
       if (!empties[front + id]) {
         found = false;
-        continue;
+        break;
       }
     }
     if (found)
