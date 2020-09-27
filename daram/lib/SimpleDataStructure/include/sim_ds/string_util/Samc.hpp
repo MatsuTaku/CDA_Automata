@@ -124,11 +124,7 @@ private:
     using mask_type = uint64_t;
     static constexpr size_t kMaskWidth = 64;
 
-    position_type y_check_(const std::vector<size_t>& indices, const BitVector& empties) const;
-
-    position_type y_check_legacy_(const std::vector<size_t>& indices, const BitVector& empties) const;
-
-    size_t shifts_of_conflicts_(mask_type fields, mask_type mask, mask_type conflicts) const;
+    position_type y_check_(const std::vector<size_t>& indices, const BitVector& empties, uint64_t* mem_access) const;
 
 };
 
@@ -142,16 +138,13 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
   node_queue.emplace(0, explorer);
   head_ = {0,1};
 
-  std::array<uint64_t, 64> cnt_table{};
-  std::array<uint64_t, 64> time_table{};
+  std::array<uint64_t, 33> cnt_table{};
+  std::array<uint64_t, 33> time_table{};
+  std::array<uint64_t, 33> mem_table{};
 
   for (size_t depth = 0; ; ++depth) {
     if (node_queue.empty())
       break;
-//#ifndef NDEBUG
-//    std::cerr << "depth: " << depth
-//              << ", block_height: " << head_[depth+1]-head_[depth] << std::endl;
-//#endif
     std::array<std::vector<size_t>, kAlphabetSize> indices_table;
     std::array<std::vector<string_array_explorer<Iter>>, kAlphabetSize> node_table;
     while (not node_queue.empty()) {
@@ -168,16 +161,10 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
     BitVector empty_bv;
     size_t max_height = 0;
     code_table_.emplace_back();
-//#ifndef NDEBUG
-//    std::cerr << "ycheck for each char..." << std::endl;;
-//#endif
     for (size_t c = 0; c < kAlphabetSize; c++) {
       auto& indices = indices_table[c];
       if (indices.empty())
         continue;
-//#ifndef NDEBUG
-//      std::cerr << c << ':' << uint8_t(c) << ", indices: " << indices.size() << std::endl;
-//#endif
       auto& nodes = node_table[c];
       auto minmaxelms = std::minmax_element(indices.begin(), indices.end());
       auto indices_height = 1 + *minmaxelms.second - *minmaxelms.first;
@@ -185,22 +172,17 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
         empty_bv.resize(max_height + indices_height, true);
 
       auto start = std::chrono::high_resolution_clock::now();
-      auto y_front = !LegacyBuild ? y_check_(indices, empty_bv) : y_check_legacy_(indices, empty_bv);
+      auto logn = bit_util::popcnt64(indices.size());
+      cnt_table[logn]++;
+      auto y_front = y_check_(indices, empty_bv, &(mem_table[logn]));
       auto end = std::chrono::high_resolution_clock::now();
-      {
-        auto logn = bit_util::popcnt64(indices.size());
-        cnt_table[logn]++;
-        time_table[logn] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-      }
+      time_table[logn] += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
       const size_t prev_height = head_[depth+1]-head_[depth];
       auto code = prev_height + y_front;
       code_table_[depth][c] = code;
       for (size_t i = 0; i < indices.size(); i++) {
         size_t index = head_[depth] + indices[i] + code;
-//#ifndef NDEBUG
-//        std::cerr<<index<<"] "<<c<<std::endl;
-//#endif
         assert(storage_map.count(index) == 0);
         storage_map[index] = c;
         size_t inset = index - head_[depth+1];
@@ -212,12 +194,6 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
       }
     }
     head_.push_back(head_[depth+1] + max_height);
-//#ifndef NDEBUG
-//    size_t used = 0;
-//    for (auto b:empty_bv) if (!b) used++;
-//    double per_used = double(used) / empty_bv.size() * 100;
-//    std::cerr << "used: " << std::fixed << std::setprecision(2) << " %" << per_used << std::endl << std::endl;
-//#endif
   }
 
   // Store character to storage_
@@ -226,67 +202,63 @@ _SamcImpl<CodeType, LegacyBuild>::_SamcImpl(const string_array_explorer<Iter>& e
     storage_[i_c.first] = i_c.second;
 
   std::cerr << " - Tree stats of trie for construction - " << std::endl;
-  std::cerr << "\tcount\ty-check_time[s]" << std::endl;
-  for (int i = 1; i < 64; i++) {
-    std::cerr << i << "] " << cnt_table[i] << "\t" << (double)time_table[i] / 1000000 << std::endl;
+  std::cerr << "\tcall-count\ty-check-time[s]\tmem-access" << std::endl;
+  for (int i = 1; i <= 32; i++) {
+    std::cerr << i << "] "
+    << cnt_table[i] << "\t"
+    << std::fixed << std::setprecision(3) << (double)time_table[i] / 1000000 << "\t"
+    << mem_table[i] << std::endl;
   }
 
 }
 
 template <typename CodeType, bool LegacyBuild>
 typename _SamcImpl<CodeType, LegacyBuild>::position_type
-_SamcImpl<CodeType, LegacyBuild>::y_check_(const std::vector<size_t>& indices, const BitVector& empties) const {
-  const auto word_size = (empties.size()-1)/kMaskWidth+1;
-  auto field_bits = [&](size_t i) {
+_SamcImpl<CodeType, LegacyBuild>::y_check_(const std::vector<size_t>& indices, const BitVector& empties, uint64_t* mem_access) const {
+  if constexpr (LegacyBuild) {
+
+    for (position_type front = -(position_type)*std::min_element(indices.begin(), indices.end()); ; ++front) {
+      bool found = true;
+      for (auto id:indices) {
+        (*mem_access)++;
+        if (!empties[front + id]) {
+          found = false;
+          break;
+        }
+      }
+      if (found)
+        return front;
+    }
+
+  } else {
+
+    const auto word_size = (empties.size()-1)/kMaskWidth+1;
+    auto field_bits = [&](size_t i) {
+      (*mem_access)++;
       return i < word_size ? empties.data()[i] : 0;
-  };
-  assert(position_type(empties.size()) + indices.front() - indices.back() >= 0);
-  auto field_size = (empties.size() + indices.front() - indices.back())/kMaskWidth+1;
-  position_type heads = *min_element(indices.begin(), indices.end());
-  for (size_t i = 0; i < field_size; i++) {
-    mask_type candidates = -1ull;
-    for (auto id : indices) {
-      auto p = (id-heads) / kMaskWidth;
-      auto insets = (id-heads) % kMaskWidth;
-      if (insets == 0) {
-        candidates &= field_bits(p+i);
-      } else {
-        candidates &= (field_bits(p+i) >> insets) | (field_bits(p+i+1) << (kMaskWidth-insets));
+    };
+    assert(position_type(empties.size()) + indices.front() - indices.back() >= 0);
+    auto field_size = (empties.size() + indices.front() - indices.back())/kMaskWidth+1;
+    position_type heads = *min_element(indices.begin(), indices.end());
+    for (size_t i = 0; i < field_size; i++) {
+      mask_type candidates = -1ull;
+      for (auto id : indices) {
+        auto p = (id-heads) / kMaskWidth;
+        auto insets = (id-heads) % kMaskWidth;
+        if (insets == 0) {
+          candidates &= field_bits(p+i);
+        } else {
+          candidates &= (field_bits(p+i) >> insets) | (field_bits(p+i+1) << (kMaskWidth-insets));
+        }
+        if (candidates == 0)
+          break;
       }
-      if (candidates == 0)
-        break;
+      if (candidates)
+        return position_type(kMaskWidth) * i + bit_util::ctz(candidates) - heads;
     }
-    if (candidates)
-      return position_type(kMaskWidth) * i + bit_util::ctz(candidates) - heads;
-  }
-  return (position_type)empties.size() + indices.front() - indices.back(); // ERROR
-}
+    return (position_type)empties.size() + indices.front() - indices.back(); // ERROR
 
-template <typename CodeType, bool LegacyBuild>
-typename _SamcImpl<CodeType, LegacyBuild>::position_type
-_SamcImpl<CodeType, LegacyBuild>::y_check_legacy_(const std::vector<size_t>& indices, const BitVector& empties) const {
-  for (position_type front = -(position_type)*std::min_element(indices.begin(), indices.end()); ; ++front) {
-    bool found = true;
-    for (auto id:indices) {
-      if (!empties[front + id]) {
-        found = false;
-        break;
-      }
-    }
-    if (found)
-      return front;
   }
-}
-
-template <typename CodeType, bool LegacyBuild>
-size_t
-_SamcImpl<CodeType, LegacyBuild>::shifts_of_conflicts_(mask_type fields, mask_type mask, mask_type conflicts) const {
-  assert((fields & mask) == conflicts);
-  using bit_util::ctz, bit_util::clz;
-  auto conflict_front = ctz(conflicts);
-  auto field_continuouses = ctz(~(fields >> conflict_front));
-  auto mask_followings = clz(~(mask << (kMaskWidth-1 - conflict_front))) - 1;
-  return field_continuouses + mask_followings;
 }
 
 
