@@ -13,7 +13,7 @@
 #include "PlainFSA.hpp"
 #include "SerializedStrings.hpp"
 
-#include "poplar.hpp"
+#include <unordered_map>
 
 namespace csd_automata {
     
@@ -46,7 +46,7 @@ private:
     
     friend class TailDict;
     
-    using StringMap = poplar::compact_fkhash_map<id_type>;
+    using StringMap = std::unordered_map<std::string, id_type>;
     using StateMap = std::unordered_map<size_t, size_t>;
     
 public:
@@ -144,15 +144,14 @@ private:
                     label_trans = orig_fsa_.get_target_state(label_trans);
                     label_on_path.push_back(orig_fsa_.get_trans_symbol(label_trans));
                 } while (orig_fsa_.is_straight_state(label_trans));
-                auto cr = poplar::make_char_range(label_on_path);
-                auto* id_ptr = string_map->find(cr);
-                if (id_ptr == nullptr) {
+                auto id_ptr = string_map->find(label_on_path);
+                if (id_ptr == string_map->end()) {
                     auto id = label_container_.size();
-                    *(string_map->update(cr)) = id;
+                    string_map->emplace(label_on_path, id);
                     label_container_.emplace_back(id, label_on_path, std::vector<size_t>{index}, 1);
                 } else {
-                    auto& container = label_container_[*id_ptr];
-                    assert(container.id == *id_ptr);
+                    auto& container = label_container_[id_ptr->second];
+                    assert(container.id == id_ptr->second);
                     container.nodes.push_back(index);
                     container.counter++;
                 }
